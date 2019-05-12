@@ -20,3 +20,16 @@ def print (*args, **kwargs):
   if (not silent_mode) or override:
     return __builtin__.print (*args, **kwargs)
 
+
+# This optional log_print function will call str.format(args) and print the
+# result to stdout.  It will return immediately when silent mode is active.
+# Use it for all permanent logging print statements to allow fastest possible
+# execution when verbose flag is not set.
+def log_print (str, *args):
+  if not silent_mode: print (str.format(*args))
+
+
+# Accessor method for the global silent_mode variable.
+def be_silent ():
+  return silent_mode
+

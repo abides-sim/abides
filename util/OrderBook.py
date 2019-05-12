@@ -5,7 +5,7 @@ import sys
 
 from message.Message import Message
 from util.order.LimitOrder import LimitOrder
-from util.util import print
+from util.util import print, log_print, be_silent
 
 from copy import deepcopy
 from agent.FinancialAgent import dollarize
@@ -36,11 +36,11 @@ class OrderBook:
     # order size "fit" or minimizing number of transactions.  Sends one notification per
     # match.
     if order.symbol != self.symbol:
-      print ("{} order discarded.  Does not match OrderBook symbol: {}".format(order.symbol, self.symbol))
+      log_print ("{} order discarded.  Does not match OrderBook symbol: {}", order.symbol, self.symbol)
       return
 
     if (order.quantity <= 0) or (int(order.quantity) != order.quantity):
-      print ("{} order discarded.  Quantity ({}) must be a positive integer.".format(order.symbol, order.quantity))
+      log_print ("{} order discarded.  Quantity ({}) must be a positive integer.", order.symbol, order.quantity)
       return
 
     # Add the order under index 0 of history: orders since the most recent trade.
@@ -48,6 +48,8 @@ class OrderBook:
                                         'quantity' : order.quantity, 'is_buy_order' : order.is_buy_order,
                                         'limit_price' : order.limit_price, 'transactions' : [],
                                         'cancellations' : [] }
+
+    print ("Just added history", self.history[0])
     
     matching = True
 
@@ -66,9 +68,9 @@ class OrderBook:
 
         order.quantity -= filled_order.quantity
 
-        print ("MATCHED: new order {} vs old order {}".format(filled_order, matched_order))
-        print ("SENT: notifications of order execution to agents {} and {} for orders {} and {}".format(
-               filled_order.agent_id, matched_order.agent_id, filled_order.order_id, matched_order.order_id))
+        log_print ("MATCHED: new order {} vs old order {}", filled_order, matched_order)
+        log_print ("SENT: notifications of order execution to agents {} and {} for orders {} and {}",
+               filled_order.agent_id, matched_order.agent_id, filled_order.order_id, matched_order.order_id)
 
         self.owner.sendMessage(order.agent_id, Message({ "msg": "ORDER_EXECUTED", "order": filled_order }))
         self.owner.sendMessage(matched_order.agent_id, Message({ "msg": "ORDER_EXECUTED", "order": matched_order }))
@@ -83,9 +85,9 @@ class OrderBook:
         # No matching order was found, so the new order enters the order book.  Notify the agent.
         self.enterOrder(deepcopy(order))
 
-        print ("ACCEPTED: new order {}".format(order))
-        print ("SENT: notifications of order acceptance to agent {} for order {}".format(
-               order.agent_id, order.order_id))
+        log_print ("ACCEPTED: new order {}", order)
+        log_print ("SENT: notifications of order acceptance to agent {} for order {}",
+               order.agent_id, order.order_id)
 
         self.owner.sendMessage(order.agent_id, Message({ "msg": "ORDER_ACCEPTED", "order": order }))
 
@@ -108,30 +110,39 @@ class OrderBook:
         trade_qty = 0
         trade_price = 0
         for q, p in executed:
-          print ("Executed: {} @ {}".format(q, p))
+          log_print ("Executed: {} @ {}", q, p)
           trade_qty += q
           trade_price += (p*q)
 
         avg_price = int(round(trade_price / trade_qty))
-        print ("Avg: {} @ ${:0.4f}".format(trade_qty, avg_price))
+        log_print ("Avg: {} @ ${:0.4f}", trade_qty, avg_price)
         self.owner.logEvent('LAST_TRADE', "{},${:0.4f}".format(trade_qty, avg_price))
 
         self.last_trade = avg_price
 
-      # Finally, log the full depth of the order book.
-      row = { 'QuoteTime' : self.owner.currentTime }
-      for quote in self.quotes_seen:
-        row[quote] = 0
-      for quote, volume in self.getInsideBids():
-        row[quote] = -volume
-        self.quotes_seen.add(quote)
-      for quote, volume in self.getInsideAsks():
-        if quote in row:
-          if row[quote] != 0:
-            print ("WARNING: THIS IS A REAL PROBLEM: an order book contains bids and asks at the same quote price!", override=True)
-        row[quote] = volume
-        self.quotes_seen.add(quote)
-      self.book_log.append(row)
+        # Transaction occurred, so advance indices.
+        self.history.insert(0, {})
+
+        # Truncate history to required length.
+        self.history = self.history[:self.owner.stream_history+1]
+
+
+      # Finally, log the full depth of the order book, ONLY if we have been requested to store the order book
+      # for later visualization.  (This is slow.)
+      if self.owner.book_freq is not None:
+        row = { 'QuoteTime' : self.owner.currentTime }
+        for quote in self.quotes_seen:
+          row[quote] = 0
+        for quote, volume in self.getInsideBids():
+          row[quote] = -volume
+          self.quotes_seen.add(quote)
+        for quote, volume in self.getInsideAsks():
+          if quote in row:
+            if row[quote] != 0:
+              print ("WARNING: THIS IS A REAL PROBLEM: an order book contains bids and asks at the same quote price!", override=True)
+          row[quote] = volume
+          self.quotes_seen.add(quote)
+        self.book_log.append(row)
 
     self.prettyPrint()
 
@@ -162,60 +173,50 @@ class OrderBook:
       return None
     else:
       # There are orders on the right side, and the new order's price does fall
-      # somewhere within them.  Find the best-price matching order.
+      # somewhere within them.  We can/will only match against the oldest order
+      # among those with the best price.  (i.e. best price, then FIFO)
 
-      # Current matching is best price then FIFO (at same price).
-      # Note that o is a LIST of all orders (oldest at index 0) at this same price.
-      for i, o in enumerate(book):
-        # The first time we find an order that can match, we take it.
-        if self.isMatch(order, o[0]):
-          # The matched order might be only partially filled.
-          # (i.e. new order is smaller)
-          if order.quantity >= o[0].quantity:
-            # Consumed entire matched order.
-            matched_order = book[i].pop(0)
+      # Note that book[i] is a LIST of all orders (oldest at index book[i][0]) at the same price.
 
-            # If the matched price now has no orders, remove it completely.
-            if not book[i]:
-              del book[i]
+      # The matched order might be only partially filled. (i.e. new order is smaller)
+      if order.quantity >= book[0][0].quantity:
+        # Consumed entire matched order.
+        matched_order = book[0].pop(0)
 
-          else:
-            # Consumed only part of matched order.
-            matched_order = deepcopy(book[i][0])
-            matched_order.quantity = order.quantity
+        # If the matched price now has no orders, remove it completely.
+        if not book[0]:
+          del book[0]
 
-            book[i][0].quantity -= matched_order.quantity
+      else:
+        # Consumed only part of matched order.
+        matched_order = deepcopy(book[0][0])
+        matched_order.quantity = order.quantity
 
-          # When two limit orders are matched, they execute at the price that
-          # was being "advertised" in the order book.
-          matched_order.fill_price = matched_order.limit_price
+        book[0][0].quantity -= matched_order.quantity
 
-          # Record the transaction in the order history and push the indices
-          # out one, possibly truncating to the maximum history length.
+      # When two limit orders are matched, they execute at the price that
+      # was being "advertised" in the order book.
+      matched_order.fill_price = matched_order.limit_price
 
-          # The incoming order is guaranteed to exist under index 0.
-          self.history[0][order.order_id]['transactions'].append( (self.owner.currentTime, order.quantity) )
+      # Record the transaction in the order history and push the indices
+      # out one, possibly truncating to the maximum history length.
 
-          # The pre-existing order may or may not still be in the recent history.
-          for idx, orders in enumerate(self.history):
-            if matched_order.order_id not in orders: continue
+      # The incoming order is guaranteed to exist under index 0.
+      print ("HISTORY", self.history)
+      print ("MATCHED HISTORY 0", self.history[0])
+      self.history[0][order.order_id]['transactions'].append( (self.owner.currentTime, order.quantity) )
 
-            # Found the matched order in history.  Update it with this transaction.
-            self.history[idx][matched_order.order_id]['transactions'].append(
-                                                     (self.owner.currentTime, matched_order.quantity) )
+      # The pre-existing order may or may not still be in the recent history.
+      for idx, orders in enumerate(self.history):
+        if matched_order.order_id not in orders: continue
 
-          # Transaction occurred, so advance indices.
-          self.history.insert(0, {})
+        # Found the matched order in history.  Update it with this transaction.
+        self.history[idx][matched_order.order_id]['transactions'].append(
+                                                 (self.owner.currentTime, matched_order.quantity) )
 
-          # Truncate history to required length.
-          self.history = self.history[:self.owner.stream_history+1]
+      # Return (only the executed portion of) the matched order.
+      return matched_order
 
-
-          # Return (only the executed portion of) the matched order.
-          return matched_order
-
-      # No matching order found.
-      return None
 
 
   def isMatch (self, order, o):
@@ -304,9 +305,9 @@ class OrderBook:
             if not book[i]:
               del book[i]
 
-            print ("CANCELLED: order {}".format(order))
-            print ("SENT: notifications of order cancellation to agent {} for order {}".format(
-                   cancelled_order.agent_id, cancelled_order.order_id))
+            log_print ("CANCELLED: order {}", order)
+            log_print ("SENT: notifications of order cancellation to agent {} for order {}",
+                   cancelled_order.agent_id, cancelled_order.order_id)
 
             self.owner.sendMessage(order.agent_id, Message({ "msg": "ORDER_CANCELLED", "order": cancelled_order }))
 
@@ -370,9 +371,13 @@ class OrderBook:
     # Start at the highest ask price and move down.  Then switch to the highest bid price and move down.
     # Show the total volume at each price.  If silent is True, return the accumulated string and print nothing.
 
+    # If the global silent flag is set, skip prettyPrinting entirely, as it takes a LOT of time.
+    if be_silent: return ''
+
     book = "{} order book as of {}\n".format(self.symbol, self.owner.currentTime)
     book += "Last trades: simulated {:d}, historical {:d}\n".format(self.last_trade,
-           self.owner.oracle.observePrice(self.symbol, self.owner.currentTime, sigma_n = 0))
+           self.owner.oracle.observePrice(self.symbol, self.owner.currentTime, sigma_n = 0,
+           random_state = self.owner.random_state))
 
     book += "{:10s}{:10s}{:10s}\n".format('BID','PRICE','ASK')
     book += "{:10s}{:10s}{:10s}\n".format('---','-----','---')
@@ -385,5 +390,5 @@ class OrderBook:
 
     if silent: return book
 
-    print (book)
+    log_print (book)
 

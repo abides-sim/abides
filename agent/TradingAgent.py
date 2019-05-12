@@ -2,30 +2,38 @@ from agent.FinancialAgent import FinancialAgent
 from agent.ExchangeAgent import ExchangeAgent
 from message.Message import Message
 from util.order.LimitOrder import LimitOrder
-from util.util import print
+from util.util import print, log_print
 
 from copy import deepcopy
+import jsons as js
 import numpy as np
 import pandas as pd
-import random
 import sys
 
+# The TradingAgent class (via FinancialAgent, via Agent) is intended as the
+# base class for all trading agents (i.e. not things like exchanges) in a
+# market simulation.  It handles a lot of messaging (inbound and outbound)
+# and state maintenance automatically, so subclasses can focus just on
+# implementing a strategy without too much bookkeeping.
 class TradingAgent(FinancialAgent):
 
-  def __init__(self, id, name, startingCash):
+  def __init__(self, id, name, type, random_state=None, starting_cash=100000, log_orders=False):
     # Base class init.
-    super().__init__(id, name)
+    super().__init__(id, name, type, random_state)
 
     # We don't yet know when the exchange opens or closes.
     self.mkt_open = None
     self.mkt_close = None
 
-    # Store startingCash in case we want to refer to it for performance stats.
+    # Log all order activity?
+    self.log_orders = log_orders
+
+    # Store starting_cash in case we want to refer to it for performance stats.
     # It should NOT be modified.  Use the 'CASH' key in self.holdings.
     # 'CASH' is always in cents!  Note that agents are limited by their starting
     # cash, currently without leverage.  Taking short positions is permitted,
     # but does NOT increase the amount of at-risk capital allowed.
-    self.startingCash = startingCash
+    self.starting_cash = starting_cash
 
     # TradingAgent has constants to support simulated market orders.
     self.MKT_BUY = sys.maxsize
@@ -33,9 +41,9 @@ class TradingAgent(FinancialAgent):
 
     # The base TradingAgent will track its holdings and outstanding orders.
     # Holdings is a dictionary of symbol -> shares.  CASH is a special symbol
-    # worth one dollar per share.  Orders is a dictionary of active, open orders
+    # worth one cent per share.  Orders is a dictionary of active, open orders
     # (not cancelled, not fully executed) keyed by order_id.
-    self.holdings = { 'CASH' : startingCash }
+    self.holdings = { 'CASH' : starting_cash }
     self.orders = {}
 
     # The base TradingAgent also tracks last known prices for every symbol
@@ -45,11 +53,20 @@ class TradingAgent(FinancialAgent):
     # automatically generate such requests, though it has a helper function
     # that can be used to make it happen.
     self.last_trade = {}
+
+    # When a last trade price comes in after market close, the trading agent
+    # automatically records it as the daily close price for a symbol.
     self.daily_close_price = {}
 
+    # The agent remembers the last known bids and asks (with variable depth,
+    # showing only aggregate volume at each price level) when it receives
+    # a response to QUERY_SPREAD.
     self.known_bids = {}
     self.known_asks = {}
 
+    # The agent remembers the order history communicated by the exchange
+    # when such is requested by an agent (for example, a heuristic belief
+    # learning agent).
     self.stream_history = {}
 
     # For special logging at the first moment the simulator kernel begins
@@ -61,7 +78,12 @@ class TradingAgent(FinancialAgent):
     # as we know.
     self.mkt_closed = False
 
-    # TMP
+    # This is probably a transient feature, but for now we permit the exchange
+    # to return the entire order book sometimes, for development and debugging.
+    # It is very expensive to pass this around, and breaks "simulation physics",
+    # but can really help understand why agents are making certain decisions.
+    # Subclasses should NOT rely on this feature as part of their strategy,
+    # as it will go away.
     self.book = ''
 
 
@@ -69,13 +91,14 @@ class TradingAgent(FinancialAgent):
 
   def kernelStarting(self, startTime):
     # self.kernel is set in Agent.kernelInitializing()
+    self.logEvent('STARTING_CASH', self.starting_cash, True)
 
     # Find an exchange with which we can place orders.  It is guaranteed
     # to exist by now (if there is one).
     self.exchangeID = self.kernel.findAgentByType(ExchangeAgent)
 
-    print ("Agent {} requested agent of type Agent.ExchangeAgent.  Given Agent ID: {}".format(
-           self.id, self.exchangeID))
+    log_print ("Agent {} requested agent of type Agent.ExchangeAgent.  Given Agent ID: {}",
+               self.id, self.exchangeID)
 
     # Request a wake-up call as in the base Agent.
     super().kernelStarting(startTime)
@@ -87,23 +110,25 @@ class TradingAgent(FinancialAgent):
 
     # Print end of day holdings.
     self.logEvent('FINAL_HOLDINGS', self.fmtHoldings(self.holdings))
+    self.logEvent('FINAL_CASH_POSITION', self.holdings['CASH'], True)
 
     # Mark to market.
-    # We may want a separate mark to market function (to use anytime) eventually.
     cash = self.markToMarket(self.holdings)
 
-    self.logEvent('ENDING_CASH', cash)
+    self.logEvent('ENDING_CASH', cash, True)
     print ("Final holdings for {}: {}.  Marked to market: {}".format(self.name, self.fmtHoldings(self.holdings),
                                                                      cash), override=True)
     
-    # TODO: Record final results for presentation/debugging.  This is probably bad.
-    mytype = str(type(self)).split('.')[-1].split("'")[0]
+    # Record final results for presentation/debugging.  This is an ugly way
+    # to do this, but it is useful for now.
+    mytype = self.type
+    gain = cash - self.starting_cash
 
     if mytype in self.kernel.meanResultByAgentType:
-      self.kernel.meanResultByAgentType[mytype] += cash
+      self.kernel.meanResultByAgentType[mytype] += gain
       self.kernel.agentCountByType[mytype] += 1
     else:
-      self.kernel.meanResultByAgentType[mytype] = cash
+      self.kernel.meanResultByAgentType[mytype] = gain
       self.kernel.agentCountByType[mytype] = 1
 
 
@@ -114,7 +139,6 @@ class TradingAgent(FinancialAgent):
 
     if self.first_wake:
       # Log initial holdings.
-      #self.logEvent('HOLDINGS_UPDATED', self.fmtHoldings(self.holdings))
       self.logEvent('HOLDINGS_UPDATED', self.holdings)
       self.first_wake = False
 
@@ -123,7 +147,9 @@ class TradingAgent(FinancialAgent):
       self.sendMessage(self.exchangeID, Message({ "msg" : "WHEN_MKT_OPEN", "sender": self.id }))
       self.sendMessage(self.exchangeID, Message({ "msg" : "WHEN_MKT_CLOSE", "sender": self.id }))
 
-    # New for MomentumAgent.
+    # For the sake of subclasses, TradingAgent now returns a boolean
+    # indicating whether the agent is "ready to trade" -- has it received
+    # the market open and closed times, and is the market not already closed.
     return (self.mkt_open and self.mkt_close) and not self.mkt_closed
 
 
@@ -137,12 +163,12 @@ class TradingAgent(FinancialAgent):
     if msg.body['msg'] == "WHEN_MKT_OPEN":
       self.mkt_open = msg.body['data']
 
-      print ("Recorded market open: {}".format(self.kernel.fmtTime(self.mkt_open)))
+      log_print ("Recorded market open: {}", self.kernel.fmtTime(self.mkt_open))
 
     elif msg.body['msg'] == "WHEN_MKT_CLOSE":
       self.mkt_close = msg.body['data']
 
-      print ("Recorded market close: {}".format(self.kernel.fmtTime(self.mkt_close)))
+      log_print ("Recorded market close: {}", self.kernel.fmtTime(self.mkt_close))
 
     elif msg.body['msg'] == "ORDER_EXECUTED":
       # Call the orderExecuted method, which subclasses should extend.  This parent
@@ -179,12 +205,14 @@ class TradingAgent(FinancialAgent):
 
     elif msg.body['msg'] == 'QUERY_SPREAD':
       # Call the querySpread method, which subclasses may extend.
+      # Also note if the market is closed.
       if msg.body['mkt_closed']: self.mkt_closed = True
 
       self.querySpread(msg.body['symbol'], msg.body['data'], msg.body['bids'], msg.body['asks'], msg.body['book'])
 
     elif msg.body['msg'] == 'QUERY_ORDER_STREAM':
       # Call the queryOrderStream method, which subclasses may extend.
+      # Also note if the market is closed.
       if msg.body['mkt_closed']: self.mkt_closed = True
 
       self.queryOrderStream(msg.body['symbol'], msg.body['orders'])
@@ -224,8 +252,8 @@ class TradingAgent(FinancialAgent):
 
 
   # Used by any Trading Agent subclass to place a limit order.  Parameters expect:
-  # string (valid symbol), int (positive share quantity), bool (True == BUY), float (x.xx price).
-  def placeLimitOrder (self, symbol, quantity, is_buy_order, limit_price):
+  # string (valid symbol), int (positive share quantity), bool (True == BUY), int (price in cents).
+  def placeLimitOrder (self, symbol, quantity, is_buy_order, limit_price, ignore_risk = False):
     order = LimitOrder(self.id, self.currentTime, symbol, quantity, is_buy_order, limit_price)
 
     if quantity > 0:
@@ -242,18 +270,24 @@ class TradingAgent(FinancialAgent):
       new_at_risk = self.markToMarket(new_holdings) - new_holdings['CASH']
 
       # If at_risk is lower, always allow.  Otherwise, new_at_risk must be below starting cash.
-      if (new_at_risk > at_risk) and (new_at_risk > self.startingCash):
-        print ("TradingAgent ignored limit order due to at-risk constraints: {}\n{}".format(order, self.fmtHoldings(self.holdings)))
-        return
+      if not ignore_risk:
+        if (new_at_risk > at_risk) and (new_at_risk > self.starting_cash):
+          log_print ("TradingAgent ignored limit order due to at-risk constraints: {}\n{}", order, self.fmtHoldings(self.holdings))
+          return
 
+      # Copy the intended order for logging, so any changes made to it elsewhere
+      # don't retroactively alter our "as placed" log of the order.  Eventually
+      # it might be nice to make the whole history of the order into transaction
+      # objects inside the order (we're halfway there) so there CAN be just a single
+      # object per order, that never alters its original state, and eliminate all these copies.
       self.orders[order.order_id] = deepcopy(order)
       self.sendMessage(self.exchangeID, Message({ "msg" : "LIMIT_ORDER", "sender": self.id,
                                                   "order" : order })) 
 
       # Log this activity.
-      self.logEvent('ORDER_SUBMITTED', order)
+      if self.log_orders: self.logEvent('ORDER_SUBMITTED', js.dump(order))
     else:
-      print ("TradingAgent ignored limit order of quantity zero: {}".format(order))
+      log_print ("TradingAgent ignored limit order of quantity zero: {}", order)
 
 
   # Used by any Trading Agent subclass to cancel any order.  The order must currently
@@ -263,16 +297,16 @@ class TradingAgent(FinancialAgent):
                                                 "order" : order })) 
 
     # Log this activity.
-    self.logEvent('CANCEL_SUBMITTED', order)
+    if self.log_orders: self.logEvent('CANCEL_SUBMITTED', js.dump(order))
 
 
   # Handles ORDER_EXECUTED messages from an exchange agent.  Subclasses may wish to extend,
   # but should still call parent method for basic portfolio/returns tracking.
   def orderExecuted (self, order):
-    print ("Received notification of execution for: {}".format(order))
+    log_print ("Received notification of execution for: {}", order)
 
     # Log this activity.
-    self.logEvent('ORDER_EXECUTED', order)
+    if self.log_orders: self.logEvent('ORDER_EXECUTED', js.dump(order))
 
     # At the very least, we must update CASH and holdings at execution time.
     qty = order.quantity if order.is_buy_order else -1 * order.quantity
@@ -299,21 +333,20 @@ class TradingAgent(FinancialAgent):
       else: o.quantity -= order.quantity
 
     else:
-      print ("Execution received for order not in orders list: {}".format(order))
+      log_print ("Execution received for order not in orders list: {}", order)
 
-    print ("After execution, agent open orders: {}".format(self.orders))
+    log_print ("After execution, agent open orders: {}", self.orders)
 
     # After execution, log holdings.
-    #self.logEvent('HOLDINGS_UPDATED', self.fmtHoldings(self.holdings))
     self.logEvent('HOLDINGS_UPDATED', self.holdings)
 
 
   # Handles ORDER_ACCEPTED messages from an exchange agent.  Subclasses may wish to extend.
   def orderAccepted (self, order):
-    print ("Received notification of acceptance for: {}".format(order))
+    log_print ("Received notification of acceptance for: {}", order)
 
     # Log this activity.
-    self.logEvent('ORDER_ACCEPTED', order)
+    if self.log_orders: self.logEvent('ORDER_ACCEPTED', js.dump(order))
 
     # We may later wish to add a status to the open orders so an agent can tell whether
     # a given order has been accepted or not (instead of needing to override this method).
@@ -321,10 +354,10 @@ class TradingAgent(FinancialAgent):
 
   # Handles ORDER_CANCELLED messages from an exchange agent.  Subclasses may wish to extend.
   def orderCancelled (self, order):
-    print ("Received notification of cancellation for: {}".format(order))
+    log_print ("Received notification of cancellation for: {}", order)
 
     # Log this activity.
-    self.logEvent('ORDER_CANCELLED', order)
+    if self.log_orders: self.logEvent('ORDER_CANCELLED', js.dump(order))
 
     # Remove the cancelled order from the open orders list.  We may of course wish to have
     # additional logic here later, so agents can easily "look for" cancelled orders.  Of
@@ -332,12 +365,12 @@ class TradingAgent(FinancialAgent):
     if order.order_id in self.orders:
       del self.orders[order.order_id]
     else:
-      print ("Cancellation received for order not in orders list: {}".format(order))
+      log_print ("Cancellation received for order not in orders list: {}", order)
 
 
   # Handles MKT_CLOSED messages from an exchange agent.  Subclasses may wish to extend.
   def marketClosed (self):
-    print ("Received notification of market closure.")
+    log_print ("Received notification of market closure.")
 
     # Log this activity.
     self.logEvent('MKT_CLOSED')
@@ -350,13 +383,13 @@ class TradingAgent(FinancialAgent):
   def queryLastTrade (self, symbol, price):
     self.last_trade[symbol] = price
 
-    print ("Received last trade price of {} for {}.".format(self.last_trade[symbol], symbol))
+    log_print ("Received last trade price of {} for {}.", self.last_trade[symbol], symbol)
 
     if self.mkt_closed:
       # Note this as the final price of the day.
       self.daily_close_price[symbol] = self.last_trade[symbol]
 
-      print ("Received daily close price of {} for {}.".format(self.last_trade[symbol], symbol))
+      log_print ("Received daily close price of {} for {}.", self.last_trade[symbol], symbol)
 
 
   # Handles QUERY_SPREAD messages from an exchange agent.
@@ -373,7 +406,7 @@ class TradingAgent(FinancialAgent):
     if asks: best_ask, best_ask_qty = (asks[0][0], asks[0][1])
     else: best_ask, best_ask_qty = ('No asks', 0)
 
-    print ("Received spread of {} @ {} / {} @ {} for {}".format(best_bid_qty, best_bid, best_ask_qty, best_ask, symbol))
+    log_print ("Received spread of {} @ {} / {} @ {} for {}", best_bid_qty, best_bid, best_ask_qty, best_ask, symbol)
 
     self.logEvent("BID_DEPTH", bids)
     self.logEvent("ASK_DEPTH", asks)
@@ -418,9 +451,9 @@ class TradingAgent(FinancialAgent):
     bid_liq = self.getBookLiquidity(self.known_bids[symbol], within)
     ask_liq = self.getBookLiquidity(self.known_asks[symbol], within)
 
-    print ("Bid/ask liq: {}, {}".format(bid_liq, ask_liq))
-    print ("Known bids: {}".format(self.known_bids[self.symbol]))
-    print ("Known asks: {}".format(self.known_asks[self.symbol]))
+    log_print ("Bid/ask liq: {}, {}", bid_liq, ask_liq)
+    log_print ("Known bids: {}", self.known_bids[self.symbol])
+    log_print ("Known asks: {}", self.known_asks[self.symbol])
 
     return bid_liq, ask_liq
 
@@ -434,7 +467,7 @@ class TradingAgent(FinancialAgent):
 
       # Is this price within "within" proportion of the best price?
       if abs(best - price) <= int(round(best * within)):
-        print ("Within {} of {}: {} with {} shares".format(within, best, price, shares))
+        log_print ("Within {} of {}: {} with {} shares", within, best, price, shares)
         liq += shares
 
     return liq

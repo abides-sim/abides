@@ -1,14 +1,27 @@
 import pandas as pd
 
 from copy import deepcopy
-from util.util import print
+from util.util import print, log_print
 
 class Agent:
 
-  def __init__ (self, id, name):
+  def __init__ (self, id, name, type, random_state):
 
+    # ID must be a unique number (usually autoincremented).
+    # Name is for human consumption, should be unique (often type + number).
+    # Type is for machine aggregation of results, should be same for all
+    # agents following the same strategy (incl. parameter settings).
+    # Every agent is given a random state to use for any stochastic needs.
+    # This is an np.random.RandomState object, already seeded.
     self.id = id
     self.name = name
+    self.type = type
+    self.random_state = random_state
+
+    if not random_state:
+      raise ValueError("A valid, seeded np.random.RandomState object is required " +
+             "for every agent.Agent", self.name)
+      sys.exit()
 
     # Kernel is supplied via kernelInitializing method of kernel lifecycle.
     self.kernel = None
@@ -30,6 +43,7 @@ class Agent:
     # It might, or might not, make sense to formalize these log Events
     # as a class, with enumerated EventTypes and so forth.
     self.log = []
+    self.logEvent("AGENT_TYPE", type)
 
 
   ### Flow of required kernel listening methods:
@@ -44,7 +58,7 @@ class Agent:
 
     self.kernel = kernel
 
-    print ("{} exists!".format(self.name))
+    log_print ("{} exists!", self.name)
 
 
   def kernelStarting (self, startTime):
@@ -56,8 +70,8 @@ class Agent:
     # Base Agent schedules a wakeup call for the first available timestamp.
     # Subclass agents may override this behavior as needed.
 
-    print ("Agent {} ({}) requesting kernel wakeup at time {}".format(
-           self.id, self.name, self.kernel.fmtTime(startTime)))
+    log_print ("Agent {} ({}) requesting kernel wakeup at time {}",
+           self.id, self.name, self.kernel.fmtTime(startTime))
 
     self.setWakeup(startTime)
 
@@ -83,12 +97,19 @@ class Agent:
 
   ### Methods for internal use by agents (e.g. bookkeeping).
 
-  def logEvent (self, eventType, event = ''):
+  def logEvent (self, eventType, event = '', appendSummaryLog = False):
     # Adds an event to this agent's log.  The deepcopy of the Event field,
     # often an object, ensures later state changes to the object will not
     # retroactively update the logged event.
+
+    # We can make a single copy of the object (in case it is an arbitrary
+    # class instance) for both potential log targets, because we don't
+    # alter logs once recorded.
+    e = deepcopy(event)
     self.log.append({ 'EventTime' : self.currentTime, 'EventType' : eventType,
-                      'Event' : deepcopy(event) })
+                      'Event' : e })
+
+    if appendSummaryLog: self.kernel.appendSummaryLog(self.id, eventType, e)
 
 
   ### Methods required for communication from other agents.
@@ -104,8 +125,8 @@ class Agent:
 
     self.currentTime = currentTime
 
-    print ("At {}, agent {} ({}) received: {}".format(
-                  self.kernel.fmtTime(currentTime), self.id, self.name, msg))
+    log_print ("At {}, agent {} ({}) received: {}",
+                  self.kernel.fmtTime(currentTime), self.id, self.name, msg)
 
 
   def wakeup (self, currentTime):
@@ -115,8 +136,8 @@ class Agent:
 
     self.currentTime = currentTime
 
-    print ("At {}, agent {} ({}) received wakeup.".format(
-                  self.kernel.fmtTime(currentTime), self.id, self.name))
+    log_print ("At {}, agent {} ({}) received wakeup.",
+                  self.kernel.fmtTime(currentTime), self.id, self.name)
 
 
   ### Methods used to request services from the Kernel.  These should be used

@@ -4,16 +4,16 @@
 ### certain "background" agents to obtain noisy observations about the "real"
 ### price of a stock at a current time.  It is intended to provide some realistic
 ### behavior and "price gravity" to the simulated market -- i.e. to make the
-### market behave something like reality in the absence of whatever experiment
-### we are running with more active agent types.
+### market behave something like historical reality in the absence of whatever
+### experiment we are running with more active agent types.
 
 import datetime as dt
 import numpy as np
 import pandas as pd
-import os, random, sys
+import os, sys
 
 from math import sqrt
-from util.util import print
+from util.util import print, log_print
 
 from joblib import Memory
 mem = Memory(cachedir='./cache', verbose=0)
@@ -21,7 +21,7 @@ mem = Memory(cachedir='./cache', verbose=0)
 
 #@mem.cache
 def read_trades(trade_file, symbols):
-  print ("Data not cached.  This will take a minute...")
+  log_print ("Data not cached.  This will take a minute...")
 
   df = pd.read_pickle(trade_file, compression='bz2')
 
@@ -39,7 +39,7 @@ def read_trades(trade_file, symbols):
 
 class DataOracle:
 
-  def __init__(self, historical_date, symbols):
+  def __init__(self, historical_date = None, symbols = None, data_dir = None):
     self.historical_date = historical_date
     self.symbols = symbols
 
@@ -48,28 +48,22 @@ class DataOracle:
     # Read historical trades here...
     h = historical_date
     pre = 'ct' if h.year < 2015 else 'ctm'
-    trade_file = os.path.join('data', 'trades', 'trades_{}'.format(h.year),
+    trade_file = os.path.join(data_dir, 'trades', 'trades_{}'.format(h.year),
                               '{}_{}{:02d}{:02d}.bgz'.format(pre, h.year, h.month, h.day))
 
-    bars_1m_file = os.path.join('data', '1m_ohlc', '1m_ohlc_{}'.format(h.year),
+    bars_1m_file = os.path.join(data_dir, '1m_ohlc', '1m_ohlc_{}'.format(h.year),
                               '{}{:02d}{:02d}_ohlc_1m.bgz'.format(h.year, h.month, h.day))
 
-    print ("DataOracle initializing trades from file {}".format(trade_file))
-    print ("DataOracle initializing 1m bars from file {}".format(bars_1m_file))
+    log_print ("DataOracle initializing trades from file {}", trade_file)
+    log_print ("DataOracle initializing 1m bars from file {}", bars_1m_file)
 
     then = dt.datetime.now()
     self.df_trades = read_trades(trade_file, symbols)
-
-    # Use this for debugging the historical trade files.
-    #tmp = self.df_trades.loc['IBM'].between_time('9:30','16:00')
-    #print (tmp[tmp['EX'] == 'T'])
-    #sys.exit()
-
     self.df_bars_1m = read_trades(bars_1m_file, symbols)
     now = dt.datetime.now()
 
-    print ("DataOracle initialized for {} with symbols {}".format(historical_date, symbols))
-    print ("DataOracle initialization took {}".format(now - then))
+    log_print ("DataOracle initialized for {} with symbols {}", historical_date, symbols)
+    log_print ("DataOracle initialization took {}", now - then)
 
 
 
@@ -77,13 +71,14 @@ class DataOracle:
   # files does propagate the earliest trade backwards, which helps.  The exchange should
   # pass its opening time.
   def getDailyOpenPrice (self, symbol, mkt_open, cents=True):
-    # Remember this.  It is useful.
+    # Remember market open time.
     self.mkt_open = mkt_open
 
-    print ("Oracle: client requested {} at market open: {}".format(symbol, mkt_open))
+    log_print ("Oracle: client requested {} at market open: {}", symbol, mkt_open)
 
+    # Find the opening historical price in the 1m OHLC bars for this symbol.
     open = self.df_bars_1m.loc[(symbol,mkt_open.time()),'open']
-    print ("Oracle: market open price was was {}".format(open))
+    log_print ("Oracle: market open price was was {}", open)
 
     return int(round(open * 100)) if cents else open
 
@@ -92,7 +87,7 @@ class DataOracle:
   # which must be of type pd.Timestamp.
   def getLatestTrade (self, symbol, currentTime):
 
-    print ("Oracle: client requested {} as of {}".format(symbol, currentTime))
+    log_print ("Oracle: client requested {} as of {}", symbol, currentTime)
 
     # See when the last historical trade was, prior to simulated currentTime.
     dt_last_trade = self.df_trades.loc[symbol].index.asof(currentTime)
@@ -109,7 +104,7 @@ class DataOracle:
       price = self.getDailyOpenPrice(symbol, self.mkt_open, cents=False)
       time = self.mkt_open
 
-    print ("Oracle: latest historical trade was {} at {}".format(price, time))
+    log_print ("Oracle: latest historical trade was {} at {}", price, time)
 
     return price
 
@@ -119,16 +114,22 @@ class DataOracle:
   # agents should use noisy=False.
   #
   # NOTE: sigma_n is the observation variance, NOT STANDARD DEVIATION.
-  def observePrice(self, symbol, currentTime, sigma_n = 0.0001):
+  #
+  # Each agent must pass its own np.random.RandomState object to the oracle.
+  # This helps to preserve the consistency of multiple simulations with experimental
+  # changes (if the oracle used a global Random object, simply adding one new agent
+  # would change everyone's "noise" on all subsequent observations).
+  def observePrice(self, symbol, currentTime, sigma_n = 0.0001, random_state = None):
     last_trade_price = self.getLatestTrade(symbol, currentTime)
 
-    # Noisy belief is a normal distribution with stdev around 1% of the last trade price.
+    # Noisy belief is a normal distribution around 1% the last trade price with variance
+    # as requested by the agent.
     if sigma_n == 0:
       belief = float(last_trade_price)
     else:
-      belief = np.random.normal(loc=last_trade_price, scale=last_trade_price * sqrt(sigma_n))
+      belief = random_state.normal(loc=last_trade_price, scale=last_trade_price * sqrt(sigma_n))
 
-    print ("Oracle: giving client value observation {:0.2f}".format(belief))
+    log_print ("Oracle: giving client value observation {:0.2f}", belief)
 
     # All simulator prices are specified in integer cents.
     return int(round(belief * 100))

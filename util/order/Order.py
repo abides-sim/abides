@@ -7,10 +7,19 @@ class Order:
   order_id = 0
 
   def __init__(self, agent_id, time_placed, symbol, quantity, is_buy_order):
+    # Numeric agent id that placed the order.
     self.agent_id = agent_id
+
+    # Time at which the order was created by the agent.
     self.time_placed = time_placed
+
+    # Equity symbol for the order.
     self.symbol = symbol
+
+    # Number of equity units affected by the order.
     self.quantity = quantity
+
+    # Boolean: True indicates a buy order; False indicates a sell order.
     self.is_buy_order = is_buy_order
 
     # Assign and increment the next unique order_id (simulation-wide).

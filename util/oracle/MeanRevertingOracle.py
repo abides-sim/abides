@@ -19,7 +19,7 @@ import pandas as pd
 import os, random, sys
 
 from math import sqrt
-from util.util import print
+from util.util import print, log_print
 
 
 class MeanRevertingOracle:
@@ -30,25 +30,32 @@ class MeanRevertingOracle:
     self.mkt_open = mkt_open
     self.mkt_close = mkt_close
     self.symbols = symbols
+
+    # The dictionary r holds the fundamenal value series for each symbol.
     self.r = {}
 
     then = dt.datetime.now()
 
     for symbol in symbols:
       s = symbols[symbol]
-      print ("MeanRevertingOracle computing fundamental value series for {}".format(symbol))
+      log_print ("MeanRevertingOracle computing fundamental value series for {}", symbol)
       self.r[symbol] = self.generate_fundamental_value_series(symbol=symbol, **s)
 
     now = dt.datetime.now()
 
-    print ("MeanRevertingOracle initialized for symbols {}".format(symbols))
-    print ("MeanRevertingOracle initialization took {}".format(now - then))
+    log_print ("MeanRevertingOracle initialized for symbols {}", symbols)
+    log_print ("MeanRevertingOracle initialization took {}", now - then)
 
 
   def generate_fundamental_value_series(self, symbol, r_bar, kappa, sigma_s):
     # Generates the fundamental value series for a single stock symbol.  r_bar is the
     # mean fundamental value, kappa is the mean reversion coefficient, and sigma_s
     # is the shock variance.  (Note: NOT STANDARD DEVIATION.)
+
+    # Because the oracle uses the global np.random PRNG to create the fundamental value
+    # series, it is important to create the oracle BEFORE the agents.  In this way the
+    # addition of a new agent will not affect the sequence created.  (Observations using
+    # the oracle will use an agent's PRNG and thus not cause a problem.)
 
     # Turn variance into std.
     sigma_s = sqrt(sigma_s)
@@ -84,10 +91,10 @@ class MeanRevertingOracle:
     if (mkt_open is not None) and (self.mkt_open is None):
       self.mkt_open = mkt_open
   
-    print ("Oracle: client requested {} at market open: {}".format(symbol, self.mkt_open))
+    log_print ("Oracle: client requested {} at market open: {}", symbol, self.mkt_open)
   
     open = self.r[symbol].loc[self.mkt_open]
-    print ("Oracle: market open price was was {}".format(open))
+    log_print ("Oracle: market open price was was {}", open)
   
     return open
 
@@ -99,7 +106,12 @@ class MeanRevertingOracle:
   # Only the Exchange or other privileged agents should use noisy=False.
   #
   # sigma_n is experimental observation variance.  NOTE: NOT STANDARD DEVIATION.
-  def observePrice(self, symbol, currentTime, sigma_n = 1000):
+  #
+  # Each agent must pass its RandomState object to observePrice.  This ensures that
+  # each agent will receive the same answers across multiple same-seed simulations
+  # even if a new agent has been added to the experiment.
+  def observePrice(self, symbol, currentTime, sigma_n = 1000, random_state = None):
+    # If the request is made after market close, return the close price.
     if currentTime >= self.mkt_close:
       r_t = self.r[symbol].loc[self.mkt_close - pd.Timedelta('1ns')]
     else:
@@ -109,10 +121,10 @@ class MeanRevertingOracle:
     if sigma_n == 0:
       obs = r_t
     else:
-      obs = int(round(np.random.normal(loc=r_t, scale=sqrt(sigma_n))))
+      obs = int(round(random_state.normal(loc=r_t, scale=sqrt(sigma_n))))
  
-    print ("Oracle: current fundamental value is {} at {}".format(r_t, currentTime))
-    print ("Oracle: giving client value observation {}".format(obs))
+    log_print ("Oracle: current fundamental value is {} at {}", r_t, currentTime)
+    log_print ("Oracle: giving client value observation {}", obs)
  
     # Reminder: all simulator prices are specified in integer cents.
     return obs
