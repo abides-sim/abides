@@ -1,4 +1,5 @@
-__pycache__
+*.png
+__pycache__/
 batch_output/
 cache/
 local/

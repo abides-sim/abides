@@ -5,7 +5,7 @@ import sys
 
 from message.Message import Message
 from util.order.LimitOrder import LimitOrder
-from util.util import print, log_print, be_silent
+from util.util import log_print, be_silent
 
 from copy import deepcopy
 from agent.FinancialAgent import dollarize
@@ -49,8 +49,6 @@ class OrderBook:
                                         'limit_price' : order.limit_price, 'transactions' : [],
                                         'cancellations' : [] }
 
-    print ("Just added history", self.history[0])
-    
     matching = True
 
     self.prettyPrint()
@@ -139,7 +137,7 @@ class OrderBook:
         for quote, volume in self.getInsideAsks():
           if quote in row:
             if row[quote] != 0:
-              print ("WARNING: THIS IS A REAL PROBLEM: an order book contains bids and asks at the same quote price!", override=True)
+              print ("WARNING: THIS IS A REAL PROBLEM: an order book contains bids and asks at the same quote price!")
           row[quote] = volume
           self.quotes_seen.add(quote)
         self.book_log.append(row)
@@ -202,8 +200,6 @@ class OrderBook:
       # out one, possibly truncating to the maximum history length.
 
       # The incoming order is guaranteed to exist under index 0.
-      print ("HISTORY", self.history)
-      print ("MATCHED HISTORY 0", self.history[0])
       self.history[0][order.order_id]['transactions'].append( (self.owner.currentTime, order.quantity) )
 
       # The pre-existing order may or may not still be in the recent history.
@@ -222,8 +218,7 @@ class OrderBook:
   def isMatch (self, order, o):
     # Returns True if order 'o' can be matched against input 'order'.
     if order.is_buy_order == o.is_buy_order:
-      print ("WARNING: isMatch() called on orders of same type: {} vs {}".format(order, o),
-             override=True)
+      print ("WARNING: isMatch() called on orders of same type: {} vs {}".format(order, o))
       return False
 
     if order.is_buy_order and (order.limit_price >= o.limit_price):
@@ -349,8 +344,7 @@ class OrderBook:
     # Returns True if order has a 'better' price than o.  (That is, a higher bid
     # or a lower ask.)  Must be same order type.
     if order.is_buy_order != o.is_buy_order:
-      print ("WARNING: isBetterPrice() called on orders of different type: {} vs {}".format(order, o),
-             override=True)
+      print ("WARNING: isBetterPrice() called on orders of different type: {} vs {}".format(order, o))
       return False
 
     if order.is_buy_order and (order.limit_price > o.limit_price):

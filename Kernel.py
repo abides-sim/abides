@@ -4,7 +4,7 @@ import pandas as pd
 import datetime, os, queue, sys
 from message.Message import Message, MessageType
 
-from util.util import print, log_print
+from util.util import log_print
 
 class Kernel:
 
@@ -178,8 +178,7 @@ class Kernel:
         # Periodically print the simulation time and total messages, even if muted.
         if ttl_messages % 100000 == 0:
           print ("\n--- Simulation time: {}, messages processed: {}, wallclock elapsed: {} ---\n".format(
-                         self.fmtTime(self.currentTime), ttl_messages, pd.Timestamp('now') - eventQueueWallClockStart),
-                 override=True)
+                         self.fmtTime(self.currentTime), ttl_messages, pd.Timestamp('now') - eventQueueWallClockStart))
 
         log_print ("\n--- Kernel Event Queue pop ---")
         log_print ("Kernel handling {} message for agent {} at time {}", 
@@ -283,8 +282,7 @@ class Kernel:
 
       print ("Event Queue elapsed: {}, messages: {}, messages per second: {:0.1f}".format(
              eventQueueWallClockElapsed, ttl_messages, 
-             ttl_messages / (eventQueueWallClockElapsed / (np.timedelta64(1, 's')))),
-             override=True)
+             ttl_messages / (eventQueueWallClockElapsed / (np.timedelta64(1, 's')))))
       log_print ("Ending sim {}", sim)
 
     # Agents will request the Kernel to serialize their agent logs, usually
@@ -294,13 +292,13 @@ class Kernel:
 
     # This should perhaps be elsewhere, as it is explicitly financial, but it
     # is convenient to have a quick summary of the results for now.
-    print ("Mean ending value by agent type:", override=True)
+    print ("Mean ending value by agent type:")
     for a in self.meanResultByAgentType:
       value = self.meanResultByAgentType[a]
       count = self.agentCountByType[a]
-      print ("{}: {:d}".format(a, int(round(value / count))), override=True)
+      print ("{}: {:d}".format(a, int(round(value / count))))
 
-    print ("Simulation ending!", override=True)
+    print ("Simulation ending!")
 
 
   def sendMessage(self, sender = None, recipient = None, msg = None, delay = 0):

@@ -1,6 +1,6 @@
 from agent.TradingAgent import TradingAgent
 from message.Message import Message
-from util.util import print, log_print
+from util.util import log_print
 
 import numpy as np
 import pandas as pd
@@ -58,7 +58,7 @@ class ImpactAgent(TradingAgent):
 
     ### Impact agent operates at a specific time.
     if currentTime < self.impact_time:
-      print ("Impact agent waiting for impact_time {}".format(self.impact_time), override=True)
+      print ("Impact agent waiting for impact_time {}".format(self.impact_time))
       self.setWakeup(self.impact_time)
       return
 
@@ -113,10 +113,10 @@ class ImpactAgent(TradingAgent):
 
         # Actually place the order only if self.impact is true.
         if self.impact: 
-          print ("Impact agent firing: {} {} @ {}".format('BUY' if direction else 'SELL', shares, self.dollarize(price)), override=True)
+          print ("Impact agent firing: {} {} @ {}".format('BUY' if direction else 'SELL', shares, self.dollarize(price)))
           self.placeLimitOrder (self.symbol, shares, direction, price)
         else:
-          print ("Impact agent would fire: {} {} @ {} (but self.impact = False)".format('BUY' if direction else 'SELL', shares, self.dollarize(price)), override=True)
+          print ("Impact agent would fire: {} {} @ {} (but self.impact = False)".format('BUY' if direction else 'SELL', shares, self.dollarize(price)))
 
         self.traded = True
         self.state = 'AWAITING_WAKEUP'

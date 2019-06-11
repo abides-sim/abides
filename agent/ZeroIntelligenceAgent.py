@@ -1,6 +1,6 @@
 from agent.TradingAgent import TradingAgent
 from message.Message import Message
-from util.util import print, log_print
+from util.util import log_print
 
 from math import sqrt
 import numpy as np

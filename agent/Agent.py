@@ -1,7 +1,7 @@
 import pandas as pd
 
 from copy import deepcopy
-from util.util import print, log_print
+from util.util import log_print
 
 class Agent:
 

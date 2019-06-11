@@ -7,7 +7,7 @@
 from agent.FinancialAgent import FinancialAgent
 from message.Message import Message
 from util.OrderBook import OrderBook
-from util.util import print, log_print
+from util.util import log_print
 
 import sys
 
@@ -134,7 +134,7 @@ class ExchangeAgent(FinancialAgent):
         # to the exchange agent log.
         self.writeLog(df, filename='orderbook_{}'.format(symbol))
 
-        print ("Order book archival complete.", override=True)
+        print ("Order book archival complete.")
    
 
   def receiveMessage (self, currentTime, msg):

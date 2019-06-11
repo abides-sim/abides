@@ -15,7 +15,7 @@ pd.options.display.max_rows = 1000
 pd.options.display.max_colwidth = 200
 
 # Initialize a persistent memcache.
-mem_sim = Memory(cachedir='./.cached_plot_sim', verbose=0)
+#mem_sim = Memory(cachedir='./.cached_plot_sim', verbose=0)
 
 
 # Linewidth for plots.
@@ -72,7 +72,7 @@ def read_simulated_quotes (file, symbol):
 # Main program starts here.
 
 if len(sys.argv) < 3:
-  print ("Usage: python mean_std_event.py <Ticker symbol> <Simulator DataFrame file(s)>")
+  print ("Usage: python event_midpoint.py <Ticker symbol> <Simulator DataFrame file(s)>")
   sys.exit()
 
 # TODO: only really works for one symbol right now.
@@ -171,7 +171,7 @@ for g in events:
   s = df.std(axis=1)
   
   # Plot mean and std.
-  m.plot(grid=True, linewidth=LW, ax=ax, fontsize=12)
+  m.plot(grid=True, linewidth=LW, ax=ax, fontsize=12, label="Relative mean mid-price")
 
   # Fill std region?
   #ax.fill_between(m.index, m-s, m+s, alpha=0.2)
@@ -180,24 +180,29 @@ for g in events:
 # Do the rest a single time for the whole plot.
 
 # If we need a vertical "time of event" line...
-#ax.axvline(x=100, color='0.5', linestyle='--', linewidth=2)
+ax.axvline(x=200, color='0.5', linestyle='--', linewidth=2, label="Order placement time")
   
 # Absolute or relative time labels...
 ax.set_xticklabels(['0','10000','20000','30000','40000','50000','60000','70000'])
 #ax.set_xticklabels(['T-30', 'T-20', 'T-10', 'T', 'T+10', 'T+20', 'T+30'])
 
 ax.legend(legend)
+#ax.legend()
   
 # Force y axis limits to make multiple plots line up exactly...
 #ax.set_ylim(-0.0065,0.0010)
+#ax.set_ylim(-0.0010,0.0065)
 
 # If an in-figure super title is required...
 #plt.suptitle('Impact Event Study: {}'.format(symbol))
   
-ax.set_xlabel('Relative Time (ms)', fontsize=12)
-ax.set_ylabel('Baseline-Relative Price', fontsize=12)
+ax.set_xlabel('Relative Time (ms)', fontsize=12, fontweight='bold')
+ax.set_ylabel('Baseline-Relative Price', fontsize=12, fontweight='bold')
   
 #plt.savefig('IABS_SELL_100_multi_size.png')
+#plt.savefig('abides_impact_sell.png')
+#plt.savefig('abides_multi_buy.png')
+#plt.savefig('abides_multi_sell.png')
   
 plt.show()
   

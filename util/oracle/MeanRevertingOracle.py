@@ -19,7 +19,7 @@ import pandas as pd
 import os, random, sys
 
 from math import sqrt
-from util.util import print, log_print
+from util.util import log_print
 
 
 class MeanRevertingOracle:

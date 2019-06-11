@@ -2,7 +2,7 @@ from agent.FinancialAgent import FinancialAgent
 from agent.ExchangeAgent import ExchangeAgent
 from message.Message import Message
 from util.order.LimitOrder import LimitOrder
-from util.util import print, log_print
+from util.util import log_print
 
 from copy import deepcopy
 import jsons as js
@@ -117,7 +117,7 @@ class TradingAgent(FinancialAgent):
 
     self.logEvent('ENDING_CASH', cash, True)
     print ("Final holdings for {}: {}.  Marked to market: {}".format(self.name, self.fmtHoldings(self.holdings),
-                                                                     cash), override=True)
+                                                                     cash))
     
     # Record final results for presentation/debugging.  This is an ugly way
     # to do this, but it is useful for now.
