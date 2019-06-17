@@ -25,17 +25,16 @@ class MarketReplayAgent(TradingAgent):
     self.last_trade[self.symbol] = self.oracle.getDailyOpenPrice(self.symbol, self.mkt_open)
     if not self.mkt_open or not self.mkt_close:
       return
-    elif currentTime == self.oracle.orderbook_df.iloc[0].name:
-      order = self.oracle.trades_df.loc[self.oracle.trades_df.timestamp == currentTime]
+    order = self.oracle.trades_df.loc[self.oracle.trades_df.timestamp == currentTime]
+    wake_up_time = self.oracle.trades_df.loc[self.oracle.trades_df.timestamp > currentTime].iloc[0].timestamp
+    if currentTime == self.oracle.orderbook_df.iloc[0].name:
       self.placeMktOpenOrders(order, t=currentTime)
-      self.setWakeup(self.oracle.trades_df.loc[self.oracle.trades_df.timestamp > currentTime].iloc[0].timestamp)
     elif (currentTime > self.mkt_open) and (currentTime < self.mkt_close):
       try:
-        order = self.oracle.trades_df.loc[self.oracle.trades_df.timestamp == currentTime]
         self.placeOrder(currentTime, order)
-        self.setWakeup(self.oracle.trades_df.loc[self.oracle.trades_df.timestamp > currentTime].iloc[0].timestamp)
       except Exception as e:
         log_print(e)
+    self.setWakeup(wake_up_time)
 
 
   def receiveMessage (self, currentTime, msg):

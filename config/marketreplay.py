@@ -130,8 +130,8 @@ noise = [ 0.0 ]
 # 7) Data Oracle
 oracle = OrderBookOracle(symbol='AAPL',
                          date='2012-06-21',
-                         orderbook_file_path='C:/_code/py/air/abides_open_source/abides/data/LOBSTER/AAPL_2012-06-21_34200000_57600000_orderbook_10.csv',
-                         message_file_path='C:/_code/py/air/abides_open_source/abides/data/LOBSTER/AAPL_2012-06-21_34200000_57600000_message_10.csv',
+                         orderbook_file_path='C:/_code/py/air/abides_open_source/abides/data/lob_data/AAPL_2012-06-21_34200000_57600000_orderbook_10.csv',
+                         message_file_path='C:/_code/py/air/abides_open_source/abides/data/lob_data/AAPL_2012-06-21_34200000_57600000_message_10.csv',
                          num_price_levels=10)
 
 kernel.runner(agents = agents, startTime = kernelStartTime,

@@ -1,5 +1,3 @@
-import pandas as pd
-
 from agent.TradingAgent import TradingAgent
 
 
@@ -14,7 +12,6 @@ class ExperimentalAgent(TradingAgent):
         self.quantity            = quantity
         self.is_buy_order        = is_buy_order
         self.limit_price         = limit_price
-        self.timestamp           = pd.Timestamp("2012-06-21 09:30:02")
 
     def kernelStarting(self, startTime):
         super().kernelStarting(startTime)
