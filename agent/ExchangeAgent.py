@@ -115,8 +115,11 @@ class ExchangeAgent(FinancialAgent):
         quotes = sorted(dfLog.index.get_level_values(1).unique())
         min_quote = quotes[0]
         max_quote = quotes[-1]
-        quotes = range(min_quote, max_quote+1)
-  
+        try:
+          quotes = range(min_quote, max_quote+1)
+        except Exception as e:
+          quotes = np.arange(min_quote, max_quote + 0.01, step=0.01)
+
         # Restructure the log to have multi-level rows of all possible pairs of time and quote
         # with volume as the only column.
         filledIndex = pd.MultiIndex.from_product([time_idx, quotes], names=['time','quote'])
@@ -260,6 +263,22 @@ class ExchangeAgent(FinancialAgent):
       else:
         # Hand the order to the order book for processing.
         self.order_books[order.symbol].cancelOrder(deepcopy(order))
+    elif msg.body['msg'] == 'MODIFY_ORDER':
+      order = msg.body['order']
+      new_order = msg.body['new_order']
+      log_print ("{} received MODIFY_ORDER: {}, new order: {}".format(self.name, order, new_order))
+      if order.symbol not in self.order_books:
+        log_print ("Modification request discarded.  Unknown symbol: {}".format(order.symbol))
+      else:
+        self.order_books[order.symbol].modifyOrder(deepcopy(order), deepcopy(new_order))
+    elif msg.body['msg'] == 'REPLICATE_ORDERBOOK_SNAPSHOT':
+      timestamp = msg.body['timestamp']
+      symbol    = msg.body['symbol']
+      log_print ("{} received REPLICATE_ORDERBOOK_SNAPSHOT for t= {}".format(self.name, timestamp))
+      if symbol not in self.order_books:
+        log_print ("Orderbook replication request discarded.  Unknown symbol: {}".format(symbol))
+      else:
+        self.order_books[symbol].replicateOrderbookSnapshot()
       
 
   def sendMessage (self, recipientID, msg):

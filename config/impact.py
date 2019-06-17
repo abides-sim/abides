@@ -7,7 +7,6 @@ from util.order import LimitOrder
 from util.oracle.MeanRevertingOracle import MeanRevertingOracle
 from util import util
 
-import datetime as dt
 import numpy as np
 import pandas as pd
 import sys
