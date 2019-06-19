@@ -4,11 +4,9 @@
 import sys
 
 from message.Message import Message
-from util.order.LimitOrder import LimitOrder
 from util.util import log_print, be_silent
 
 from copy import deepcopy
-from agent.FinancialAgent import dollarize
 
 class OrderBook:
 
@@ -29,10 +27,11 @@ class OrderBook:
     # Create an order history for the exchange to report to certain agent types.
     self.history = [{}]
 
-    self.bid_levels_price = dict()
-    self.bid_levels_size = dict()
-    self.ask_levels_price = dict()
-    self.ask_levels_size = dict()
+    self.mid_dict = dict()
+    self.bid_levels_price_dict = dict()
+    self.bid_levels_size_dict = dict()
+    self.ask_levels_price_dict = dict()
+    self.ask_levels_size_dict = dict()
 
 
   def handleLimitOrder (self, order):
@@ -147,7 +146,7 @@ class OrderBook:
           self.quotes_seen.add(quote)
         self.book_log.append(row)
 
-    self.updateOrderbookDataframe()
+    self.updateOrderbookLevelDicts()
     self.prettyPrint()
 
 
@@ -333,11 +332,7 @@ class OrderBook:
         self.bids = book
       else:
         self.asks = book
-      self.updateOrderbookDataframe()
-
-
-  def replicateOrderbookSnapshot(self):
-    self.updateOrderbookDataframe()
+      self.updateOrderbookLevelDicts()
 
 
   # Get the inside bid price(s) and share volume available at each price, to a limit
@@ -368,9 +363,11 @@ class OrderBook:
     return book
 
 
-  def updateOrderbookDataframe(self):
-    bid_list  = self.getInsideBids(30)
-    ask_list  = self.getInsideAsks(30)
+  def updateOrderbookLevelDicts(self):
+    if self.asks and self.bids:
+      self.mid_dict[self.owner.currentTime] = (self.asks[0][0].limit_price + self.bids[0][0].limit_price) / 2
+    bid_list  = self.getInsideBids(10)
+    ask_list  = self.getInsideAsks(10)
     bldp = {}
     blds = {}
     sldp = {}
@@ -379,14 +376,14 @@ class OrderBook:
       level += 1
       bldp[level] = order[0]
       blds[level] = order[1]
-    self.bid_levels_price[self.owner.currentTime] = bldp
-    self.bid_levels_size[self.owner.currentTime] = blds
+    self.bid_levels_price_dict[self.owner.currentTime] = bldp
+    self.bid_levels_size_dict[self.owner.currentTime] = blds
     for level, order in enumerate(ask_list):
       level += 1
       sldp[level] = order[0]
       slds[level] = order[1]
-    self.ask_levels_price[self.owner.currentTime] = sldp
-    self.ask_levels_size[self.owner.currentTime] = slds
+    self.ask_levels_price_dict[self.owner.currentTime] = sldp
+    self.ask_levels_size_dict[self.owner.currentTime] = slds
 
 
   # These could be moved to the LimitOrder class.  We could even operator overload them

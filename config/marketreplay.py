@@ -3,9 +3,9 @@ from Kernel import Kernel
 from agent.MarketReplayAgent import MarketReplayAgent
 from agent.ExchangeAgent import ExchangeAgent
 from agent.ExperimentalAgent import ExperimentalAgent
-from util.oracle.OrderBookOracle import OrderBookOracle
 
 from util import util
+from util.oracle.RandomOrderBookOracle import RandomOrderBookOracle
 from util.order import LimitOrder
 
 import datetime as dt
@@ -61,7 +61,7 @@ symbols = ['AAPL']
 print("Symbols traded: {}".format(symbols))
 
 # 2) Historical Date to simulate
-date = '2012-06-21'
+date = '2019-06-19'
 date_pd = pd.to_datetime(date)
 print("Historical Simulation Date: {}".format(date))
 
@@ -70,19 +70,19 @@ agents = []
 # 3) ExchangeAgent Config
 num_exchanges = 1
 mkt_open  = date_pd + pd.to_timedelta('09:30:00')
-mkt_close = date_pd + pd.to_timedelta('09:30:05')
+mkt_close = date_pd + pd.to_timedelta('09:35:00')
 print("ExchangeAgent num_exchanges: {}".format(num_exchanges))
 print("ExchangeAgent mkt_open: {}".format(mkt_open))
 print("ExchangeAgent mkt_close: {}".format(mkt_close))
 
-ea = ExchangeAgent(id = 0,
-                   name = 'Exchange_Agent',
-                   type = 'ExchangeAgent',
-                   mkt_open = mkt_open,
-                   mkt_close = mkt_close,
-                   symbols = symbols,
-                   log_orders=log_orders,
-                   book_freq = '1s',
+ea = ExchangeAgent(id         = 0,
+                   name       = 'Exchange_Agent',
+                   type       = 'ExchangeAgent',
+                   mkt_open   = mkt_open,
+                   mkt_close  = mkt_close,
+                   symbols    = symbols,
+                   log_orders = log_orders,
+                   book_freq  = None,
                    pipeline_delay = 0,
                    computation_delay = 0,
                    stream_history = 10,
@@ -91,48 +91,46 @@ ea = ExchangeAgent(id = 0,
 agents.extend([ea])
 
 # 4) MarketReplayAgent Config
-num_mr_agents  = 1
-cash_mr_agents = 10000000
-
-mr_agents = [MarketReplayAgent(id      = 1,
-                              name    = "Market_Replay_Agent",
-                              symbol  = symbols[0],
-                              date    = date,
-                              startingCash = cash_mr_agents,
-                              random_state = random_state)]
-agents.extend(mr_agents)
+market_replay_agents = [MarketReplayAgent(id     = 1,
+                                          name    = "Market_Replay_Agent",
+                                          type    = 'MarketReplayAgent',
+                                          symbol  = symbols[0],
+                                          log_orders = log_orders,
+                                          date    = date,
+                                          starting_cash = 0,
+                                          random_state = random_state)]
+agents.extend(market_replay_agents)
 
 # 5) ExperimentalAgent Config
-num_exp_agents  = 1
-cash_exp_agents = 10000000
-
-exp_agents = [ExperimentalAgent(id      = 2,
+experimental_agents = [ExperimentalAgent(id      = 2,
                                name    = "Experimental_Agent",
                                symbol  = symbols[0],
-                               startingCash = cash_exp_agents,
-                               execution_timestamp = pd.Timestamp("2012-06-21 09:30:02"),
+                               starting_cash = 10000000,
+                               log_orders = log_orders,
+                               execution_timestamp = pd.Timestamp("2019-06-19 09:32:00"),
                                quantity = 1000,
                                is_buy_order = True,
                                limit_price = 500,
                                random_state = random_state)]
-agents.extend(exp_agents)
+agents.extend(experimental_agents)
 #######################################################################################################################
 
 # 6) Kernel Parameters
 kernel = Kernel("Market Replay Kernel", random_state = random_state)
 
 kernelStartTime = date_pd + pd.to_timedelta('09:30:00')
-kernelStopTime = date_pd + pd.to_timedelta('09:30:05')
+kernelStopTime = date_pd + pd.to_timedelta('09:35:00')
 defaultComputationDelay = 0
 latency = np.zeros((3, 3))
 noise = [ 0.0 ]
 
-# 7) Data Oracle
-oracle = OrderBookOracle(symbol='AAPL',
-                         date='2012-06-21',
-                         orderbook_file_path='C:/_code/py/air/abides_open_source/abides/data/lob_data/AAPL_2012-06-21_34200000_57600000_orderbook_10.csv',
-                         message_file_path='C:/_code/py/air/abides_open_source/abides/data/lob_data/AAPL_2012-06-21_34200000_57600000_message_10.csv',
-                         num_price_levels=10)
+oracle = RandomOrderBookOracle(symbol = 'AAPL',
+                               market_open_ts =  mkt_open,
+                               market_close_ts = mkt_close,
+                               buy_price_range = [90, 105],
+                               sell_price_range = [95, 110],
+                               quantity_range = [50, 500],
+                               seed=seed)
 
 kernel.runner(agents = agents, startTime = kernelStartTime,
               stopTime = kernelStopTime, agentLatency = latency,

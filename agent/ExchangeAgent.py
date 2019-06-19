@@ -9,8 +9,6 @@ from message.Message import Message
 from util.OrderBook import OrderBook
 from util.util import log_print
 
-import sys
-
 import jsons as js
 import numpy as np
 import pandas as pd
@@ -68,8 +66,11 @@ class ExchangeAgent(FinancialAgent):
 
     # Obtain opening prices (in integer cents).  These are not noisy right now.
     for symbol in self.order_books:
-      self.order_books[symbol].last_trade = self.oracle.getDailyOpenPrice(symbol, self.mkt_open)
-      log_print ("Opening price for {} is {}", symbol, self.order_books[symbol].last_trade)
+      try:
+        self.order_books[symbol].last_trade = self.oracle.getDailyOpenPrice(symbol, self.mkt_open)
+        log_print ("Opening price for {} is {}", symbol, self.order_books[symbol].last_trade)
+      except AttributeError as e:
+        log_print(str(e))
 
 
   # The exchange agent overrides this to additionally log the full depth of its
@@ -77,8 +78,13 @@ class ExchangeAgent(FinancialAgent):
   def kernelTerminating (self):
     super().kernelTerminating()
 
-    # Skip order book dump if requested.
-    if self.book_freq is None: return
+    if self.book_freq is None:
+      for symbol in self.order_books:
+        book = self.order_books[symbol]
+        dfLog = pd.DataFrame([book.mid_dict, book.bid_levels_price_dict, book.bid_levels_size_dict,
+                              book.ask_levels_price_dict, book.ask_levels_size_dict]).T
+        dfLog.columns = ['mid_price', 'bid_level_prices', 'bid_level_sizes', 'ask_level_prices', 'ask_level_sizes']
+        self.writeLog(dfLog, filename='orderbook_{}'.format(symbol))
 
     # Iterate over the order books controlled by this exchange.
     for symbol in self.order_books:
@@ -137,7 +143,7 @@ class ExchangeAgent(FinancialAgent):
         # to the exchange agent log.
         self.writeLog(df, filename='orderbook_{}'.format(symbol))
 
-        print ("Order book archival complete.")
+    print ("Order book archival complete.")
    
 
   def receiveMessage (self, currentTime, msg):
@@ -271,15 +277,7 @@ class ExchangeAgent(FinancialAgent):
         log_print ("Modification request discarded.  Unknown symbol: {}".format(order.symbol))
       else:
         self.order_books[order.symbol].modifyOrder(deepcopy(order), deepcopy(new_order))
-    elif msg.body['msg'] == 'REPLICATE_ORDERBOOK_SNAPSHOT':
-      timestamp = msg.body['timestamp']
-      symbol    = msg.body['symbol']
-      log_print ("{} received REPLICATE_ORDERBOOK_SNAPSHOT for t= {}".format(self.name, timestamp))
-      if symbol not in self.order_books:
-        log_print ("Orderbook replication request discarded.  Unknown symbol: {}".format(symbol))
-      else:
-        self.order_books[symbol].replicateOrderbookSnapshot()
-      
+
 
   def sendMessage (self, recipientID, msg):
     # The ExchangeAgent automatically applies appropriate parallel processing pipeline delay
