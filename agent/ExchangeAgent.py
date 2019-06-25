@@ -9,8 +9,6 @@ from message.Message import Message
 from util.OrderBook import OrderBook
 from util.util import log_print
 
-import sys
-
 import jsons as js
 import numpy as np
 import pandas as pd
@@ -68,8 +66,11 @@ class ExchangeAgent(FinancialAgent):
 
     # Obtain opening prices (in integer cents).  These are not noisy right now.
     for symbol in self.order_books:
-      self.order_books[symbol].last_trade = self.oracle.getDailyOpenPrice(symbol, self.mkt_open)
-      log_print ("Opening price for {} is {}", symbol, self.order_books[symbol].last_trade)
+      try:
+        self.order_books[symbol].last_trade = self.oracle.getDailyOpenPrice(symbol, self.mkt_open)
+        log_print ("Opening price for {} is {}", symbol, self.order_books[symbol].last_trade)
+      except AttributeError as e:
+        log_print(str(e))
 
 
   # The exchange agent overrides this to additionally log the full depth of its
@@ -77,8 +78,13 @@ class ExchangeAgent(FinancialAgent):
   def kernelTerminating (self):
     super().kernelTerminating()
 
-    # Skip order book dump if requested.
-    if self.book_freq is None: return
+    if self.book_freq is None:
+      for symbol in self.order_books:
+        book = self.order_books[symbol]
+        dfLog = pd.DataFrame([book.mid_dict, book.bid_levels_price_dict, book.bid_levels_size_dict,
+                              book.ask_levels_price_dict, book.ask_levels_size_dict]).T
+        dfLog.columns = ['mid_price', 'bid_level_prices', 'bid_level_sizes', 'ask_level_prices', 'ask_level_sizes']
+        self.writeLog(dfLog, filename='orderbook_{}'.format(symbol))
 
     # Iterate over the order books controlled by this exchange.
     for symbol in self.order_books:
@@ -115,8 +121,11 @@ class ExchangeAgent(FinancialAgent):
         quotes = sorted(dfLog.index.get_level_values(1).unique())
         min_quote = quotes[0]
         max_quote = quotes[-1]
-        quotes = range(min_quote, max_quote+1)
-  
+        try:
+          quotes = range(min_quote, max_quote+1)
+        except Exception as e:
+          quotes = np.arange(min_quote, max_quote + 0.01, step=0.01)
+
         # Restructure the log to have multi-level rows of all possible pairs of time and quote
         # with volume as the only column.
         filledIndex = pd.MultiIndex.from_product([time_idx, quotes], names=['time','quote'])
@@ -134,7 +143,7 @@ class ExchangeAgent(FinancialAgent):
         # to the exchange agent log.
         self.writeLog(df, filename='orderbook_{}'.format(symbol))
 
-        print ("Order book archival complete.")
+    print ("Order book archival complete.")
    
 
   def receiveMessage (self, currentTime, msg):
@@ -260,7 +269,15 @@ class ExchangeAgent(FinancialAgent):
       else:
         # Hand the order to the order book for processing.
         self.order_books[order.symbol].cancelOrder(deepcopy(order))
-      
+    elif msg.body['msg'] == 'MODIFY_ORDER':
+      order = msg.body['order']
+      new_order = msg.body['new_order']
+      log_print ("{} received MODIFY_ORDER: {}, new order: {}".format(self.name, order, new_order))
+      if order.symbol not in self.order_books:
+        log_print ("Modification request discarded.  Unknown symbol: {}".format(order.symbol))
+      else:
+        self.order_books[order.symbol].modifyOrder(deepcopy(order), deepcopy(new_order))
+
 
   def sendMessage (self, recipientID, msg):
     # The ExchangeAgent automatically applies appropriate parallel processing pipeline delay

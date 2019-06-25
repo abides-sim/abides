@@ -253,8 +253,8 @@ class TradingAgent(FinancialAgent):
 
   # Used by any Trading Agent subclass to place a limit order.  Parameters expect:
   # string (valid symbol), int (positive share quantity), bool (True == BUY), int (price in cents).
-  def placeLimitOrder (self, symbol, quantity, is_buy_order, limit_price, ignore_risk = False):
-    order = LimitOrder(self.id, self.currentTime, symbol, quantity, is_buy_order, limit_price)
+  def placeLimitOrder (self, symbol, quantity, is_buy_order, limit_price, dollar=True, order_id=None, ignore_risk = False):
+    order = LimitOrder(self.id, self.currentTime, symbol, quantity, is_buy_order, limit_price, dollar, order_id)
 
     if quantity > 0:
       # Test if this order can be permitted given our at-risk limits.
@@ -298,6 +298,15 @@ class TradingAgent(FinancialAgent):
 
     # Log this activity.
     if self.log_orders: self.logEvent('CANCEL_SUBMITTED', js.dump(order))
+
+  # Used by any Trading Agent subclass to modify any existing limitorder.  The order must currently
+  # appear in the agent's open orders list.
+  def modifyOrder (self, order, newOrder):
+    self.sendMessage(self.exchangeID, Message({ "msg" : "MODIFY_ORDER", "sender": self.id,
+                                                "order" : order, "new_order" : newOrder}))
+
+    # Log this activity.
+    if self.log_orders: self.logEvent('MODIFY_ORDER', js.dump(order))
 
 
   # Handles ORDER_EXECUTED messages from an exchange agent.  Subclasses may wish to extend,

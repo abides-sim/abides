@@ -6,8 +6,7 @@ class Order:
 
   order_id = 0
 
-  def __init__(self, agent_id, time_placed, symbol, quantity, is_buy_order):
-    # Numeric agent id that placed the order.
+  def __init__(self, agent_id, time_placed, symbol, quantity, is_buy_order, order_id=None):
     self.agent_id = agent_id
 
     # Time at which the order was created by the agent.
@@ -23,8 +22,12 @@ class Order:
     self.is_buy_order = is_buy_order
 
     # Assign and increment the next unique order_id (simulation-wide).
-    self.order_id = Order.order_id
-    Order.order_id += 1
+
+    if not order_id:
+      self.order_id = Order.order_id
+      Order.order_id += 1
+    else:
+      self.order_id = order_id
 
     # Create placeholder fields that don't get filled in until certain
     # events happen.  (We could instead subclass to a special FilledOrder

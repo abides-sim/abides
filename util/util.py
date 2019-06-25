@@ -19,3 +19,6 @@ def log_print (str, *args):
 def be_silent ():
   return silent_mode
 
+
+def delist(list_of_lists):
+    return [x for b in list_of_lists for x in b]

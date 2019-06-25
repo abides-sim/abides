@@ -4,11 +4,9 @@
 import sys
 
 from message.Message import Message
-from util.order.LimitOrder import LimitOrder
 from util.util import log_print, be_silent
 
 from copy import deepcopy
-from agent.FinancialAgent import dollarize
 
 class OrderBook:
 
@@ -28,6 +26,12 @@ class OrderBook:
 
     # Create an order history for the exchange to report to certain agent types.
     self.history = [{}]
+
+    self.mid_dict = dict()
+    self.bid_levels_price_dict = dict()
+    self.bid_levels_size_dict = dict()
+    self.ask_levels_price_dict = dict()
+    self.ask_levels_size_dict = dict()
 
 
   def handleLimitOrder (self, order):
@@ -142,6 +146,7 @@ class OrderBook:
           self.quotes_seen.add(quote)
         self.book_log.append(row)
 
+    self.updateOrderbookLevelDicts()
     self.prettyPrint()
 
 
@@ -309,6 +314,26 @@ class OrderBook:
             # We found the order and cancelled it, so stop looking.
             return
 
+  def modifyOrder (self, order, new_order):
+      book = self.bids if order.is_buy_order else self.asks
+      if not book: return
+      for i, o in enumerate(book):
+        if self.isEqualPrice(order, o[0]):
+          for mi, mo in enumerate(book[i]):
+            if order.order_id == mo.order_id:
+              book[i][0] = new_order
+              for idx, orders in enumerate(self.history):
+                if new_order.order_id not in orders: continue
+                self.history[idx][new_order.order_id]['transactions'].append((self.owner.currentTime, new_order.quantity))
+                print("MODIFIED: order {}".format(order))
+                print("SENT: notifications of order modification to agent {} for order {}".format(new_order.agent_id, new_order.order_id))
+                self.owner.sendMessage(order.agent_id, Message({"msg": "ORDER_MODIFIED", "new_order": new_order}))
+      if order.is_buy_order:
+        self.bids = book
+      else:
+        self.asks = book
+      self.updateOrderbookLevelDicts()
+
 
   # Get the inside bid price(s) and share volume available at each price, to a limit
   # of "depth".  (i.e. inside price, inside 2 prices)  Returns a list of tuples:
@@ -336,6 +361,29 @@ class OrderBook:
       book.append( (price, qty) )
 
     return book
+
+
+  def updateOrderbookLevelDicts(self):
+    if self.asks and self.bids:
+      self.mid_dict[self.owner.currentTime] = (self.asks[0][0].limit_price + self.bids[0][0].limit_price) / 2
+    bid_list  = self.getInsideBids(10)
+    ask_list  = self.getInsideAsks(10)
+    bldp = {}
+    blds = {}
+    sldp = {}
+    slds = {}
+    for level, order in enumerate(bid_list):
+      level += 1
+      bldp[level] = order[0]
+      blds[level] = order[1]
+    self.bid_levels_price_dict[self.owner.currentTime] = bldp
+    self.bid_levels_size_dict[self.owner.currentTime] = blds
+    for level, order in enumerate(ask_list):
+      level += 1
+      sldp[level] = order[0]
+      slds[level] = order[1]
+    self.ask_levels_price_dict[self.owner.currentTime] = sldp
+    self.ask_levels_size_dict[self.owner.currentTime] = slds
 
 
   # These could be moved to the LimitOrder class.  We could even operator overload them
