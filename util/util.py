@@ -20,5 +20,6 @@ def be_silent ():
   return silent_mode
 
 
+# Utility method to flatten nested lists.
 def delist(list_of_lists):
     return [x for b in list_of_lists for x in b]

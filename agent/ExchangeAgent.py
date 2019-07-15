@@ -10,7 +10,6 @@ from util.OrderBook import OrderBook
 from util.util import log_print
 
 import jsons as js
-import numpy as np
 import pandas as pd
 pd.set_option('display.max_rows', 500)
 
@@ -78,13 +77,18 @@ class ExchangeAgent(FinancialAgent):
   def kernelTerminating (self):
     super().kernelTerminating()
 
-    if self.book_freq is None:
-      for symbol in self.order_books:
-        book = self.order_books[symbol]
-        dfLog = pd.DataFrame([book.mid_dict, book.bid_levels_price_dict, book.bid_levels_size_dict,
-                              book.ask_levels_price_dict, book.ask_levels_size_dict]).T
-        dfLog.columns = ['mid_price', 'bid_level_prices', 'bid_level_sizes', 'ask_level_prices', 'ask_level_sizes']
-        self.writeLog(dfLog, filename='orderbook_{}'.format(symbol))
+    # If the oracle supports writing the fundamental value series for its
+    # symbols, write them to disk.
+    if hasattr(self.oracle, 'f_log'):
+      for symbol in self.oracle.f_log:
+        dfFund = pd.DataFrame(self.oracle.f_log[symbol])
+        dfFund.set_index('FundamentalTime', inplace=True)
+        self.writeLog(dfFund, filename='fundamental_{}'.format(symbol))
+
+      print ("Fundamental archival complete.")
+
+    # Skip order book dump if requested.
+    if self.book_freq is None: return
 
     # Iterate over the order books controlled by this exchange.
     for symbol in self.order_books:
@@ -121,10 +125,7 @@ class ExchangeAgent(FinancialAgent):
         quotes = sorted(dfLog.index.get_level_values(1).unique())
         min_quote = quotes[0]
         max_quote = quotes[-1]
-        try:
-          quotes = range(min_quote, max_quote+1)
-        except Exception as e:
-          quotes = np.arange(min_quote, max_quote + 0.01, step=0.01)
+        quotes = range(min_quote, max_quote+1)
 
         # Restructure the log to have multi-level rows of all possible pairs of time and quote
         # with volume as the only column.
@@ -136,7 +137,6 @@ class ExchangeAgent(FinancialAgent):
   
         df = pd.DataFrame(index=dfLog.index)
         df['Volume'] = dfLog
-
 
 
         # Archive the order book snapshots directly to a file named with the symbol, rather than
@@ -270,6 +270,12 @@ class ExchangeAgent(FinancialAgent):
         # Hand the order to the order book for processing.
         self.order_books[order.symbol].cancelOrder(deepcopy(order))
     elif msg.body['msg'] == 'MODIFY_ORDER':
+      # Replace an existing order with a modified order.  There could be some timing issues
+      # here.  What if an order is partially executed, but the submitting agent has not
+      # yet received the norification, and submits a modification to the quantity of the
+      # (already partially executed) order?  I guess it is okay if we just think of this
+      # as "delete and then add new" and make it the agent's problem if anything weird
+      # happens.
       order = msg.body['order']
       new_order = msg.body['new_order']
       log_print ("{} received MODIFY_ORDER: {}, new order: {}".format(self.name, order, new_order))

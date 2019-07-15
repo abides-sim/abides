@@ -24,8 +24,8 @@ class ExperimentalAgent(TradingAgent):
             return
         elif (currentTime > self.mkt_open) and (currentTime < self.mkt_close):
             if currentTime == self.execution_timestamp:
-                self.placeLimitOrder(self.symbol, self.quantity, self.is_buy_order, self.limit_price, dollar=False)
-                if self.log_orders: self.logEvent('LIMIT_ORDER', {'agent_id': self.id, 'dollar': False, 'fill_price': None,
+                self.placeLimitOrder(self.symbol, self.quantity, self.is_buy_order, self.limit_price)
+                if self.log_orders: self.logEvent('LIMIT_ORDER', {'agent_id': self.id, 'fill_price': None,
                                                                   'is_buy_order': self.is_buy_order, 'limit_price': self.limit_price,
                                                                   'order_id': 1, 'quantity': self.quantity, 'symbol': self.symbol,
                                                                   'time_placed': str(currentTime)})

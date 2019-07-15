@@ -220,7 +220,14 @@ class ZeroIntelligenceAgent(TradingAgent):
     # Now having a best estimate of the fundamental at time t, we can make our best estimate
     # of the final fundamental (for time T) as of current time t.  Delta is now the number
     # of time steps remaining until the simulated exchange closes.
-    delta = (self.mkt_close - self.currentTime) / np.timedelta64(1, 'ns')
+    delta = max(0, (self.mkt_close - self.currentTime) / np.timedelta64(1, 'ns'))
+
+    # IDEA: instead of letting agent "imagine time forward" to the end of the day,
+    #       impose a maximum forward delta, like ten minutes or so.  This could make
+    #       them think more like traders and less like long-term investors.  Add
+    #       this line of code (keeping the max() line above) to try it.
+    #delta = min(delta, 1000000000 * 60 * 10)
+
     r_T  = (1 - (1 - self.kappa) ** delta) * self.r_bar
     r_T += ((1 - self.kappa) ** delta) * r_tprime
 

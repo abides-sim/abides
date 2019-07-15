@@ -110,7 +110,7 @@ experimental_agents = [ExperimentalAgent(id      = 2,
                                execution_timestamp = pd.Timestamp("2019-06-19 09:32:00"),
                                quantity = 1000,
                                is_buy_order = True,
-                               limit_price = 500,
+                               limit_price = 50000,
                                random_state = random_state)]
 agents.extend(experimental_agents)
 #######################################################################################################################
@@ -127,9 +127,9 @@ noise = [ 0.0 ]
 oracle = RandomOrderBookOracle(symbol = 'AAPL',
                                market_open_ts =  mkt_open,
                                market_close_ts = mkt_close,
-                               buy_price_range = [90, 105],
-                               sell_price_range = [95, 110],
-                               quantity_range = [50, 500],
+                               buy_price_range = [9000, 10500],
+                               sell_price_range = [9500, 11000],
+                               quantity_range = [5000, 50000],
                                seed=seed)
 
 kernel.runner(agents = agents, startTime = kernelStartTime,

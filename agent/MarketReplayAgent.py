@@ -58,14 +58,13 @@ class MarketReplayAgent(TradingAgent):
         existing_order = self.orders.get(id)
 
         if type == 'NEW':
-            self.placeLimitOrder(self.symbol, vol, direction == 'BUY', float(price), dollar=False, order_id=id)
+            self.placeLimitOrder(self.symbol, vol, direction == 'BUY', int(price), order_id=id)
         elif type in ['CANCELLATION', 'PARTIAL_CANCELLATION']:
             if existing_order:
                 if type == 'CANCELLATION':
                     self.cancelOrder(existing_order)
                 elif type == 'PARTIAL_CANCELLATION':
-                    new_order = LimitOrder(self.id, currentTime, self.symbol, vol, direction == 'BUY', float(price),
-                                           dollar=False, order_id=id)
+                    new_order = LimitOrder(self.id, currentTime, self.symbol, vol, direction == 'BUY', int(price), order_id=id)
                     self.modifyOrder(existing_order, new_order)
         elif type in ['EXECUTE_VISIBLE', 'EXECUTE_HIDDEN']:
             if existing_order:
@@ -76,8 +75,7 @@ class MarketReplayAgent(TradingAgent):
                     if new_vol == 0:
                         self.cancelOrder(existing_order)
                     else:
-                        executed_order = LimitOrder(self.id, currentTime, self.symbol, new_vol, direction == 'BUY', float(price),
-                                                    dollar=False, order_id=id)
+                        executed_order = LimitOrder(self.id, currentTime, self.symbol, new_vol, direction == 'BUY', int(price), order_id=id)
                         self.modifyOrder(existing_order, executed_order)
                         self.orders.get(id).quantity = new_vol
     else:

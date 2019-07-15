@@ -12,29 +12,26 @@ silent_mode = False
 
 class LimitOrder (Order):
 
-  def __init__ (self, agent_id, time_placed, symbol, quantity, is_buy_order, limit_price, dollar=True, order_id=None):
+
+  def __init__ (self, agent_id, time_placed, symbol, quantity, is_buy_order, limit_price, order_id=None):
     super().__init__(agent_id, time_placed, symbol, quantity, is_buy_order, order_id)
+
+    # The limit price is the minimum price the agent will accept (for a sell order) or
+    # the maximum price the agent will pay (for a buy order).
     self.limit_price = limit_price
-    self.dollar = dollar
 
   def __str__ (self):
     if silent_mode: return ''
 
     filled = ''
-    if self.dollar:
-        self.limit_price = dollarize(self.limit_price) if abs(self.limit_price) < sys.maxsize else 'MKT'
-        if self.fill_price: filled = " (filled @ {})".format(dollarize(self.fill_price))
-    else:
-        if self.fill_price: filled = " (filled @ {})".format(self.fill_price)
+    if self.fill_price: filled = " (filled @ {})".format(dollarize(self.fill_price))
 
     # Until we make explicit market orders, we make a few assumptions that EXTREME prices on limit
     # orders are trying to represent a market order.  This only affects printing - they still hit
     # the order book like limit orders, which is wrong.
-    return "(Order_ID: {} Agent {} @ {}) : {} {} {} @ {}{}".format(self.order_id, self.agent_id,
-                                                                   Kernel.fmtTime(self.time_placed),
-                                                                   "BUY" if self.is_buy_order else "SELL",
-                                                                   self.quantity, self.symbol,
-                                                                   self.limit_price, filled)
+    return "(Agent {} @ {}) : {} {} {} @ {}{}".format(self.agent_id, Kernel.fmtTime(self.time_placed),
+                                                      "BUY" if self.is_buy_order else "SELL", self.quantity, self.symbol,
+                                                      dollarize(self.limit_price) if abs(self.limit_price) < sys.maxsize else 'MKT', filled)
 
   def __repr__ (self):
     if silent_mode: return ''

@@ -24,7 +24,8 @@ PRINT_BASELINE = False
 PRINT_VOLUME = False
 
 BETWEEN_START = pd.to_datetime('09:30').time()
-BETWEEN_END = pd.to_datetime('09:30:00.000001').time()
+#BETWEEN_END = pd.to_datetime('09:30:00.000001').time()
+BETWEEN_END = pd.to_datetime('16:00:00').time()
 
 # Linewidth for plots.
 LW = 2
@@ -79,6 +80,8 @@ if len(sys.argv) >= 4: agent_log = sys.argv[3]
 print ("Visualizing simulated {} from {}".format(symbol, sim_file))
 
 df_sim = read_simulated_trades(sim_file, symbol)
+
+print (df_sim)
 
 if PRINT_BASELINE:
   baseline_file = os.path.join(os.path.dirname(sim_file) + '_baseline', os.path.basename(sim_file))
@@ -162,10 +165,19 @@ else:
   # For nanosecond experiments, turn it into int index.  Pandas gets weird if all
   # the times vary only by a few nanoseconds.
 
-  rng = pd.date_range(start=df_sim.index[0], end=df_sim.index[-1], freq='1N')
-  df_sim = df_sim[~df_sim.index.duplicated(keep='last')]
-  df_sim = df_sim.reindex(rng,method='ffill')
-  df_sim = df_sim.reset_index(drop=True)
+  # Frequency needs to be a CLI arg.
+  #rng = pd.date_range(start=df_sim.index[0], end=df_sim.index[-1], freq='1N')
+  #rng = pd.date_range(start=df_sim.index[0], end=df_sim.index[-1], freq='1S')
+
+  # Resample obviates this need.
+  #df_sim = df_sim[~df_sim.index.duplicated(keep='last')]
+  #df_sim = df_sim.resample('1S').mean()
+
+  # When printing volume, we'll need to split series, because price can be mean
+  # (or avg share price) but volume should be sum.
+
+  #df_sim = df_sim.reindex(rng,method='ffill')
+  #df_sim = df_sim.reset_index(drop=True)
   df_sim['PRICE'].plot(color='C1', grid=True, linewidth=LW, alpha=0.9, ax=axes[0])
   axes[0].legend(['Simulated'])
 

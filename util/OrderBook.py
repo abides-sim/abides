@@ -27,12 +27,6 @@ class OrderBook:
     # Create an order history for the exchange to report to certain agent types.
     self.history = [{}]
 
-    self.mid_dict = dict()
-    self.bid_levels_price_dict = dict()
-    self.bid_levels_size_dict = dict()
-    self.ask_levels_price_dict = dict()
-    self.ask_levels_size_dict = dict()
-
 
   def handleLimitOrder (self, order):
     # Matches a limit order or adds it to the order book.  Handles partial matches piecewise,
@@ -146,7 +140,6 @@ class OrderBook:
           self.quotes_seen.add(quote)
         self.book_log.append(row)
 
-    self.updateOrderbookLevelDicts()
     self.prettyPrint()
 
 
@@ -315,6 +308,8 @@ class OrderBook:
             return
 
   def modifyOrder (self, order, new_order):
+      # Modifies the quantity of an existing limit order in the order book
+      if not self.isSameOrder(order, new_order): return
       book = self.bids if order.is_buy_order else self.asks
       if not book: return
       for i, o in enumerate(book):
@@ -325,14 +320,13 @@ class OrderBook:
               for idx, orders in enumerate(self.history):
                 if new_order.order_id not in orders: continue
                 self.history[idx][new_order.order_id]['transactions'].append((self.owner.currentTime, new_order.quantity))
-                print("MODIFIED: order {}".format(order))
-                print("SENT: notifications of order modification to agent {} for order {}".format(new_order.agent_id, new_order.order_id))
+                log_print("MODIFIED: order {}", order)
+                log_print("SENT: notifications of order modification to agent {} for order {}", new_order.agent_id, new_order.order_id)
                 self.owner.sendMessage(order.agent_id, Message({"msg": "ORDER_MODIFIED", "new_order": new_order}))
       if order.is_buy_order:
         self.bids = book
       else:
         self.asks = book
-      self.updateOrderbookLevelDicts()
 
 
   # Get the inside bid price(s) and share volume available at each price, to a limit
@@ -363,29 +357,6 @@ class OrderBook:
     return book
 
 
-  def updateOrderbookLevelDicts(self):
-    if self.asks and self.bids:
-      self.mid_dict[self.owner.currentTime] = (self.asks[0][0].limit_price + self.bids[0][0].limit_price) / 2
-    bid_list  = self.getInsideBids(10)
-    ask_list  = self.getInsideAsks(10)
-    bldp = {}
-    blds = {}
-    sldp = {}
-    slds = {}
-    for level, order in enumerate(bid_list):
-      level += 1
-      bldp[level] = order[0]
-      blds[level] = order[1]
-    self.bid_levels_price_dict[self.owner.currentTime] = bldp
-    self.bid_levels_size_dict[self.owner.currentTime] = blds
-    for level, order in enumerate(ask_list):
-      level += 1
-      sldp[level] = order[0]
-      slds[level] = order[1]
-    self.ask_levels_price_dict[self.owner.currentTime] = sldp
-    self.ask_levels_size_dict[self.owner.currentTime] = slds
-
-
   # These could be moved to the LimitOrder class.  We could even operator overload them
   # into >, <, ==, etc.
   def isBetterPrice (self, order, o):
@@ -406,6 +377,10 @@ class OrderBook:
 
   def isEqualPrice (self, order, o):
     return order.limit_price == o.limit_price
+
+
+  def isSameOrder (self, order, new_order):
+    return order.order_id == new_order.order_id
 
 
   # Print a nicely-formatted view of the current order book.
