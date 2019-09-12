@@ -1,0 +1,1031 @@
+---------------
+Hardware Specs:
+---------------
+Mac (system_profiler SPHardwareDataType) or lshw -short
+
+Processor Name: Intel Core i7
+Processor Speed: 2.6 GHz
+Number of Processors: 1
+Total Number of Cores: 6
+L2 Cache (per Core): 256 KB
+L3 Cache: 12 MB
+Memory: 16 GB
+
+------------------
+Simulation Results:
+------------------
+./scripts/sparse_zi.sh
+
+ZeroIntelligenceAgent noise: 1000000.0000
+Configuration seed: 123456789
+
+Event Queue elapsed: 0 days 00:00:59.733625, messages: 185200, messages per second: 3100.4
+Mean ending value by agent type:
+	ZeroIntelligenceAgent Type 1 [0 <= R <= 250, eta=1]: -19781
+	ZeroIntelligenceAgent Type 2 [0 <= R <= 500, eta=1]: -19338
+	ZeroIntelligenceAgent Type 3 [0 <= R <= 1000, eta=0.8]: -18593
+	ZeroIntelligenceAgent Type 4 [0 <= R <= 1000, eta=1]: 30137
+	ZeroIntelligenceAgent Type 5 [0 <= R <= 2000, eta=0.8]: 641
+	ZeroIntelligenceAgent Type 6 [250 <= R <= 500, eta=0.8]: 5634
+	ZeroIntelligenceAgent Type 7 [250 <= R <= 500, eta=1]: 27887
+
+Final holdings for ZI Agent 1 Type 1 [0 <= R <= 250, eta=1]: { JPM: 400, CASH: -30025600 }.  Marked to market: 9586000
+Final holdings for ZI Agent 2 Type 1 [0 <= R <= 250, eta=1]: { JPM: -300, CASH: 39844700 }.  Marked to market: 10136000
+Final holdings for ZI Agent 3 Type 1 [0 <= R <= 250, eta=1]: { JPM: -200, CASH: 30053400 }.  Marked to market: 10247600
+Final holdings for ZI Agent 4 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -10022000 }.  Marked to market: 9783800
+Final holdings for ZI Agent 5 Type 1 [0 <= R <= 250, eta=1]: { JPM: -200, CASH: 29904300 }.  Marked to market: 10098500
+Final holdings for ZI Agent 6 Type 1 [0 <= R <= 250, eta=1]: { JPM: 100, CASH: -58400 }.  Marked to market: 9844500
+Final holdings for ZI Agent 7 Type 1 [0 <= R <= 250, eta=1]: { JPM: -200, CASH: 30172400 }.  Marked to market: 10366600
+Final holdings for ZI Agent 8 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -10014200 }.  Marked to market: 9791600
+Final holdings for ZI Agent 9 Type 1 [0 <= R <= 250, eta=1]: { JPM: -100, CASH: 19945000 }.  Marked to market: 10042100
+Final holdings for ZI Agent 10 Type 1 [0 <= R <= 250, eta=1]: { JPM: -200, CASH: 29885200 }.  Marked to market: 10079400
+Final holdings for ZI Agent 11 Type 1 [0 <= R <= 250, eta=1]: { JPM: -100, CASH: 19720900 }.  Marked to market: 9818000
+Final holdings for ZI Agent 12 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -9942800 }.  Marked to market: 9863000
+Final holdings for ZI Agent 13 Type 1 [0 <= R <= 250, eta=1]: { JPM: -500, CASH: 59824900 }.  Marked to market: 10310400
+Final holdings for ZI Agent 14 Type 1 [0 <= R <= 250, eta=1]: { CASH: 9883500 }.  Marked to market: 9883500
+Final holdings for ZI Agent 15 Type 1 [0 <= R <= 250, eta=1]: { JPM: 700, CASH: -60090700 }.  Marked to market: 9229600
+Final holdings for ZI Agent 16 Type 1 [0 <= R <= 250, eta=1]: { CASH: 10055200 }.  Marked to market: 10055200
+Final holdings for ZI Agent 17 Type 1 [0 <= R <= 250, eta=1]: { CASH: 10199500 }.  Marked to market: 10199500
+Final holdings for ZI Agent 18 Type 1 [0 <= R <= 250, eta=1]: { JPM: -200, CASH: 29960900 }.  Marked to market: 10155100
+Final holdings for ZI Agent 19 Type 1 [0 <= R <= 250, eta=1]: { JPM: 300, CASH: -20144400 }.  Marked to market: 9564300
+Final holdings for ZI Agent 20 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -9957100 }.  Marked to market: 9848700
+Final holdings for ZI Agent 21 Type 1 [0 <= R <= 250, eta=1]: { JPM: -200, CASH: 30012600 }.  Marked to market: 10206800
+Final holdings for ZI Agent 22 Type 1 [0 <= R <= 250, eta=1]: { JPM: 400, CASH: -30104600 }.  Marked to market: 9507000
+Final holdings for ZI Agent 23 Type 1 [0 <= R <= 250, eta=1]: { JPM: -300, CASH: 39771300 }.  Marked to market: 10062600
+Final holdings for ZI Agent 24 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -9818900 }.  Marked to market: 9986900
+Final holdings for ZI Agent 25 Type 1 [0 <= R <= 250, eta=1]: { JPM: -300, CASH: 39888900 }.  Marked to market: 10180200
+Final holdings for ZI Agent 26 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -9933600 }.  Marked to market: 9872200
+Final holdings for ZI Agent 27 Type 1 [0 <= R <= 250, eta=1]: { JPM: 100, CASH: -48600 }.  Marked to market: 9854300
+Final holdings for ZI Agent 28 Type 1 [0 <= R <= 250, eta=1]: { JPM: 100, CASH: 26400 }.  Marked to market: 9929300
+Final holdings for ZI Agent 29 Type 1 [0 <= R <= 250, eta=1]: { JPM: 100, CASH: 98300 }.  Marked to market: 10001200
+Final holdings for ZI Agent 30 Type 1 [0 <= R <= 250, eta=1]: { JPM: -100, CASH: 20218400 }.  Marked to market: 10315500
+Final holdings for ZI Agent 31 Type 1 [0 <= R <= 250, eta=1]: { JPM: -300, CASH: 39820400 }.  Marked to market: 10111700
+Final holdings for ZI Agent 32 Type 1 [0 <= R <= 250, eta=1]: { JPM: -200, CASH: 30016900 }.  Marked to market: 10211100
+Final holdings for ZI Agent 33 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -10143500 }.  Marked to market: 9662300
+Final holdings for ZI Agent 34 Type 1 [0 <= R <= 250, eta=1]: { JPM: -100, CASH: 19925800 }.  Marked to market: 10022900
+Final holdings for ZI Agent 35 Type 1 [0 <= R <= 250, eta=1]: { JPM: -100, CASH: 20028300 }.  Marked to market: 10125400
+Final holdings for ZI Agent 36 Type 1 [0 <= R <= 250, eta=1]: { JPM: -300, CASH: 39833500 }.  Marked to market: 10124800
+Final holdings for ZI Agent 37 Type 1 [0 <= R <= 250, eta=1]: { JPM: -300, CASH: 39861700 }.  Marked to market: 10153000
+Final holdings for ZI Agent 38 Type 1 [0 <= R <= 250, eta=1]: { CASH: 9815700 }.  Marked to market: 9815700
+Final holdings for ZI Agent 39 Type 1 [0 <= R <= 250, eta=1]: { JPM: -300, CASH: 40025500 }.  Marked to market: 10316800
+Final holdings for ZI Agent 40 Type 1 [0 <= R <= 250, eta=1]: { JPM: 100, CASH: -34500 }.  Marked to market: 9868400
+Final holdings for ZI Agent 41 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -9965800 }.  Marked to market: 9840000
+Final holdings for ZI Agent 42 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -10229000 }.  Marked to market: 9576800
+Final holdings for ZI Agent 43 Type 1 [0 <= R <= 250, eta=1]: { JPM: -300, CASH: 40034800 }.  Marked to market: 10326100
+Final holdings for ZI Agent 44 Type 1 [0 <= R <= 250, eta=1]: { JPM: 400, CASH: -30109200 }.  Marked to market: 9502400
+Final holdings for ZI Agent 45 Type 1 [0 <= R <= 250, eta=1]: { JPM: -300, CASH: 39923400 }.  Marked to market: 10214700
+Final holdings for ZI Agent 46 Type 1 [0 <= R <= 250, eta=1]: { JPM: 400, CASH: -30002700 }.  Marked to market: 9608900
+Final holdings for ZI Agent 47 Type 1 [0 <= R <= 250, eta=1]: { JPM: 100, CASH: -184200 }.  Marked to market: 9718700
+Final holdings for ZI Agent 48 Type 1 [0 <= R <= 250, eta=1]: { JPM: -100, CASH: 19979400 }.  Marked to market: 10076500
+Final holdings for ZI Agent 49 Type 1 [0 <= R <= 250, eta=1]: { CASH: 10100100 }.  Marked to market: 10100100
+Final holdings for ZI Agent 50 Type 1 [0 <= R <= 250, eta=1]: { JPM: 100, CASH: -65000 }.  Marked to market: 9837900
+Final holdings for ZI Agent 51 Type 1 [0 <= R <= 250, eta=1]: { JPM: -200, CASH: 29825200 }.  Marked to market: 10019400
+Final holdings for ZI Agent 52 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -10069400 }.  Marked to market: 9736400
+Final holdings for ZI Agent 53 Type 1 [0 <= R <= 250, eta=1]: { JPM: 400, CASH: -30244700 }.  Marked to market: 9366900
+Final holdings for ZI Agent 54 Type 1 [0 <= R <= 250, eta=1]: { JPM: -200, CASH: 29813800 }.  Marked to market: 10008000
+Final holdings for ZI Agent 55 Type 1 [0 <= R <= 250, eta=1]: { JPM: 300, CASH: -20257200 }.  Marked to market: 9451500
+Final holdings for ZI Agent 56 Type 1 [0 <= R <= 250, eta=1]: { CASH: 10201700 }.  Marked to market: 10201700
+Final holdings for ZI Agent 57 Type 1 [0 <= R <= 250, eta=1]: { JPM: 300, CASH: -20130700 }.  Marked to market: 9578000
+Final holdings for ZI Agent 58 Type 1 [0 <= R <= 250, eta=1]: { JPM: -100, CASH: 20104800 }.  Marked to market: 10201900
+Final holdings for ZI Agent 59 Type 1 [0 <= R <= 250, eta=1]: { JPM: -400, CASH: 50077800 }.  Marked to market: 10466200
+Final holdings for ZI Agent 60 Type 1 [0 <= R <= 250, eta=1]: { JPM: -400, CASH: 49888500 }.  Marked to market: 10276900
+Final holdings for ZI Agent 61 Type 1 [0 <= R <= 250, eta=1]: { CASH: 9850800 }.  Marked to market: 9850800
+Final holdings for ZI Agent 62 Type 1 [0 <= R <= 250, eta=1]: { JPM: -100, CASH: 20097200 }.  Marked to market: 10194300
+Final holdings for ZI Agent 63 Type 1 [0 <= R <= 250, eta=1]: { JPM: 400, CASH: -29793800 }.  Marked to market: 9817800
+Final holdings for ZI Agent 64 Type 1 [0 <= R <= 250, eta=1]: { JPM: -200, CASH: 29894200 }.  Marked to market: 10088400
+Final holdings for ZI Agent 65 Type 1 [0 <= R <= 250, eta=1]: { JPM: 100, CASH: 4100 }.  Marked to market: 9907000
+Final holdings for ZI Agent 66 Type 1 [0 <= R <= 250, eta=1]: { CASH: 10110300 }.  Marked to market: 10110300
+Final holdings for ZI Agent 67 Type 1 [0 <= R <= 250, eta=1]: { JPM: -400, CASH: 49958500 }.  Marked to market: 10346900
+Final holdings for ZI Agent 68 Type 1 [0 <= R <= 250, eta=1]: { JPM: -300, CASH: 39777900 }.  Marked to market: 10069200
+Final holdings for ZI Agent 69 Type 1 [0 <= R <= 250, eta=1]: { JPM: -300, CASH: 40000100 }.  Marked to market: 10291400
+Final holdings for ZI Agent 70 Type 1 [0 <= R <= 250, eta=1]: { JPM: -300, CASH: 40125100 }.  Marked to market: 10416400
+Final holdings for ZI Agent 71 Type 1 [0 <= R <= 250, eta=1]: { CASH: 9715600 }.  Marked to market: 9715600
+Final holdings for ZI Agent 72 Type 1 [0 <= R <= 250, eta=1]: { CASH: 9796400 }.  Marked to market: 9796400
+Final holdings for ZI Agent 73 Type 1 [0 <= R <= 250, eta=1]: { JPM: 300, CASH: -19938600 }.  Marked to market: 9770100
+Final holdings for ZI Agent 74 Type 1 [0 <= R <= 250, eta=1]: { CASH: 9976300 }.  Marked to market: 9976300
+Final holdings for ZI Agent 75 Type 1 [0 <= R <= 250, eta=1]: { JPM: 100, CASH: 372600 }.  Marked to market: 10289800
+Final holdings for ZI Agent 76 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -10134400 }.  Marked to market: 9671400
+Final holdings for ZI Agent 77 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -9997000 }.  Marked to market: 9941200
+Final holdings for ZI Agent 78 Type 1 [0 <= R <= 250, eta=1]: { JPM: -300, CASH: 40097900 }.  Marked to market: 10389200
+Final holdings for ZI Agent 79 Type 1 [0 <= R <= 250, eta=1]: { JPM: -300, CASH: 39971000 }.  Marked to market: 10262300
+Final holdings for ZI Agent 80 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -9954300 }.  Marked to market: 9851500
+Final holdings for ZI Agent 81 Type 1 [0 <= R <= 250, eta=1]: { CASH: 10131400 }.  Marked to market: 10131400
+Final holdings for ZI Agent 82 Type 1 [0 <= R <= 250, eta=1]: { JPM: -300, CASH: 40172900 }.  Marked to market: 10464200
+Final holdings for ZI Agent 83 Type 1 [0 <= R <= 250, eta=1]: { JPM: 700, CASH: -60034100 }.  Marked to market: 9286200
+Final holdings for ZI Agent 84 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -10079700 }.  Marked to market: 9726100
+Final holdings for ZI Agent 85 Type 1 [0 <= R <= 250, eta=1]: { CASH: 9941600 }.  Marked to market: 9941600
+Final holdings for ZI Agent 86 Type 1 [0 <= R <= 250, eta=1]: { JPM: 100, CASH: -32700 }.  Marked to market: 9870200
+Final holdings for ZI Agent 87 Type 1 [0 <= R <= 250, eta=1]: { JPM: -100, CASH: 19661000 }.  Marked to market: 9758100
+Final holdings for ZI Agent 88 Type 1 [0 <= R <= 250, eta=1]: { JPM: -200, CASH: 29997600 }.  Marked to market: 10191800
+Final holdings for ZI Agent 89 Type 1 [0 <= R <= 250, eta=1]: { JPM: -200, CASH: 29982200 }.  Marked to market: 10176400
+Final holdings for ZI Agent 90 Type 1 [0 <= R <= 250, eta=1]: { JPM: -100, CASH: 19763800 }.  Marked to market: 9860900
+Final holdings for ZI Agent 91 Type 1 [0 <= R <= 250, eta=1]: { JPM: -100, CASH: 20069200 }.  Marked to market: 10166300
+Final holdings for ZI Agent 92 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -10231600 }.  Marked to market: 9574200
+Final holdings for ZI Agent 93 Type 1 [0 <= R <= 250, eta=1]: { JPM: -400, CASH: 49955300 }.  Marked to market: 10343700
+Final holdings for ZI Agent 94 Type 1 [0 <= R <= 250, eta=1]: { JPM: 300, CASH: -19991900 }.  Marked to market: 9716800
+Final holdings for ZI Agent 95 Type 1 [0 <= R <= 250, eta=1]: { JPM: 400, CASH: -30005000 }.  Marked to market: 9606600
+Final holdings for ZI Agent 96 Type 1 [0 <= R <= 250, eta=1]: { JPM: -400, CASH: 49761800 }.  Marked to market: 10150200
+Final holdings for ZI Agent 97 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -10133800 }.  Marked to market: 9672000
+Final holdings for ZI Agent 98 Type 1 [0 <= R <= 250, eta=1]: { JPM: -100, CASH: 20063500 }.  Marked to market: 10160600
+Final holdings for ZI Agent 99 Type 1 [0 <= R <= 250, eta=1]: { JPM: -300, CASH: 40015600 }.  Marked to market: 10306900
+Final holdings for ZI Agent 100 Type 1 [0 <= R <= 250, eta=1]: { JPM: 300, CASH: -20066600 }.  Marked to market: 9642100
+Final holdings for ZI Agent 101 Type 1 [0 <= R <= 250, eta=1]: { JPM: -200, CASH: 30031800 }.  Marked to market: 10226000
+Final holdings for ZI Agent 102 Type 1 [0 <= R <= 250, eta=1]: { JPM: 100, CASH: 5500 }.  Marked to market: 9999600
+Final holdings for ZI Agent 103 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -10042200 }.  Marked to market: 9763600
+Final holdings for ZI Agent 104 Type 1 [0 <= R <= 250, eta=1]: { CASH: 10098900 }.  Marked to market: 10098900
+Final holdings for ZI Agent 105 Type 1 [0 <= R <= 250, eta=1]: { JPM: -200, CASH: 30054600 }.  Marked to market: 10248800
+Final holdings for ZI Agent 106 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -9978500 }.  Marked to market: 9827300
+Final holdings for ZI Agent 107 Type 1 [0 <= R <= 250, eta=1]: { JPM: 100, CASH: -228700 }.  Marked to market: 9674200
+Final holdings for ZI Agent 108 Type 1 [0 <= R <= 250, eta=1]: { JPM: 100, CASH: 41800 }.  Marked to market: 9944700
+Final holdings for ZI Agent 109 Type 1 [0 <= R <= 250, eta=1]: { CASH: 9886800 }.  Marked to market: 9886800
+Final holdings for ZI Agent 110 Type 1 [0 <= R <= 250, eta=1]: { JPM: -400, CASH: 50033400 }.  Marked to market: 10421800
+Final holdings for ZI Agent 111 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -9877700 }.  Marked to market: 9928100
+Final holdings for ZI Agent 112 Type 1 [0 <= R <= 250, eta=1]: { JPM: 500, CASH: -39875500 }.  Marked to market: 9639000
+Final holdings for ZI Agent 113 Type 1 [0 <= R <= 250, eta=1]: { JPM: -400, CASH: 49980900 }.  Marked to market: 10369300
+Final holdings for ZI Agent 114 Type 1 [0 <= R <= 250, eta=1]: { CASH: 9924800 }.  Marked to market: 9924800
+Final holdings for ZI Agent 115 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -10195100 }.  Marked to market: 9610700
+Final holdings for ZI Agent 116 Type 1 [0 <= R <= 250, eta=1]: { JPM: 100, CASH: 56000 }.  Marked to market: 9958900
+Final holdings for ZI Agent 117 Type 1 [0 <= R <= 250, eta=1]: { CASH: 10150600 }.  Marked to market: 10150600
+Final holdings for ZI Agent 118 Type 1 [0 <= R <= 250, eta=1]: { JPM: 300, CASH: -20179600 }.  Marked to market: 9529100
+Final holdings for ZI Agent 119 Type 1 [0 <= R <= 250, eta=1]: { JPM: 300, CASH: -19957900 }.  Marked to market: 9750800
+Final holdings for ZI Agent 120 Type 1 [0 <= R <= 250, eta=1]: { CASH: 10151600 }.  Marked to market: 10151600
+Final holdings for ZI Agent 121 Type 1 [0 <= R <= 250, eta=1]: { JPM: -500, CASH: 59992100 }.  Marked to market: 10477600
+Final holdings for ZI Agent 122 Type 1 [0 <= R <= 250, eta=1]: { JPM: 300, CASH: -19756400 }.  Marked to market: 9952300
+Final holdings for ZI Agent 123 Type 1 [0 <= R <= 250, eta=1]: { JPM: -200, CASH: 29989600 }.  Marked to market: 10183800
+Final holdings for ZI Agent 124 Type 1 [0 <= R <= 250, eta=1]: { JPM: 100, CASH: -225400 }.  Marked to market: 9677500
+Final holdings for ZI Agent 125 Type 1 [0 <= R <= 250, eta=1]: { JPM: -200, CASH: 30019400 }.  Marked to market: 10213600
+Final holdings for ZI Agent 126 Type 1 [0 <= R <= 250, eta=1]: { JPM: 300, CASH: -20182500 }.  Marked to market: 9616800
+Final holdings for ZI Agent 127 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -9819900 }.  Marked to market: 9985900
+Final holdings for ZI Agent 128 Type 1 [0 <= R <= 250, eta=1]: { JPM: -500, CASH: 60087500 }.  Marked to market: 10573000
+Final holdings for ZI Agent 129 Type 1 [0 <= R <= 250, eta=1]: { JPM: 100, CASH: 23700 }.  Marked to market: 9926600
+Final holdings for ZI Agent 130 Type 1 [0 <= R <= 250, eta=1]: { JPM: -100, CASH: 19951100 }.  Marked to market: 10048200
+Final holdings for ZI Agent 131 Type 1 [0 <= R <= 250, eta=1]: { JPM: -200, CASH: 29993300 }.  Marked to market: 10187500
+Final holdings for ZI Agent 132 Type 1 [0 <= R <= 250, eta=1]: { CASH: 10080700 }.  Marked to market: 10080700
+Final holdings for ZI Agent 133 Type 1 [0 <= R <= 250, eta=1]: { JPM: -300, CASH: 39791300 }.  Marked to market: 10082600
+Final holdings for ZI Agent 134 Type 1 [0 <= R <= 250, eta=1]: { JPM: -400, CASH: 49931100 }.  Marked to market: 10319500
+Final holdings for ZI Agent 135 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -9891600 }.  Marked to market: 9914200
+Final holdings for ZI Agent 136 Type 1 [0 <= R <= 250, eta=1]: { CASH: 9944600 }.  Marked to market: 9944600
+Final holdings for ZI Agent 137 Type 1 [0 <= R <= 250, eta=1]: { CASH: 9954100 }.  Marked to market: 9954100
+Final holdings for ZI Agent 138 Type 1 [0 <= R <= 250, eta=1]: { JPM: -300, CASH: 40011800 }.  Marked to market: 10303100
+Final holdings for ZI Agent 139 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -10077900 }.  Marked to market: 9727900
+Final holdings for ZI Agent 140 Type 1 [0 <= R <= 250, eta=1]: { JPM: -200, CASH: 29908100 }.  Marked to market: 10102300
+Final holdings for ZI Agent 141 Type 1 [0 <= R <= 250, eta=1]: { JPM: 100, CASH: -37200 }.  Marked to market: 9865700
+Final holdings for ZI Agent 142 Type 1 [0 <= R <= 250, eta=1]: { JPM: 200, CASH: -10008600 }.  Marked to market: 9797200
+Final holdings for ZI Agent 143 Type 1 [0 <= R <= 250, eta=1]: { JPM: -100, CASH: 20191800 }.  Marked to market: 10288900
+Final holdings for ZI Agent 144 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 19752700 }.  Marked to market: 9849800
+Final holdings for ZI Agent 145 Type 2 [0 <= R <= 500, eta=1]: { JPM: 100, CASH: -128900 }.  Marked to market: 9774000
+Final holdings for ZI Agent 146 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 20049200 }.  Marked to market: 10146300
+Final holdings for ZI Agent 147 Type 2 [0 <= R <= 500, eta=1]: { JPM: 200, CASH: -9864800 }.  Marked to market: 9941000
+Final holdings for ZI Agent 148 Type 2 [0 <= R <= 500, eta=1]: { JPM: -600, CASH: 69878700 }.  Marked to market: 10461300
+Final holdings for ZI Agent 149 Type 2 [0 <= R <= 500, eta=1]: { JPM: 100, CASH: -54100 }.  Marked to market: 9848800
+Final holdings for ZI Agent 150 Type 2 [0 <= R <= 500, eta=1]: { JPM: 100, CASH: -78500 }.  Marked to market: 9824400
+Final holdings for ZI Agent 151 Type 2 [0 <= R <= 500, eta=1]: { CASH: 10317700 }.  Marked to market: 10317700
+Final holdings for ZI Agent 152 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 20143100 }.  Marked to market: 10240200
+Final holdings for ZI Agent 153 Type 2 [0 <= R <= 500, eta=1]: { CASH: 9979300 }.  Marked to market: 9979300
+Final holdings for ZI Agent 154 Type 2 [0 <= R <= 500, eta=1]: { JPM: 300, CASH: -19972000 }.  Marked to market: 9736700
+Final holdings for ZI Agent 155 Type 2 [0 <= R <= 500, eta=1]: { CASH: 10141000 }.  Marked to market: 10141000
+Final holdings for ZI Agent 156 Type 2 [0 <= R <= 500, eta=1]: { JPM: -400, CASH: 50173800 }.  Marked to market: 10562200
+Final holdings for ZI Agent 157 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 19868400 }.  Marked to market: 9965500
+Final holdings for ZI Agent 158 Type 2 [0 <= R <= 500, eta=1]: { CASH: 10029800 }.  Marked to market: 10029800
+Final holdings for ZI Agent 159 Type 2 [0 <= R <= 500, eta=1]: { JPM: 200, CASH: -9866200 }.  Marked to market: 9939600
+Final holdings for ZI Agent 160 Type 2 [0 <= R <= 500, eta=1]: { JPM: 500, CASH: -39913700 }.  Marked to market: 9600800
+Final holdings for ZI Agent 161 Type 2 [0 <= R <= 500, eta=1]: { JPM: -300, CASH: 40026200 }.  Marked to market: 10317500
+Final holdings for ZI Agent 162 Type 2 [0 <= R <= 500, eta=1]: { JPM: -300, CASH: 39963100 }.  Marked to market: 10254400
+Final holdings for ZI Agent 163 Type 2 [0 <= R <= 500, eta=1]: { JPM: 300, CASH: -19734200 }.  Marked to market: 9974500
+Final holdings for ZI Agent 164 Type 2 [0 <= R <= 500, eta=1]: { JPM: -300, CASH: 40137600 }.  Marked to market: 10428900
+Final holdings for ZI Agent 165 Type 2 [0 <= R <= 500, eta=1]: { JPM: 100, CASH: -87300 }.  Marked to market: 9815600
+Final holdings for ZI Agent 166 Type 2 [0 <= R <= 500, eta=1]: { JPM: 300, CASH: -19992100 }.  Marked to market: 9880400
+Final holdings for ZI Agent 167 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 20081300 }.  Marked to market: 10178400
+Final holdings for ZI Agent 168 Type 2 [0 <= R <= 500, eta=1]: { JPM: -500, CASH: 59922900 }.  Marked to market: 10408400
+Final holdings for ZI Agent 169 Type 2 [0 <= R <= 500, eta=1]: { JPM: 100, CASH: -204500 }.  Marked to market: 9698400
+Final holdings for ZI Agent 170 Type 2 [0 <= R <= 500, eta=1]: { CASH: 9975500 }.  Marked to market: 9975500
+Final holdings for ZI Agent 171 Type 2 [0 <= R <= 500, eta=1]: { JPM: 200, CASH: -9796900 }.  Marked to market: 10008900
+Final holdings for ZI Agent 172 Type 2 [0 <= R <= 500, eta=1]: { CASH: 9902400 }.  Marked to market: 9902400
+Final holdings for ZI Agent 173 Type 2 [0 <= R <= 500, eta=1]: { JPM: 300, CASH: -20177800 }.  Marked to market: 9530900
+Final holdings for ZI Agent 174 Type 2 [0 <= R <= 500, eta=1]: { CASH: 10111000 }.  Marked to market: 10111000
+Final holdings for ZI Agent 175 Type 2 [0 <= R <= 500, eta=1]: { JPM: -500, CASH: 60070500 }.  Marked to market: 10556000
+Final holdings for ZI Agent 176 Type 2 [0 <= R <= 500, eta=1]: { JPM: 500, CASH: -40189700 }.  Marked to market: 9324800
+Final holdings for ZI Agent 177 Type 2 [0 <= R <= 500, eta=1]: { JPM: 300, CASH: -20063600 }.  Marked to market: 9645100
+Final holdings for ZI Agent 178 Type 2 [0 <= R <= 500, eta=1]: { JPM: -600, CASH: 69863200 }.  Marked to market: 10445800
+Final holdings for ZI Agent 179 Type 2 [0 <= R <= 500, eta=1]: { CASH: 9868900 }.  Marked to market: 9868900
+Final holdings for ZI Agent 180 Type 2 [0 <= R <= 500, eta=1]: { JPM: -200, CASH: 29924300 }.  Marked to market: 10118500
+Final holdings for ZI Agent 181 Type 2 [0 <= R <= 500, eta=1]: { JPM: 200, CASH: -9740200 }.  Marked to market: 10065600
+Final holdings for ZI Agent 182 Type 2 [0 <= R <= 500, eta=1]: { JPM: -200, CASH: 30032800 }.  Marked to market: 10227000
+Final holdings for ZI Agent 183 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 19998500 }.  Marked to market: 10095600
+Final holdings for ZI Agent 184 Type 2 [0 <= R <= 500, eta=1]: { JPM: -200, CASH: 29947400 }.  Marked to market: 10141600
+Final holdings for ZI Agent 185 Type 2 [0 <= R <= 500, eta=1]: { JPM: -400, CASH: 50090800 }.  Marked to market: 10479200
+Final holdings for ZI Agent 186 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 19937800 }.  Marked to market: 10034900
+Final holdings for ZI Agent 187 Type 2 [0 <= R <= 500, eta=1]: { JPM: 300, CASH: -20003600 }.  Marked to market: 9705100
+Final holdings for ZI Agent 188 Type 2 [0 <= R <= 500, eta=1]: { JPM: -200, CASH: 30013900 }.  Marked to market: 10208100
+Final holdings for ZI Agent 189 Type 2 [0 <= R <= 500, eta=1]: { JPM: 300, CASH: -19936200 }.  Marked to market: 9772500
+Final holdings for ZI Agent 190 Type 2 [0 <= R <= 500, eta=1]: { JPM: -300, CASH: 39955600 }.  Marked to market: 10246900
+Final holdings for ZI Agent 191 Type 2 [0 <= R <= 500, eta=1]: { JPM: 600, CASH: -50181700 }.  Marked to market: 9235700
+Final holdings for ZI Agent 192 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 19830300 }.  Marked to market: 9927400
+Final holdings for ZI Agent 193 Type 2 [0 <= R <= 500, eta=1]: { JPM: -200, CASH: 29953700 }.  Marked to market: 10147900
+Final holdings for ZI Agent 194 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 19910700 }.  Marked to market: 10007800
+Final holdings for ZI Agent 195 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 20152300 }.  Marked to market: 10203200
+Final holdings for ZI Agent 196 Type 2 [0 <= R <= 500, eta=1]: { JPM: 100, CASH: 194900 }.  Marked to market: 10097800
+Final holdings for ZI Agent 197 Type 2 [0 <= R <= 500, eta=1]: { JPM: 200, CASH: -9977900 }.  Marked to market: 9827900
+Final holdings for ZI Agent 198 Type 2 [0 <= R <= 500, eta=1]: { CASH: 10128000 }.  Marked to market: 10128000
+Final holdings for ZI Agent 199 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 20226400 }.  Marked to market: 10323500
+Final holdings for ZI Agent 200 Type 2 [0 <= R <= 500, eta=1]: { CASH: 9945800 }.  Marked to market: 9945800
+Final holdings for ZI Agent 201 Type 2 [0 <= R <= 500, eta=1]: { JPM: -400, CASH: 49972600 }.  Marked to market: 10361000
+Final holdings for ZI Agent 202 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 20171700 }.  Marked to market: 10268800
+Final holdings for ZI Agent 203 Type 2 [0 <= R <= 500, eta=1]: { JPM: 200, CASH: -10117100 }.  Marked to market: 9688700
+Final holdings for ZI Agent 204 Type 2 [0 <= R <= 500, eta=1]: { CASH: 9969200 }.  Marked to market: 9969200
+Final holdings for ZI Agent 205 Type 2 [0 <= R <= 500, eta=1]: { JPM: 500, CASH: -40045600 }.  Marked to market: 9468900
+Final holdings for ZI Agent 206 Type 2 [0 <= R <= 500, eta=1]: { CASH: 10123600 }.  Marked to market: 10123600
+Final holdings for ZI Agent 207 Type 2 [0 <= R <= 500, eta=1]: { CASH: 9936100 }.  Marked to market: 9936100
+Final holdings for ZI Agent 208 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 20296400 }.  Marked to market: 10393500
+Final holdings for ZI Agent 209 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 19926500 }.  Marked to market: 10023600
+Final holdings for ZI Agent 210 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 19972300 }.  Marked to market: 10069400
+Final holdings for ZI Agent 211 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 19792500 }.  Marked to market: 9889600
+Final holdings for ZI Agent 212 Type 2 [0 <= R <= 500, eta=1]: { JPM: 300, CASH: -19939900 }.  Marked to market: 9768800
+Final holdings for ZI Agent 213 Type 2 [0 <= R <= 500, eta=1]: { JPM: 200, CASH: -10087700 }.  Marked to market: 9718100
+Final holdings for ZI Agent 214 Type 2 [0 <= R <= 500, eta=1]: { JPM: 100, CASH: 170000 }.  Marked to market: 10072900
+Final holdings for ZI Agent 215 Type 2 [0 <= R <= 500, eta=1]: { JPM: 100, CASH: -32300 }.  Marked to market: 9870600
+Final holdings for ZI Agent 216 Type 2 [0 <= R <= 500, eta=1]: { JPM: -500, CASH: 60085800 }.  Marked to market: 10571300
+Final holdings for ZI Agent 217 Type 2 [0 <= R <= 500, eta=1]: { JPM: 300, CASH: -20072800 }.  Marked to market: 9635900
+Final holdings for ZI Agent 218 Type 2 [0 <= R <= 500, eta=1]: { JPM: 200, CASH: -10221100 }.  Marked to market: 9584700
+Final holdings for ZI Agent 219 Type 2 [0 <= R <= 500, eta=1]: { CASH: 9651800 }.  Marked to market: 9651800
+Final holdings for ZI Agent 220 Type 2 [0 <= R <= 500, eta=1]: { JPM: 100, CASH: 28200 }.  Marked to market: 9931100
+Final holdings for ZI Agent 221 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 19991800 }.  Marked to market: 10088900
+Final holdings for ZI Agent 222 Type 2 [0 <= R <= 500, eta=1]: { JPM: 200, CASH: -10027700 }.  Marked to market: 9778100
+Final holdings for ZI Agent 223 Type 2 [0 <= R <= 500, eta=1]: { CASH: 9983000 }.  Marked to market: 9983000
+Final holdings for ZI Agent 224 Type 2 [0 <= R <= 500, eta=1]: { JPM: -600, CASH: 69949400 }.  Marked to market: 10532000
+Final holdings for ZI Agent 225 Type 2 [0 <= R <= 500, eta=1]: { JPM: 200, CASH: -10115200 }.  Marked to market: 9690600
+Final holdings for ZI Agent 226 Type 2 [0 <= R <= 500, eta=1]: { JPM: 300, CASH: -20139900 }.  Marked to market: 9568800
+Final holdings for ZI Agent 227 Type 2 [0 <= R <= 500, eta=1]: { JPM: 100, CASH: -12800 }.  Marked to market: 9890100
+Final holdings for ZI Agent 228 Type 2 [0 <= R <= 500, eta=1]: { JPM: 100, CASH: -19200 }.  Marked to market: 9883700
+Final holdings for ZI Agent 229 Type 2 [0 <= R <= 500, eta=1]: { JPM: 300, CASH: -19996300 }.  Marked to market: 9712400
+Final holdings for ZI Agent 230 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 19871000 }.  Marked to market: 9968100
+Final holdings for ZI Agent 231 Type 2 [0 <= R <= 500, eta=1]: { JPM: -200, CASH: 29973000 }.  Marked to market: 10167200
+Final holdings for ZI Agent 232 Type 2 [0 <= R <= 500, eta=1]: { CASH: 9915800 }.  Marked to market: 9915800
+Final holdings for ZI Agent 233 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 19951200 }.  Marked to market: 10048300
+Final holdings for ZI Agent 234 Type 2 [0 <= R <= 500, eta=1]: { CASH: 9790000 }.  Marked to market: 9790000
+Final holdings for ZI Agent 235 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 19798200 }.  Marked to market: 9895300
+Final holdings for ZI Agent 236 Type 2 [0 <= R <= 500, eta=1]: { JPM: 300, CASH: -19772800 }.  Marked to market: 9935900
+Final holdings for ZI Agent 237 Type 2 [0 <= R <= 500, eta=1]: { JPM: -400, CASH: 49831100 }.  Marked to market: 10219500
+Final holdings for ZI Agent 238 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 19959800 }.  Marked to market: 10056900
+Final holdings for ZI Agent 239 Type 2 [0 <= R <= 500, eta=1]: { JPM: 300, CASH: -20055200 }.  Marked to market: 9653500
+Final holdings for ZI Agent 240 Type 2 [0 <= R <= 500, eta=1]: { JPM: 100, CASH: 216400 }.  Marked to market: 10119300
+Final holdings for ZI Agent 241 Type 2 [0 <= R <= 500, eta=1]: { JPM: 300, CASH: -20092200 }.  Marked to market: 9616500
+Final holdings for ZI Agent 242 Type 2 [0 <= R <= 500, eta=1]: { JPM: -600, CASH: 69769500 }.  Marked to market: 10352100
+Final holdings for ZI Agent 243 Type 2 [0 <= R <= 500, eta=1]: { JPM: -200, CASH: 29778500 }.  Marked to market: 9972700
+Final holdings for ZI Agent 244 Type 2 [0 <= R <= 500, eta=1]: { JPM: -300, CASH: 40180900 }.  Marked to market: 10472200
+Final holdings for ZI Agent 245 Type 2 [0 <= R <= 500, eta=1]: { JPM: 300, CASH: -20314200 }.  Marked to market: 9394500
+Final holdings for ZI Agent 246 Type 2 [0 <= R <= 500, eta=1]: { CASH: 9894700 }.  Marked to market: 9894700
+Final holdings for ZI Agent 247 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 19748900 }.  Marked to market: 9846000
+Final holdings for ZI Agent 248 Type 2 [0 <= R <= 500, eta=1]: { JPM: 200, CASH: -10223400 }.  Marked to market: 9582400
+Final holdings for ZI Agent 249 Type 2 [0 <= R <= 500, eta=1]: { CASH: 9869200 }.  Marked to market: 9869200
+Final holdings for ZI Agent 250 Type 2 [0 <= R <= 500, eta=1]: { JPM: -200, CASH: 29914600 }.  Marked to market: 10108800
+Final holdings for ZI Agent 251 Type 2 [0 <= R <= 500, eta=1]: { CASH: 9741600 }.  Marked to market: 9741600
+Final holdings for ZI Agent 252 Type 2 [0 <= R <= 500, eta=1]: { JPM: 200, CASH: -9973100 }.  Marked to market: 9832700
+Final holdings for ZI Agent 253 Type 2 [0 <= R <= 500, eta=1]: { JPM: 200, CASH: -10017900 }.  Marked to market: 9787900
+Final holdings for ZI Agent 254 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 19961300 }.  Marked to market: 10058400
+Final holdings for ZI Agent 255 Type 2 [0 <= R <= 500, eta=1]: { JPM: -300, CASH: 40020900 }.  Marked to market: 10312200
+Final holdings for ZI Agent 256 Type 2 [0 <= R <= 500, eta=1]: { JPM: 100, CASH: 173700 }.  Marked to market: 10076600
+Final holdings for ZI Agent 257 Type 2 [0 <= R <= 500, eta=1]: { JPM: 300, CASH: -19858500 }.  Marked to market: 9850200
+Final holdings for ZI Agent 258 Type 2 [0 <= R <= 500, eta=1]: { JPM: 300, CASH: -20100600 }.  Marked to market: 9608100
+Final holdings for ZI Agent 259 Type 2 [0 <= R <= 500, eta=1]: { JPM: -300, CASH: 39963800 }.  Marked to market: 10255100
+Final holdings for ZI Agent 260 Type 2 [0 <= R <= 500, eta=1]: { JPM: 200, CASH: -10040900 }.  Marked to market: 9764900
+Final holdings for ZI Agent 261 Type 2 [0 <= R <= 500, eta=1]: { CASH: 10178600 }.  Marked to market: 10178600
+Final holdings for ZI Agent 262 Type 2 [0 <= R <= 500, eta=1]: { JPM: 100, CASH: 86100 }.  Marked to market: 9989000
+Final holdings for ZI Agent 263 Type 2 [0 <= R <= 500, eta=1]: { JPM: -200, CASH: 30039900 }.  Marked to market: 10234100
+Final holdings for ZI Agent 264 Type 2 [0 <= R <= 500, eta=1]: { JPM: -600, CASH: 69983100 }.  Marked to market: 10565700
+Final holdings for ZI Agent 265 Type 2 [0 <= R <= 500, eta=1]: { JPM: -200, CASH: 30065900 }.  Marked to market: 10260100
+Final holdings for ZI Agent 266 Type 2 [0 <= R <= 500, eta=1]: { JPM: -200, CASH: 30106600 }.  Marked to market: 10300800
+Final holdings for ZI Agent 267 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 20068600 }.  Marked to market: 10165700
+Final holdings for ZI Agent 268 Type 2 [0 <= R <= 500, eta=1]: { JPM: 200, CASH: -10004400 }.  Marked to market: 9801400
+Final holdings for ZI Agent 269 Type 2 [0 <= R <= 500, eta=1]: { CASH: 9703100 }.  Marked to market: 9703100
+Final holdings for ZI Agent 270 Type 2 [0 <= R <= 500, eta=1]: { JPM: 200, CASH: -10009500 }.  Marked to market: 9796300
+Final holdings for ZI Agent 271 Type 2 [0 <= R <= 500, eta=1]: { JPM: -200, CASH: 30077200 }.  Marked to market: 10271400
+Final holdings for ZI Agent 272 Type 2 [0 <= R <= 500, eta=1]: { CASH: 9998900 }.  Marked to market: 9998900
+Final holdings for ZI Agent 273 Type 2 [0 <= R <= 500, eta=1]: { CASH: 9893300 }.  Marked to market: 9893300
+Final holdings for ZI Agent 274 Type 2 [0 <= R <= 500, eta=1]: { JPM: -200, CASH: 29773900 }.  Marked to market: 9968100
+Final holdings for ZI Agent 275 Type 2 [0 <= R <= 500, eta=1]: { CASH: 9946300 }.  Marked to market: 9946300
+Final holdings for ZI Agent 276 Type 2 [0 <= R <= 500, eta=1]: { JPM: 400, CASH: -30096900 }.  Marked to market: 9514700
+Final holdings for ZI Agent 277 Type 2 [0 <= R <= 500, eta=1]: { JPM: 500, CASH: -40038000 }.  Marked to market: 9476500
+Final holdings for ZI Agent 278 Type 2 [0 <= R <= 500, eta=1]: { JPM: 400, CASH: -29913200 }.  Marked to market: 9698400
+Final holdings for ZI Agent 279 Type 2 [0 <= R <= 500, eta=1]: { JPM: 300, CASH: -19911700 }.  Marked to market: 9797000
+Final holdings for ZI Agent 280 Type 2 [0 <= R <= 500, eta=1]: { JPM: 500, CASH: -40098300 }.  Marked to market: 9416200
+Final holdings for ZI Agent 281 Type 2 [0 <= R <= 500, eta=1]: { JPM: -500, CASH: 60039700 }.  Marked to market: 10525200
+Final holdings for ZI Agent 282 Type 2 [0 <= R <= 500, eta=1]: { CASH: 9801600 }.  Marked to market: 9801600
+Final holdings for ZI Agent 283 Type 2 [0 <= R <= 500, eta=1]: { JPM: 100, CASH: -389000 }.  Marked to market: 9513900
+Final holdings for ZI Agent 284 Type 2 [0 <= R <= 500, eta=1]: { JPM: -300, CASH: 40042500 }.  Marked to market: 10333800
+Final holdings for ZI Agent 285 Type 2 [0 <= R <= 500, eta=1]: { JPM: -100, CASH: 20117500 }.  Marked to market: 10214600
+Final holdings for ZI Agent 286 Type 2 [0 <= R <= 500, eta=1]: { CASH: 9953900 }.  Marked to market: 9953900
+Final holdings for ZI Agent 287 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -200, CASH: 29989600 }.  Marked to market: 10183800
+Final holdings for ZI Agent 288 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 9973200 }.  Marked to market: 9973200
+Final holdings for ZI Agent 289 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 200, CASH: -9863200 }.  Marked to market: 9942600
+Final holdings for ZI Agent 290 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -300, CASH: 39867800 }.  Marked to market: 10159100
+Final holdings for ZI Agent 291 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 20149200 }.  Marked to market: 10246300
+Final holdings for ZI Agent 292 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 400, CASH: -29851800 }.  Marked to market: 9759800
+Final holdings for ZI Agent 293 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -300, CASH: 39949500 }.  Marked to market: 10240800
+Final holdings for ZI Agent 294 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 100, CASH: 21100 }.  Marked to market: 9924000
+Final holdings for ZI Agent 295 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 9875100 }.  Marked to market: 9875100
+Final holdings for ZI Agent 296 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 300, CASH: -19838300 }.  Marked to market: 9870400
+Final holdings for ZI Agent 297 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 9800200 }.  Marked to market: 9800200
+Final holdings for ZI Agent 298 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 100, CASH: -26700 }.  Marked to market: 9876200
+Final holdings for ZI Agent 299 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -300, CASH: 40096900 }.  Marked to market: 10388200
+Final holdings for ZI Agent 300 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -200, CASH: 29975800 }.  Marked to market: 10170000
+Final holdings for ZI Agent 301 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 9887000 }.  Marked to market: 9887000
+Final holdings for ZI Agent 302 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 200, CASH: -9930500 }.  Marked to market: 9875300
+Final holdings for ZI Agent 303 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 20019500 }.  Marked to market: 10116600
+Final holdings for ZI Agent 304 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -200, CASH: 30018800 }.  Marked to market: 10213000
+Final holdings for ZI Agent 305 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 100, CASH: -30200 }.  Marked to market: 9872700
+Final holdings for ZI Agent 306 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 300, CASH: -20021100 }.  Marked to market: 9687600
+Final holdings for ZI Agent 307 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -200, CASH: 29998000 }.  Marked to market: 10192200
+Final holdings for ZI Agent 308 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 200, CASH: -10056500 }.  Marked to market: 9749300
+Final holdings for ZI Agent 309 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -200, CASH: 30057800 }.  Marked to market: 10252000
+Final holdings for ZI Agent 310 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 20295100 }.  Marked to market: 10392200
+Final holdings for ZI Agent 311 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 9943500 }.  Marked to market: 9943500
+Final holdings for ZI Agent 312 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 20143500 }.  Marked to market: 10240600
+Final holdings for ZI Agent 313 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -200, CASH: 29989300 }.  Marked to market: 10183500
+Final holdings for ZI Agent 314 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 400, CASH: -29994500 }.  Marked to market: 9617100
+Final holdings for ZI Agent 315 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 200, CASH: -10155800 }.  Marked to market: 9650000
+Final holdings for ZI Agent 316 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -300, CASH: 39939400 }.  Marked to market: 10230700
+Final holdings for ZI Agent 317 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 19824400 }.  Marked to market: 9921500
+Final holdings for ZI Agent 318 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 200, CASH: -9995700 }.  Marked to market: 9810100
+Final holdings for ZI Agent 319 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 300, CASH: -20024800 }.  Marked to market: 9683900
+Final holdings for ZI Agent 320 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -400, CASH: 50109100 }.  Marked to market: 10497500
+Final holdings for ZI Agent 321 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -400, CASH: 49886100 }.  Marked to market: 10274500
+Final holdings for ZI Agent 322 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 200, CASH: -9838400 }.  Marked to market: 9967400
+Final holdings for ZI Agent 323 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -300, CASH: 39975000 }.  Marked to market: 10266300
+Final holdings for ZI Agent 324 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -200, CASH: 29965900 }.  Marked to market: 10160100
+Final holdings for ZI Agent 325 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 200, CASH: -9804000 }.  Marked to market: 10001800
+Final holdings for ZI Agent 326 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 300, CASH: -19815500 }.  Marked to market: 9893200
+Final holdings for ZI Agent 327 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 400, CASH: -30424900 }.  Marked to market: 9186700
+Final holdings for ZI Agent 328 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 10306400 }.  Marked to market: 10306400
+Final holdings for ZI Agent 329 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 300, CASH: -20087100 }.  Marked to market: 9621600
+Final holdings for ZI Agent 330 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 20178400 }.  Marked to market: 10275500
+Final holdings for ZI Agent 331 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 200, CASH: -9990400 }.  Marked to market: 9815400
+Final holdings for ZI Agent 332 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 9973600 }.  Marked to market: 9973600
+Final holdings for ZI Agent 333 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 20113700 }.  Marked to market: 10210800
+Final holdings for ZI Agent 334 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 100, CASH: 29700 }.  Marked to market: 9932600
+Final holdings for ZI Agent 335 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -400, CASH: 50044100 }.  Marked to market: 10432500
+Final holdings for ZI Agent 336 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 100, CASH: -108000 }.  Marked to market: 9794900
+Final holdings for ZI Agent 337 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 200, CASH: -9947900 }.  Marked to market: 9857900
+Final holdings for ZI Agent 338 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -200, CASH: 29886100 }.  Marked to market: 10080300
+Final holdings for ZI Agent 339 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 100, CASH: -97300 }.  Marked to market: 9805600
+Final holdings for ZI Agent 340 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 100, CASH: -138200 }.  Marked to market: 9764700
+Final holdings for ZI Agent 341 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 20084000 }.  Marked to market: 10181100
+Final holdings for ZI Agent 342 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 300, CASH: -20050000 }.  Marked to market: 9837500
+Final holdings for ZI Agent 343 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 200, CASH: -9987100 }.  Marked to market: 9818700
+Final holdings for ZI Agent 344 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 400, CASH: -30153100 }.  Marked to market: 9458500
+Final holdings for ZI Agent 345 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 100, CASH: 29400 }.  Marked to market: 9932300
+Final holdings for ZI Agent 346 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 20025500 }.  Marked to market: 10122600
+Final holdings for ZI Agent 347 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 600, CASH: -50150400 }.  Marked to market: 9267000
+Final holdings for ZI Agent 348 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 10277500 }.  Marked to market: 10277500
+Final holdings for ZI Agent 349 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 100, CASH: -44100 }.  Marked to market: 9858800
+Final holdings for ZI Agent 350 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 20005500 }.  Marked to market: 10102600
+Final holdings for ZI Agent 351 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 200, CASH: -10218100 }.  Marked to market: 9587700
+Final holdings for ZI Agent 352 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 19823500 }.  Marked to market: 9920600
+Final holdings for ZI Agent 353 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -200, CASH: 30066900 }.  Marked to market: 10261100
+Final holdings for ZI Agent 354 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 19858400 }.  Marked to market: 9955500
+Final holdings for ZI Agent 355 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 9969500 }.  Marked to market: 9969500
+Final holdings for ZI Agent 356 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 600, CASH: -49938700 }.  Marked to market: 9478700
+Final holdings for ZI Agent 357 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 300, CASH: -20002700 }.  Marked to market: 9706000
+Final holdings for ZI Agent 358 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 300, CASH: -20229600 }.  Marked to market: 9479100
+Final holdings for ZI Agent 359 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 9830800 }.  Marked to market: 9830800
+Final holdings for ZI Agent 360 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -500, CASH: 60233700 }.  Marked to market: 10719200
+Final holdings for ZI Agent 361 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -200, CASH: 30043200 }.  Marked to market: 10237400
+Final holdings for ZI Agent 362 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 300, CASH: -20117200 }.  Marked to market: 9591500
+Final holdings for ZI Agent 363 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 100, CASH: -51400 }.  Marked to market: 9851500
+Final holdings for ZI Agent 364 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 9860000 }.  Marked to market: 9860000
+Final holdings for ZI Agent 365 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 200, CASH: -9836900 }.  Marked to market: 9968900
+Final holdings for ZI Agent 366 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 9902500 }.  Marked to market: 9902500
+Final holdings for ZI Agent 367 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -200, CASH: 29878400 }.  Marked to market: 10072600
+Final holdings for ZI Agent 368 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 19854800 }.  Marked to market: 9951900
+Final holdings for ZI Agent 369 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -400, CASH: 49782700 }.  Marked to market: 10171100
+Final holdings for ZI Agent 370 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -200, CASH: 30191400 }.  Marked to market: 10175000
+Final holdings for ZI Agent 371 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 10069200 }.  Marked to market: 10069200
+Final holdings for ZI Agent 372 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 20176100 }.  Marked to market: 10273200
+Final holdings for ZI Agent 373 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 100, CASH: -600 }.  Marked to market: 9902300
+Final holdings for ZI Agent 374 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 20145500 }.  Marked to market: 10242600
+Final holdings for ZI Agent 375 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 300, CASH: -20061300 }.  Marked to market: 9647400
+Final holdings for ZI Agent 376 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 10338500 }.  Marked to market: 10338500
+Final holdings for ZI Agent 377 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 400, CASH: -30052700 }.  Marked to market: 9558900
+Final holdings for ZI Agent 378 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 200, CASH: -9880400 }.  Marked to market: 9925400
+Final holdings for ZI Agent 379 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -200, CASH: 30308300 }.  Marked to market: 10502500
+Final holdings for ZI Agent 380 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 100, CASH: -126100 }.  Marked to market: 9776800
+Final holdings for ZI Agent 381 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -500, CASH: 59982700 }.  Marked to market: 10468200
+Final holdings for ZI Agent 382 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -400, CASH: 49922800 }.  Marked to market: 10311200
+Final holdings for ZI Agent 383 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -200, CASH: 30062600 }.  Marked to market: 10256800
+Final holdings for ZI Agent 384 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 19961200 }.  Marked to market: 10058300
+Final holdings for ZI Agent 385 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 100, CASH: 158300 }.  Marked to market: 10061200
+Final holdings for ZI Agent 386 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 9964000 }.  Marked to market: 9964000
+Final holdings for ZI Agent 387 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 400, CASH: -30175800 }.  Marked to market: 9435800
+Final holdings for ZI Agent 388 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 9910800 }.  Marked to market: 9910800
+Final holdings for ZI Agent 389 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 200, CASH: -10132300 }.  Marked to market: 9673500
+Final holdings for ZI Agent 390 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 200, CASH: -10063000 }.  Marked to market: 9742800
+Final holdings for ZI Agent 391 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 200, CASH: -10119100 }.  Marked to market: 9686700
+Final holdings for ZI Agent 392 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 400, CASH: -29801500 }.  Marked to market: 9810100
+Final holdings for ZI Agent 393 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -300, CASH: 39876300 }.  Marked to market: 10167600
+Final holdings for ZI Agent 394 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 100, CASH: -20500 }.  Marked to market: 9882400
+Final holdings for ZI Agent 395 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 9984400 }.  Marked to market: 9984400
+Final holdings for ZI Agent 396 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 100, CASH: -38000 }.  Marked to market: 9864900
+Final holdings for ZI Agent 397 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 20014300 }.  Marked to market: 10111400
+Final holdings for ZI Agent 398 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 600, CASH: -49923600 }.  Marked to market: 9493800
+Final holdings for ZI Agent 399 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 200, CASH: -9992700 }.  Marked to market: 9813100
+Final holdings for ZI Agent 400 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 9977100 }.  Marked to market: 9977100
+Final holdings for ZI Agent 401 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -300, CASH: 40006700 }.  Marked to market: 10298000
+Final holdings for ZI Agent 402 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 300, CASH: -20120200 }.  Marked to market: 9588500
+Final holdings for ZI Agent 403 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -300, CASH: 39930500 }.  Marked to market: 10221800
+Final holdings for ZI Agent 404 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -300, CASH: 40029100 }.  Marked to market: 10320400
+Final holdings for ZI Agent 405 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 19987500 }.  Marked to market: 10084600
+Final holdings for ZI Agent 406 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -200, CASH: 29928800 }.  Marked to market: 10123000
+Final holdings for ZI Agent 407 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 19990300 }.  Marked to market: 10087400
+Final holdings for ZI Agent 408 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 300, CASH: -20006300 }.  Marked to market: 9702400
+Final holdings for ZI Agent 409 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 100, CASH: 185100 }.  Marked to market: 10088000
+Final holdings for ZI Agent 410 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -200, CASH: 30016700 }.  Marked to market: 10210900
+Final holdings for ZI Agent 411 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 20230700 }.  Marked to market: 10327800
+Final holdings for ZI Agent 412 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 19930600 }.  Marked to market: 10027700
+Final holdings for ZI Agent 413 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 200, CASH: -10031900 }.  Marked to market: 9773900
+Final holdings for ZI Agent 414 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 20045600 }.  Marked to market: 10142700
+Final holdings for ZI Agent 415 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 20139300 }.  Marked to market: 10236400
+Final holdings for ZI Agent 416 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 9950300 }.  Marked to market: 9950300
+Final holdings for ZI Agent 417 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 200, CASH: -9960300 }.  Marked to market: 9845500
+Final holdings for ZI Agent 418 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 100, CASH: -147100 }.  Marked to market: 9755800
+Final holdings for ZI Agent 419 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 20063100 }.  Marked to market: 10160200
+Final holdings for ZI Agent 420 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 400, CASH: -30006500 }.  Marked to market: 9605100
+Final holdings for ZI Agent 421 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 400, CASH: -29701400 }.  Marked to market: 9910200
+Final holdings for ZI Agent 422 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 300, CASH: -20069100 }.  Marked to market: 9639600
+Final holdings for ZI Agent 423 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -100, CASH: 20112700 }.  Marked to market: 10209800
+Final holdings for ZI Agent 424 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: 300, CASH: -20066600 }.  Marked to market: 9642100
+Final holdings for ZI Agent 425 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 9890600 }.  Marked to market: 9890600
+Final holdings for ZI Agent 426 Type 3 [0 <= R <= 1000, eta=0.8]: { JPM: -700, CASH: 79940500 }.  Marked to market: 10620200
+Final holdings for ZI Agent 427 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 9981000 }.  Marked to market: 9981000
+Final holdings for ZI Agent 428 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 10207200 }.  Marked to market: 10207200
+Final holdings for ZI Agent 429 Type 3 [0 <= R <= 1000, eta=0.8]: { CASH: 10184200 }.  Marked to market: 10184200
+Final holdings for ZI Agent 430 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: -44400 }.  Marked to market: 9858500
+Final holdings for ZI Agent 431 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -400, CASH: 50044800 }.  Marked to market: 10433200
+Final holdings for ZI Agent 432 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -300, CASH: 39824400 }.  Marked to market: 10115700
+Final holdings for ZI Agent 433 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: -235800 }.  Marked to market: 9667100
+Final holdings for ZI Agent 434 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 19865600 }.  Marked to market: 9962700
+Final holdings for ZI Agent 435 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -400, CASH: 50071100 }.  Marked to market: 10459500
+Final holdings for ZI Agent 436 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -300, CASH: 40037000 }.  Marked to market: 10328300
+Final holdings for ZI Agent 437 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 19937100 }.  Marked to market: 10034200
+Final holdings for ZI Agent 438 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 10134200 }.  Marked to market: 10134200
+Final holdings for ZI Agent 439 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -200, CASH: 29910000 }.  Marked to market: 10104200
+Final holdings for ZI Agent 440 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -400, CASH: 49873700 }.  Marked to market: 10262100
+Final holdings for ZI Agent 441 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 300, CASH: -19831100 }.  Marked to market: 9877600
+Final holdings for ZI Agent 442 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 10133100 }.  Marked to market: 10133100
+Final holdings for ZI Agent 443 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 200, CASH: -10116200 }.  Marked to market: 9689600
+Final holdings for ZI Agent 444 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: 62000 }.  Marked to market: 9964900
+Final holdings for ZI Agent 445 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 19990100 }.  Marked to market: 10087200
+Final holdings for ZI Agent 446 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: 38800 }.  Marked to market: 9941700
+Final holdings for ZI Agent 447 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 300, CASH: -20001600 }.  Marked to market: 9707100
+Final holdings for ZI Agent 448 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -400, CASH: 50029600 }.  Marked to market: 10418000
+Final holdings for ZI Agent 449 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 300, CASH: -19943200 }.  Marked to market: 9974600
+Final holdings for ZI Agent 450 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 9871100 }.  Marked to market: 9871100
+Final holdings for ZI Agent 451 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 10067700 }.  Marked to market: 10067700
+Final holdings for ZI Agent 452 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: -28300 }.  Marked to market: 9874600
+Final holdings for ZI Agent 453 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 20022000 }.  Marked to market: 10119100
+Final holdings for ZI Agent 454 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 400, CASH: -30033700 }.  Marked to market: 9577900
+Final holdings for ZI Agent 455 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 10295300 }.  Marked to market: 10295300
+Final holdings for ZI Agent 456 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 20030300 }.  Marked to market: 10127400
+Final holdings for ZI Agent 457 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 10119800 }.  Marked to market: 10119800
+Final holdings for ZI Agent 458 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 200, CASH: -9951600 }.  Marked to market: 9854200
+Final holdings for ZI Agent 459 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 400, CASH: -30183800 }.  Marked to market: 9427800
+Final holdings for ZI Agent 460 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 400, CASH: -29896400 }.  Marked to market: 9715200
+Final holdings for ZI Agent 461 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 400, CASH: -30013900 }.  Marked to market: 9597700
+Final holdings for ZI Agent 462 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 9994000 }.  Marked to market: 9994000
+Final holdings for ZI Agent 463 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -200, CASH: 29893500 }.  Marked to market: 10087700
+Final holdings for ZI Agent 464 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -200, CASH: 30015700 }.  Marked to market: 10209900
+Final holdings for ZI Agent 465 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -200, CASH: 30272000 }.  Marked to market: 10466200
+Final holdings for ZI Agent 466 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -200, CASH: 30072200 }.  Marked to market: 10266400
+Final holdings for ZI Agent 467 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: -32700 }.  Marked to market: 9870200
+Final holdings for ZI Agent 468 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 300, CASH: -19934700 }.  Marked to market: 9774000
+Final holdings for ZI Agent 469 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -200, CASH: 29923000 }.  Marked to market: 10117200
+Final holdings for ZI Agent 470 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: 11400 }.  Marked to market: 9914300
+Final holdings for ZI Agent 471 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: 117700 }.  Marked to market: 10020600
+Final holdings for ZI Agent 472 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -200, CASH: 29853900 }.  Marked to market: 10048100
+Final holdings for ZI Agent 473 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 20127500 }.  Marked to market: 10218600
+Final holdings for ZI Agent 474 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -200, CASH: 30090100 }.  Marked to market: 10284300
+Final holdings for ZI Agent 475 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: 5100 }.  Marked to market: 9908000
+Final holdings for ZI Agent 476 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -200, CASH: 30076000 }.  Marked to market: 10270200
+Final holdings for ZI Agent 477 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -400, CASH: 50039900 }.  Marked to market: 10428300
+Final holdings for ZI Agent 478 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 19993200 }.  Marked to market: 10090300
+Final holdings for ZI Agent 479 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -400, CASH: 50048900 }.  Marked to market: 10437300
+Final holdings for ZI Agent 480 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 19859600 }.  Marked to market: 9956700
+Final holdings for ZI Agent 481 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 10067000 }.  Marked to market: 10067000
+Final holdings for ZI Agent 482 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 10186900 }.  Marked to market: 10186900
+Final holdings for ZI Agent 483 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -200, CASH: 30070200 }.  Marked to market: 10264400
+Final holdings for ZI Agent 484 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -400, CASH: 49955100 }.  Marked to market: 10343500
+Final holdings for ZI Agent 485 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 200, CASH: -9983500 }.  Marked to market: 9822300
+Final holdings for ZI Agent 486 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 300, CASH: -19874100 }.  Marked to market: 9834600
+Final holdings for ZI Agent 487 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 200, CASH: -9965000 }.  Marked to market: 9840800
+Final holdings for ZI Agent 488 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 20030200 }.  Marked to market: 10127300
+Final holdings for ZI Agent 489 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 200, CASH: -9733400 }.  Marked to market: 10072400
+Final holdings for ZI Agent 490 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: -203800 }.  Marked to market: 9699100
+Final holdings for ZI Agent 491 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: 35600 }.  Marked to market: 9938500
+Final holdings for ZI Agent 492 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 20042700 }.  Marked to market: 10139800
+Final holdings for ZI Agent 493 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -400, CASH: 50017500 }.  Marked to market: 10405900
+Final holdings for ZI Agent 494 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -200, CASH: 30120200 }.  Marked to market: 10314400
+Final holdings for ZI Agent 495 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -300, CASH: 40140300 }.  Marked to market: 10413600
+Final holdings for ZI Agent 496 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 300, CASH: -19945000 }.  Marked to market: 9763700
+Final holdings for ZI Agent 497 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 9977800 }.  Marked to market: 9977800
+Final holdings for ZI Agent 498 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: 304400 }.  Marked to market: 10207300
+Final holdings for ZI Agent 499 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: 9400 }.  Marked to market: 9912300
+Final holdings for ZI Agent 500 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 19910600 }.  Marked to market: 10007700
+Final holdings for ZI Agent 501 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 200, CASH: -9945700 }.  Marked to market: 9860100
+Final holdings for ZI Agent 502 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 500, CASH: -40112700 }.  Marked to market: 9401800
+Final holdings for ZI Agent 503 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 200, CASH: -10128000 }.  Marked to market: 9677800
+Final holdings for ZI Agent 504 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 19908500 }.  Marked to market: 10005600
+Final holdings for ZI Agent 505 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 10055200 }.  Marked to market: 10055200
+Final holdings for ZI Agent 506 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -300, CASH: 40123900 }.  Marked to market: 10415200
+Final holdings for ZI Agent 507 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -300, CASH: 39823300 }.  Marked to market: 10114600
+Final holdings for ZI Agent 508 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 20004200 }.  Marked to market: 10101300
+Final holdings for ZI Agent 509 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 20107400 }.  Marked to market: 10204500
+Final holdings for ZI Agent 510 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: 63800 }.  Marked to market: 9966700
+Final holdings for ZI Agent 511 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 20000300 }.  Marked to market: 10097400
+Final holdings for ZI Agent 512 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 300, CASH: -19915000 }.  Marked to market: 9793700
+Final holdings for ZI Agent 513 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 300, CASH: -19970600 }.  Marked to market: 9738100
+Final holdings for ZI Agent 514 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 300, CASH: -20243000 }.  Marked to market: 9465700
+Final holdings for ZI Agent 515 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 400, CASH: -29915700 }.  Marked to market: 9695900
+Final holdings for ZI Agent 516 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 400, CASH: -29928300 }.  Marked to market: 9683300
+Final holdings for ZI Agent 517 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 20133200 }.  Marked to market: 10230300
+Final holdings for ZI Agent 518 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 10138500 }.  Marked to market: 10138500
+Final holdings for ZI Agent 519 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 200, CASH: -9983700 }.  Marked to market: 9822100
+Final holdings for ZI Agent 520 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 9949400 }.  Marked to market: 9949400
+Final holdings for ZI Agent 521 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -300, CASH: 39982900 }.  Marked to market: 10274200
+Final holdings for ZI Agent 522 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 20066300 }.  Marked to market: 10163400
+Final holdings for ZI Agent 523 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 20182300 }.  Marked to market: 10279400
+Final holdings for ZI Agent 524 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 200, CASH: -10117000 }.  Marked to market: 9688800
+Final holdings for ZI Agent 525 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -300, CASH: 39983400 }.  Marked to market: 10274700
+Final holdings for ZI Agent 526 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -200, CASH: 29965100 }.  Marked to market: 10159300
+Final holdings for ZI Agent 527 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -300, CASH: 39891100 }.  Marked to market: 10182400
+Final holdings for ZI Agent 528 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -200, CASH: 29982100 }.  Marked to market: 10176300
+Final holdings for ZI Agent 529 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: -167900 }.  Marked to market: 9735000
+Final holdings for ZI Agent 530 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 10124500 }.  Marked to market: 10124500
+Final holdings for ZI Agent 531 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 19995400 }.  Marked to market: 10092500
+Final holdings for ZI Agent 532 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 9930900 }.  Marked to market: 9930900
+Final holdings for ZI Agent 533 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -400, CASH: 50263700 }.  Marked to market: 10652100
+Final holdings for ZI Agent 534 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -400, CASH: 49996200 }.  Marked to market: 10384600
+Final holdings for ZI Agent 535 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: 41200 }.  Marked to market: 9944100
+Final holdings for ZI Agent 536 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: -26900 }.  Marked to market: 9876000
+Final holdings for ZI Agent 537 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 9799200 }.  Marked to market: 9799200
+Final holdings for ZI Agent 538 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 10090500 }.  Marked to market: 10090500
+Final holdings for ZI Agent 539 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -200, CASH: 29957500 }.  Marked to market: 10151700
+Final holdings for ZI Agent 540 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -300, CASH: 40080900 }.  Marked to market: 10372200
+Final holdings for ZI Agent 541 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 300, CASH: -19904800 }.  Marked to market: 9803900
+Final holdings for ZI Agent 542 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 300, CASH: -20029400 }.  Marked to market: 9679300
+Final holdings for ZI Agent 543 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 300, CASH: -20049800 }.  Marked to market: 9658900
+Final holdings for ZI Agent 544 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 500, CASH: -40006000 }.  Marked to market: 9508500
+Final holdings for ZI Agent 545 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: 96800 }.  Marked to market: 9999700
+Final holdings for ZI Agent 546 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -400, CASH: 50116800 }.  Marked to market: 10505200
+Final holdings for ZI Agent 547 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 200, CASH: -9736400 }.  Marked to market: 10069400
+Final holdings for ZI Agent 548 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 500, CASH: -40075400 }.  Marked to market: 9439100
+Final holdings for ZI Agent 549 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 9984300 }.  Marked to market: 9984300
+Final holdings for ZI Agent 550 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 300, CASH: -19997800 }.  Marked to market: 9710900
+Final holdings for ZI Agent 551 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 500, CASH: -39853900 }.  Marked to market: 9660600
+Final holdings for ZI Agent 552 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 10071600 }.  Marked to market: 10071600
+Final holdings for ZI Agent 553 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -200, CASH: 29817200 }.  Marked to market: 10011400
+Final holdings for ZI Agent 554 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 10148300 }.  Marked to market: 10148300
+Final holdings for ZI Agent 555 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 20062500 }.  Marked to market: 10159600
+Final holdings for ZI Agent 556 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -400, CASH: 50010600 }.  Marked to market: 10399000
+Final holdings for ZI Agent 557 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: 255500 }.  Marked to market: 10207400
+Final holdings for ZI Agent 558 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 200, CASH: -9954800 }.  Marked to market: 9851000
+Final holdings for ZI Agent 559 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 10024200 }.  Marked to market: 10024200
+Final holdings for ZI Agent 560 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -200, CASH: 30125500 }.  Marked to market: 10319700
+Final holdings for ZI Agent 561 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: -14800 }.  Marked to market: 9888100
+Final holdings for ZI Agent 562 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 9866600 }.  Marked to market: 9866600
+Final holdings for ZI Agent 563 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 20192500 }.  Marked to market: 10289600
+Final holdings for ZI Agent 564 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 100, CASH: -46200 }.  Marked to market: 9856700
+Final holdings for ZI Agent 565 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -300, CASH: 40178000 }.  Marked to market: 10469300
+Final holdings for ZI Agent 566 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -300, CASH: 40109600 }.  Marked to market: 10400900
+Final holdings for ZI Agent 567 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 10156400 }.  Marked to market: 10156400
+Final holdings for ZI Agent 568 Type 4 [0 <= R <= 1000, eta=1]: { CASH: 9948300 }.  Marked to market: 9948300
+Final holdings for ZI Agent 569 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 20248200 }.  Marked to market: 10345300
+Final holdings for ZI Agent 570 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -100, CASH: 19915000 }.  Marked to market: 10012100
+Final holdings for ZI Agent 571 Type 4 [0 <= R <= 1000, eta=1]: { JPM: 300, CASH: -20054500 }.  Marked to market: 9654200
+Final holdings for ZI Agent 572 Type 4 [0 <= R <= 1000, eta=1]: { JPM: -200, CASH: 29919800 }.  Marked to market: 9938200
+Final holdings for ZI Agent 573 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 200, CASH: -10072200 }.  Marked to market: 9733600
+Final holdings for ZI Agent 574 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 9989200 }.  Marked to market: 9989200
+Final holdings for ZI Agent 575 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 9944200 }.  Marked to market: 9944200
+Final holdings for ZI Agent 576 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -200, CASH: 29915800 }.  Marked to market: 10110000
+Final holdings for ZI Agent 577 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 9969900 }.  Marked to market: 9969900
+Final holdings for ZI Agent 578 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -200, CASH: 30045400 }.  Marked to market: 10239600
+Final holdings for ZI Agent 579 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 20083700 }.  Marked to market: 10180800
+Final holdings for ZI Agent 580 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 200, CASH: -10055200 }.  Marked to market: 9750600
+Final holdings for ZI Agent 581 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: -85800 }.  Marked to market: 9817100
+Final holdings for ZI Agent 582 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 9974100 }.  Marked to market: 9974100
+Final holdings for ZI Agent 583 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 10025400 }.  Marked to market: 10025400
+Final holdings for ZI Agent 584 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 9956000 }.  Marked to market: 9956000
+Final holdings for ZI Agent 585 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 9999800 }.  Marked to market: 9999800
+Final holdings for ZI Agent 586 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 200, CASH: -10048000 }.  Marked to market: 9757800
+Final holdings for ZI Agent 587 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 9932100 }.  Marked to market: 9932100
+Final holdings for ZI Agent 588 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 10157000 }.  Marked to market: 10157000
+Final holdings for ZI Agent 589 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 19992800 }.  Marked to market: 10089900
+Final holdings for ZI Agent 590 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 9915000 }.  Marked to market: 9915000
+Final holdings for ZI Agent 591 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 300, CASH: -19904100 }.  Marked to market: 9804600
+Final holdings for ZI Agent 592 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -200, CASH: 29998600 }.  Marked to market: 10192800
+Final holdings for ZI Agent 593 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 10078000 }.  Marked to market: 10078000
+Final holdings for ZI Agent 594 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -200, CASH: 29888700 }.  Marked to market: 10082900
+Final holdings for ZI Agent 595 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 200, CASH: -9987400 }.  Marked to market: 9818400
+Final holdings for ZI Agent 596 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 10019200 }.  Marked to market: 10019200
+Final holdings for ZI Agent 597 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 300, CASH: -19958500 }.  Marked to market: 9750200
+Final holdings for ZI Agent 598 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 10016700 }.  Marked to market: 10016700
+Final holdings for ZI Agent 599 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 19990000 }.  Marked to market: 10050600
+Final holdings for ZI Agent 600 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -500, CASH: 59872300 }.  Marked to market: 10357800
+Final holdings for ZI Agent 601 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: 43300 }.  Marked to market: 9946200
+Final holdings for ZI Agent 602 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: 180800 }.  Marked to market: 10083700
+Final holdings for ZI Agent 603 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 10020800 }.  Marked to market: 10020800
+Final holdings for ZI Agent 604 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -200, CASH: 29961000 }.  Marked to market: 10155200
+Final holdings for ZI Agent 605 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 20084600 }.  Marked to market: 10181700
+Final holdings for ZI Agent 606 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 20291300 }.  Marked to market: 10388400
+Final holdings for ZI Agent 607 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -200, CASH: 29965700 }.  Marked to market: 10159900
+Final holdings for ZI Agent 608 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 20035500 }.  Marked to market: 10132600
+Final holdings for ZI Agent 609 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 20043200 }.  Marked to market: 10140300
+Final holdings for ZI Agent 610 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 300, CASH: -20120000 }.  Marked to market: 9588700
+Final holdings for ZI Agent 611 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: 181200 }.  Marked to market: 10084100
+Final holdings for ZI Agent 612 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 10043300 }.  Marked to market: 10043300
+Final holdings for ZI Agent 613 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 9859700 }.  Marked to market: 9859700
+Final holdings for ZI Agent 614 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: 61300 }.  Marked to market: 9964200
+Final holdings for ZI Agent 615 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 20127700 }.  Marked to market: 10224800
+Final holdings for ZI Agent 616 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -300, CASH: 39959900 }.  Marked to market: 10251200
+Final holdings for ZI Agent 617 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 9955900 }.  Marked to market: 9955900
+Final holdings for ZI Agent 618 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 20006800 }.  Marked to market: 10103900
+Final holdings for ZI Agent 619 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: 12200 }.  Marked to market: 9934200
+Final holdings for ZI Agent 620 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 20012800 }.  Marked to market: 10109900
+Final holdings for ZI Agent 621 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 20089600 }.  Marked to market: 10186700
+Final holdings for ZI Agent 622 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 10020200 }.  Marked to market: 10020200
+Final holdings for ZI Agent 623 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -200, CASH: 30070400 }.  Marked to market: 10264600
+Final holdings for ZI Agent 624 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 10016700 }.  Marked to market: 10016700
+Final holdings for ZI Agent 625 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 300, CASH: -19929100 }.  Marked to market: 9779600
+Final holdings for ZI Agent 626 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 200, CASH: -10054400 }.  Marked to market: 9751400
+Final holdings for ZI Agent 627 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 9971300 }.  Marked to market: 9971300
+Final holdings for ZI Agent 628 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 300, CASH: -20089200 }.  Marked to market: 9619500
+Final holdings for ZI Agent 629 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 300, CASH: -19936200 }.  Marked to market: 9772500
+Final holdings for ZI Agent 630 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 200, CASH: -10011400 }.  Marked to market: 9794400
+Final holdings for ZI Agent 631 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -200, CASH: 30050500 }.  Marked to market: 10244700
+Final holdings for ZI Agent 632 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 10094200 }.  Marked to market: 10094200
+Final holdings for ZI Agent 633 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -200, CASH: 29828800 }.  Marked to market: 10023000
+Final holdings for ZI Agent 634 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: 37500 }.  Marked to market: 9940400
+Final holdings for ZI Agent 635 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -300, CASH: 40156600 }.  Marked to market: 10447900
+Final holdings for ZI Agent 636 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 500, CASH: -40143500 }.  Marked to market: 9371000
+Final holdings for ZI Agent 637 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 9880400 }.  Marked to market: 9880400
+Final holdings for ZI Agent 638 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -400, CASH: 50002800 }.  Marked to market: 10391200
+Final holdings for ZI Agent 639 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 19961600 }.  Marked to market: 10058700
+Final holdings for ZI Agent 640 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 19985600 }.  Marked to market: 10082700
+Final holdings for ZI Agent 641 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 200, CASH: -10000500 }.  Marked to market: 9805300
+Final holdings for ZI Agent 642 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 9998200 }.  Marked to market: 9998200
+Final holdings for ZI Agent 643 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 400, CASH: -30117300 }.  Marked to market: 9494300
+Final holdings for ZI Agent 644 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: 49200 }.  Marked to market: 9952100
+Final holdings for ZI Agent 645 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -300, CASH: 39872100 }.  Marked to market: 10163400
+Final holdings for ZI Agent 646 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 19996100 }.  Marked to market: 10093200
+Final holdings for ZI Agent 647 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 10002300 }.  Marked to market: 10002300
+Final holdings for ZI Agent 648 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: -7200 }.  Marked to market: 9895700
+Final holdings for ZI Agent 649 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 200, CASH: -10005900 }.  Marked to market: 9799900
+Final holdings for ZI Agent 650 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 200, CASH: -9928900 }.  Marked to market: 9876900
+Final holdings for ZI Agent 651 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: 0 }.  Marked to market: 9902900
+Final holdings for ZI Agent 652 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 19948400 }.  Marked to market: 10045500
+Final holdings for ZI Agent 653 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -300, CASH: 40119300 }.  Marked to market: 10410600
+Final holdings for ZI Agent 654 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 300, CASH: -19891600 }.  Marked to market: 9927800
+Final holdings for ZI Agent 655 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 9947100 }.  Marked to market: 9947100
+Final holdings for ZI Agent 656 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -300, CASH: 40029400 }.  Marked to market: 10320700
+Final holdings for ZI Agent 657 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 300, CASH: -20029200 }.  Marked to market: 9679500
+Final holdings for ZI Agent 658 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 200, CASH: -10065000 }.  Marked to market: 9740800
+Final holdings for ZI Agent 659 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: 97500 }.  Marked to market: 10000400
+Final holdings for ZI Agent 660 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 20046000 }.  Marked to market: 10143100
+Final holdings for ZI Agent 661 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 300, CASH: -19879500 }.  Marked to market: 9829200
+Final holdings for ZI Agent 662 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: 70400 }.  Marked to market: 9973300
+Final holdings for ZI Agent 663 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 500, CASH: -40243600 }.  Marked to market: 9270900
+Final holdings for ZI Agent 664 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 300, CASH: -19866100 }.  Marked to market: 9842600
+Final holdings for ZI Agent 665 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 10149800 }.  Marked to market: 10149800
+Final holdings for ZI Agent 666 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: 121400 }.  Marked to market: 10024300
+Final holdings for ZI Agent 667 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -400, CASH: 49951000 }.  Marked to market: 10339400
+Final holdings for ZI Agent 668 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -200, CASH: 29962400 }.  Marked to market: 10156600
+Final holdings for ZI Agent 669 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 10064100 }.  Marked to market: 10064100
+Final holdings for ZI Agent 670 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: 19000 }.  Marked to market: 9921900
+Final holdings for ZI Agent 671 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: 66100 }.  Marked to market: 9969000
+Final holdings for ZI Agent 672 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 10129000 }.  Marked to market: 10129000
+Final holdings for ZI Agent 673 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 10058300 }.  Marked to market: 10058300
+Final holdings for ZI Agent 674 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: 42800 }.  Marked to market: 9945700
+Final holdings for ZI Agent 675 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 300, CASH: -20112900 }.  Marked to market: 9595800
+Final holdings for ZI Agent 676 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: 102700 }.  Marked to market: 10005600
+Final holdings for ZI Agent 677 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 200, CASH: -9946900 }.  Marked to market: 9858900
+Final holdings for ZI Agent 678 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 10259500 }.  Marked to market: 10259500
+Final holdings for ZI Agent 679 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 9992900 }.  Marked to market: 9992900
+Final holdings for ZI Agent 680 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -400, CASH: 50235200 }.  Marked to market: 10623600
+Final holdings for ZI Agent 681 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -200, CASH: 29943300 }.  Marked to market: 10045100
+Final holdings for ZI Agent 682 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 19951600 }.  Marked to market: 10048700
+Final holdings for ZI Agent 683 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 200, CASH: -9995500 }.  Marked to market: 9810300
+Final holdings for ZI Agent 684 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 9917500 }.  Marked to market: 9917500
+Final holdings for ZI Agent 685 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -200, CASH: 29937500 }.  Marked to market: 10131700
+Final holdings for ZI Agent 686 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -200, CASH: 29942000 }.  Marked to market: 10136200
+Final holdings for ZI Agent 687 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 300, CASH: -19988500 }.  Marked to market: 9720200
+Final holdings for ZI Agent 688 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 10073600 }.  Marked to market: 10073600
+Final holdings for ZI Agent 689 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 300, CASH: -20006600 }.  Marked to market: 9702100
+Final holdings for ZI Agent 690 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -300, CASH: 39877800 }.  Marked to market: 10169100
+Final holdings for ZI Agent 691 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 200, CASH: -10141600 }.  Marked to market: 9664200
+Final holdings for ZI Agent 692 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -200, CASH: 30015200 }.  Marked to market: 10209400
+Final holdings for ZI Agent 693 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -200, CASH: 30096000 }.  Marked to market: 10290200
+Final holdings for ZI Agent 694 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: 25900 }.  Marked to market: 9928800
+Final holdings for ZI Agent 695 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 19936300 }.  Marked to market: 10033400
+Final holdings for ZI Agent 696 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -600, CASH: 69936500 }.  Marked to market: 10519100
+Final holdings for ZI Agent 697 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: 23400 }.  Marked to market: 9926300
+Final holdings for ZI Agent 698 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 300, CASH: -19944100 }.  Marked to market: 9764600
+Final holdings for ZI Agent 699 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -200, CASH: 30116200 }.  Marked to market: 10310400
+Final holdings for ZI Agent 700 Type 5 [0 <= R <= 2000, eta=0.8]: { CASH: 10044100 }.  Marked to market: 10044100
+Final holdings for ZI Agent 701 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 19953700 }.  Marked to market: 10050800
+Final holdings for ZI Agent 702 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -300, CASH: 39959000 }.  Marked to market: 10250300
+Final holdings for ZI Agent 703 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 200, CASH: -10036600 }.  Marked to market: 10014400
+Final holdings for ZI Agent 704 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -300, CASH: 40030800 }.  Marked to market: 10322100
+Final holdings for ZI Agent 705 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -300, CASH: 39938600 }.  Marked to market: 9898700
+Final holdings for ZI Agent 706 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 300, CASH: -19899300 }.  Marked to market: 9809400
+Final holdings for ZI Agent 707 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 300, CASH: -19933500 }.  Marked to market: 9775200
+Final holdings for ZI Agent 708 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 20070900 }.  Marked to market: 10168000
+Final holdings for ZI Agent 709 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: 81100 }.  Marked to market: 9984000
+Final holdings for ZI Agent 710 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 200, CASH: -10011200 }.  Marked to market: 9794600
+Final holdings for ZI Agent 711 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 100, CASH: 143400 }.  Marked to market: 10046300
+Final holdings for ZI Agent 712 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 500, CASH: -40214700 }.  Marked to market: 9299800
+Final holdings for ZI Agent 713 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 20142800 }.  Marked to market: 10239900
+Final holdings for ZI Agent 714 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: 200, CASH: -9960700 }.  Marked to market: 9845100
+Final holdings for ZI Agent 715 Type 5 [0 <= R <= 2000, eta=0.8]: { JPM: -100, CASH: 20091400 }.  Marked to market: 10184800
+Final holdings for ZI Agent 716 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: -72800 }.  Marked to market: 9830100
+Final holdings for ZI Agent 717 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -400, CASH: 50009600 }.  Marked to market: 10398000
+Final holdings for ZI Agent 718 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: 89300 }.  Marked to market: 9992200
+Final holdings for ZI Agent 719 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 20020600 }.  Marked to market: 10117700
+Final holdings for ZI Agent 720 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 19840100 }.  Marked to market: 9937200
+Final holdings for ZI Agent 721 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 19952900 }.  Marked to market: 10050000
+Final holdings for ZI Agent 722 Type 6 [250 <= R <= 500, eta=0.8]: { CASH: 9888500 }.  Marked to market: 9888500
+Final holdings for ZI Agent 723 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: 119700 }.  Marked to market: 10022600
+Final holdings for ZI Agent 724 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 20167200 }.  Marked to market: 10264300
+Final holdings for ZI Agent 725 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 19924200 }.  Marked to market: 10021300
+Final holdings for ZI Agent 726 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 400, CASH: -29822200 }.  Marked to market: 9789400
+Final holdings for ZI Agent 727 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 200, CASH: -9933900 }.  Marked to market: 9871900
+Final holdings for ZI Agent 728 Type 6 [250 <= R <= 500, eta=0.8]: { CASH: 10028700 }.  Marked to market: 10028700
+Final holdings for ZI Agent 729 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 500, CASH: -39967100 }.  Marked to market: 9547400
+Final holdings for ZI Agent 730 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 19943800 }.  Marked to market: 10040900
+Final holdings for ZI Agent 731 Type 6 [250 <= R <= 500, eta=0.8]: { CASH: 10187000 }.  Marked to market: 10187000
+Final holdings for ZI Agent 732 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: -94800 }.  Marked to market: 9808100
+Final holdings for ZI Agent 733 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 300, CASH: -20002000 }.  Marked to market: 9706700
+Final holdings for ZI Agent 734 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 19947500 }.  Marked to market: 10044600
+Final holdings for ZI Agent 735 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -300, CASH: 40070900 }.  Marked to market: 10362200
+Final holdings for ZI Agent 736 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -500, CASH: 60020200 }.  Marked to market: 10505700
+Final holdings for ZI Agent 737 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 20013700 }.  Marked to market: 10110800
+Final holdings for ZI Agent 738 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 300, CASH: -20168300 }.  Marked to market: 9540400
+Final holdings for ZI Agent 739 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: -15500 }.  Marked to market: 9887400
+Final holdings for ZI Agent 740 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -200, CASH: 30068500 }.  Marked to market: 10262700
+Final holdings for ZI Agent 741 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -200, CASH: 30198100 }.  Marked to market: 10392300
+Final holdings for ZI Agent 742 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 200, CASH: -9955900 }.  Marked to market: 9849900
+Final holdings for ZI Agent 743 Type 6 [250 <= R <= 500, eta=0.8]: { CASH: 10036100 }.  Marked to market: 10036100
+Final holdings for ZI Agent 744 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 20020500 }.  Marked to market: 10117600
+Final holdings for ZI Agent 745 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: 81700 }.  Marked to market: 9984600
+Final holdings for ZI Agent 746 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: 54600 }.  Marked to market: 9957500
+Final holdings for ZI Agent 747 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -200, CASH: 29785900 }.  Marked to market: 9980100
+Final holdings for ZI Agent 748 Type 6 [250 <= R <= 500, eta=0.8]: { CASH: 10048100 }.  Marked to market: 10048100
+Final holdings for ZI Agent 749 Type 6 [250 <= R <= 500, eta=0.8]: { CASH: 10090800 }.  Marked to market: 10090800
+Final holdings for ZI Agent 750 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 400, CASH: -30165900 }.  Marked to market: 9445700
+Final holdings for ZI Agent 751 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 19827400 }.  Marked to market: 9924500
+Final holdings for ZI Agent 752 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 300, CASH: -19990800 }.  Marked to market: 9990000
+Final holdings for ZI Agent 753 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 200, CASH: -9839300 }.  Marked to market: 9966500
+Final holdings for ZI Agent 754 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -600, CASH: 69916900 }.  Marked to market: 10499500
+Final holdings for ZI Agent 755 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 200, CASH: -9984100 }.  Marked to market: 9821700
+Final holdings for ZI Agent 756 Type 6 [250 <= R <= 500, eta=0.8]: { CASH: 10147000 }.  Marked to market: 10147000
+Final holdings for ZI Agent 757 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 400, CASH: -29916700 }.  Marked to market: 9694900
+Final holdings for ZI Agent 758 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -200, CASH: 30066300 }.  Marked to market: 10260500
+Final holdings for ZI Agent 759 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -300, CASH: 40190100 }.  Marked to market: 10481400
+Final holdings for ZI Agent 760 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: -94500 }.  Marked to market: 9808400
+Final holdings for ZI Agent 761 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 19802500 }.  Marked to market: 9899600
+Final holdings for ZI Agent 762 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 19660600 }.  Marked to market: 9757700
+Final holdings for ZI Agent 763 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -200, CASH: 29934000 }.  Marked to market: 10128200
+Final holdings for ZI Agent 764 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -200, CASH: 30131500 }.  Marked to market: 10325700
+Final holdings for ZI Agent 765 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: -39800 }.  Marked to market: 9863100
+Final holdings for ZI Agent 766 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: 53100 }.  Marked to market: 9956000
+Final holdings for ZI Agent 767 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 300, CASH: -19911200 }.  Marked to market: 9797500
+Final holdings for ZI Agent 768 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 200, CASH: -10146500 }.  Marked to market: 9659300
+Final holdings for ZI Agent 769 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 400, CASH: -29953900 }.  Marked to market: 9657700
+Final holdings for ZI Agent 770 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -300, CASH: 39972500 }.  Marked to market: 10263800
+Final holdings for ZI Agent 771 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: 175200 }.  Marked to market: 10078100
+Final holdings for ZI Agent 772 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 200, CASH: -9939000 }.  Marked to market: 9866800
+Final holdings for ZI Agent 773 Type 6 [250 <= R <= 500, eta=0.8]: { CASH: 10009900 }.  Marked to market: 10009900
+Final holdings for ZI Agent 774 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -400, CASH: 50307000 }.  Marked to market: 10695400
+Final holdings for ZI Agent 775 Type 6 [250 <= R <= 500, eta=0.8]: { CASH: 10283100 }.  Marked to market: 10283100
+Final holdings for ZI Agent 776 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 300, CASH: -19992900 }.  Marked to market: 9715800
+Final holdings for ZI Agent 777 Type 6 [250 <= R <= 500, eta=0.8]: { CASH: 9971900 }.  Marked to market: 9971900
+Final holdings for ZI Agent 778 Type 6 [250 <= R <= 500, eta=0.8]: { CASH: 10188700 }.  Marked to market: 10188700
+Final holdings for ZI Agent 779 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 19875700 }.  Marked to market: 9972800
+Final holdings for ZI Agent 780 Type 6 [250 <= R <= 500, eta=0.8]: { CASH: 10176200 }.  Marked to market: 10176200
+Final holdings for ZI Agent 781 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 300, CASH: -20069200 }.  Marked to market: 9639500
+Final holdings for ZI Agent 782 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 200, CASH: -10145600 }.  Marked to market: 9660200
+Final holdings for ZI Agent 783 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 19921400 }.  Marked to market: 10018500
+Final holdings for ZI Agent 784 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 200, CASH: -9838600 }.  Marked to market: 9967200
+Final holdings for ZI Agent 785 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -400, CASH: 50102200 }.  Marked to market: 10490600
+Final holdings for ZI Agent 786 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 19945400 }.  Marked to market: 10042500
+Final holdings for ZI Agent 787 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -200, CASH: 29872200 }.  Marked to market: 10066400
+Final holdings for ZI Agent 788 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -300, CASH: 40264200 }.  Marked to market: 10555500
+Final holdings for ZI Agent 789 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -200, CASH: 30133800 }.  Marked to market: 10328000
+Final holdings for ZI Agent 790 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 400, CASH: -30102900 }.  Marked to market: 9508700
+Final holdings for ZI Agent 791 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -300, CASH: 39779900 }.  Marked to market: 10071200
+Final holdings for ZI Agent 792 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 20076900 }.  Marked to market: 10174000
+Final holdings for ZI Agent 793 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 400, CASH: -30140600 }.  Marked to market: 9471000
+Final holdings for ZI Agent 794 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: 79900 }.  Marked to market: 9982800
+Final holdings for ZI Agent 795 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: 56000 }.  Marked to market: 9958900
+Final holdings for ZI Agent 796 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: -68200 }.  Marked to market: 9834700
+Final holdings for ZI Agent 797 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: -4400 }.  Marked to market: 9898500
+Final holdings for ZI Agent 798 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -400, CASH: 49730700 }.  Marked to market: 10119100
+Final holdings for ZI Agent 799 Type 6 [250 <= R <= 500, eta=0.8]: { CASH: 10088000 }.  Marked to market: 10088000
+Final holdings for ZI Agent 800 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 300, CASH: -19937100 }.  Marked to market: 9771600
+Final holdings for ZI Agent 801 Type 6 [250 <= R <= 500, eta=0.8]: { CASH: 10168200 }.  Marked to market: 10168200
+Final holdings for ZI Agent 802 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -200, CASH: 29905500 }.  Marked to market: 10099700
+Final holdings for ZI Agent 803 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: 6500 }.  Marked to market: 9909400
+Final holdings for ZI Agent 804 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -300, CASH: 40136900 }.  Marked to market: 10428200
+Final holdings for ZI Agent 805 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 19867200 }.  Marked to market: 9964300
+Final holdings for ZI Agent 806 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: 58700 }.  Marked to market: 9961600
+Final holdings for ZI Agent 807 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -200, CASH: 30153500 }.  Marked to market: 10347700
+Final holdings for ZI Agent 808 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: -46900 }.  Marked to market: 9856000
+Final holdings for ZI Agent 809 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 200, CASH: -10009200 }.  Marked to market: 9796600
+Final holdings for ZI Agent 810 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -300, CASH: 40165100 }.  Marked to market: 10456400
+Final holdings for ZI Agent 811 Type 6 [250 <= R <= 500, eta=0.8]: { CASH: 10104700 }.  Marked to market: 10104700
+Final holdings for ZI Agent 812 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 300, CASH: -20040100 }.  Marked to market: 9668600
+Final holdings for ZI Agent 813 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 800, CASH: -70153900 }.  Marked to market: 9069300
+Final holdings for ZI Agent 814 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 200, CASH: -9921500 }.  Marked to market: 9884300
+Final holdings for ZI Agent 815 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -300, CASH: 39981500 }.  Marked to market: 10272800
+Final holdings for ZI Agent 816 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 300, CASH: -20129800 }.  Marked to market: 9578900
+Final holdings for ZI Agent 817 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 20126400 }.  Marked to market: 10223500
+Final holdings for ZI Agent 818 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -200, CASH: 30143800 }.  Marked to market: 10338000
+Final holdings for ZI Agent 819 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: 99200 }.  Marked to market: 10002100
+Final holdings for ZI Agent 820 Type 6 [250 <= R <= 500, eta=0.8]: { CASH: 10002900 }.  Marked to market: 10002900
+Final holdings for ZI Agent 821 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 500, CASH: -39778300 }.  Marked to market: 9736200
+Final holdings for ZI Agent 822 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 200, CASH: -10249800 }.  Marked to market: 9556000
+Final holdings for ZI Agent 823 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 300, CASH: -19878900 }.  Marked to market: 9829800
+Final holdings for ZI Agent 824 Type 6 [250 <= R <= 500, eta=0.8]: { CASH: 9797700 }.  Marked to market: 9797700
+Final holdings for ZI Agent 825 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -300, CASH: 39879300 }.  Marked to market: 10170600
+Final holdings for ZI Agent 826 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -200, CASH: 30047500 }.  Marked to market: 10241700
+Final holdings for ZI Agent 827 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -500, CASH: 60011200 }.  Marked to market: 10496700
+Final holdings for ZI Agent 828 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -200, CASH: 30147400 }.  Marked to market: 10341600
+Final holdings for ZI Agent 829 Type 6 [250 <= R <= 500, eta=0.8]: { CASH: 10029200 }.  Marked to market: 10029200
+Final holdings for ZI Agent 830 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: 49000 }.  Marked to market: 9951900
+Final holdings for ZI Agent 831 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: 47900 }.  Marked to market: 9950800
+Final holdings for ZI Agent 832 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 300, CASH: -19986100 }.  Marked to market: 9722600
+Final holdings for ZI Agent 833 Type 6 [250 <= R <= 500, eta=0.8]: { CASH: 9906900 }.  Marked to market: 9906900
+Final holdings for ZI Agent 834 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 400, CASH: -30067000 }.  Marked to market: 9544600
+Final holdings for ZI Agent 835 Type 6 [250 <= R <= 500, eta=0.8]: { CASH: 10022000 }.  Marked to market: 10022000
+Final holdings for ZI Agent 836 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -200, CASH: 29997500 }.  Marked to market: 10191700
+Final holdings for ZI Agent 837 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -400, CASH: 50216000 }.  Marked to market: 10604400
+Final holdings for ZI Agent 838 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 300, CASH: -20106500 }.  Marked to market: 9602200
+Final holdings for ZI Agent 839 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: 261900 }.  Marked to market: 10257100
+Final holdings for ZI Agent 840 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 100, CASH: -207000 }.  Marked to market: 9695900
+Final holdings for ZI Agent 841 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 200, CASH: -10046400 }.  Marked to market: 9759400
+Final holdings for ZI Agent 842 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -300, CASH: 39917600 }.  Marked to market: 10208900
+Final holdings for ZI Agent 843 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 200, CASH: -9892500 }.  Marked to market: 9913300
+Final holdings for ZI Agent 844 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -200, CASH: 29975200 }.  Marked to market: 10169400
+Final holdings for ZI Agent 845 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 20095800 }.  Marked to market: 10192900
+Final holdings for ZI Agent 846 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -300, CASH: 39734500 }.  Marked to market: 10025800
+Final holdings for ZI Agent 847 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 200, CASH: -10010400 }.  Marked to market: 9795400
+Final holdings for ZI Agent 848 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -300, CASH: 39989500 }.  Marked to market: 10280800
+Final holdings for ZI Agent 849 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 200, CASH: -10009300 }.  Marked to market: 9796500
+Final holdings for ZI Agent 850 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 19994400 }.  Marked to market: 10091500
+Final holdings for ZI Agent 851 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -400, CASH: 49897100 }.  Marked to market: 10285500
+Final holdings for ZI Agent 852 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 20119200 }.  Marked to market: 10216300
+Final holdings for ZI Agent 853 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 20032800 }.  Marked to market: 10129900
+Final holdings for ZI Agent 854 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 20200300 }.  Marked to market: 10297400
+Final holdings for ZI Agent 855 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: -100, CASH: 19995800 }.  Marked to market: 10092900
+Final holdings for ZI Agent 856 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 200, CASH: -9788300 }.  Marked to market: 10017500
+Final holdings for ZI Agent 857 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 300, CASH: -20196000 }.  Marked to market: 9512700
+Final holdings for ZI Agent 858 Type 6 [250 <= R <= 500, eta=0.8]: { JPM: 300, CASH: -20099100 }.  Marked to market: 9609600
+Final holdings for ZI Agent 859 Type 7 [250 <= R <= 500, eta=1]: { JPM: -300, CASH: 40166300 }.  Marked to market: 10457600
+Final holdings for ZI Agent 860 Type 7 [250 <= R <= 500, eta=1]: { JPM: 400, CASH: -29745400 }.  Marked to market: 9866200
+Final holdings for ZI Agent 861 Type 7 [250 <= R <= 500, eta=1]: { CASH: 9893100 }.  Marked to market: 9893100
+Final holdings for ZI Agent 862 Type 7 [250 <= R <= 500, eta=1]: { JPM: -200, CASH: 29767300 }.  Marked to market: 9961500
+Final holdings for ZI Agent 863 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: -254700 }.  Marked to market: 9648200
+Final holdings for ZI Agent 864 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: 107300 }.  Marked to market: 10010200
+Final holdings for ZI Agent 865 Type 7 [250 <= R <= 500, eta=1]: { CASH: 10012700 }.  Marked to market: 10012700
+Final holdings for ZI Agent 866 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: -63000 }.  Marked to market: 9839900
+Final holdings for ZI Agent 867 Type 7 [250 <= R <= 500, eta=1]: { JPM: 200, CASH: -10215700 }.  Marked to market: 9590100
+Final holdings for ZI Agent 868 Type 7 [250 <= R <= 500, eta=1]: { JPM: 300, CASH: -19895000 }.  Marked to market: 9813700
+Final holdings for ZI Agent 869 Type 7 [250 <= R <= 500, eta=1]: { CASH: 9841200 }.  Marked to market: 9841200
+Final holdings for ZI Agent 870 Type 7 [250 <= R <= 500, eta=1]: { JPM: 300, CASH: -20006200 }.  Marked to market: 9702500
+Final holdings for ZI Agent 871 Type 7 [250 <= R <= 500, eta=1]: { JPM: -400, CASH: 49870400 }.  Marked to market: 10258800
+Final holdings for ZI Agent 872 Type 7 [250 <= R <= 500, eta=1]: { JPM: -400, CASH: 50207600 }.  Marked to market: 10596000
+Final holdings for ZI Agent 873 Type 7 [250 <= R <= 500, eta=1]: { JPM: 200, CASH: -9946200 }.  Marked to market: 9859600
+Final holdings for ZI Agent 874 Type 7 [250 <= R <= 500, eta=1]: { CASH: 9926100 }.  Marked to market: 9926100
+Final holdings for ZI Agent 875 Type 7 [250 <= R <= 500, eta=1]: { CASH: 10196900 }.  Marked to market: 10196900
+Final holdings for ZI Agent 876 Type 7 [250 <= R <= 500, eta=1]: { CASH: 9719600 }.  Marked to market: 9719600
+Final holdings for ZI Agent 877 Type 7 [250 <= R <= 500, eta=1]: { JPM: -100, CASH: 20032000 }.  Marked to market: 10129100
+Final holdings for ZI Agent 878 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: 105700 }.  Marked to market: 10008600
+Final holdings for ZI Agent 879 Type 7 [250 <= R <= 500, eta=1]: { JPM: -400, CASH: 50185600 }.  Marked to market: 10574000
+Final holdings for ZI Agent 880 Type 7 [250 <= R <= 500, eta=1]: { JPM: 300, CASH: -20043800 }.  Marked to market: 9664900
+Final holdings for ZI Agent 881 Type 7 [250 <= R <= 500, eta=1]: { JPM: 300, CASH: -20103300 }.  Marked to market: 9605400
+Final holdings for ZI Agent 882 Type 7 [250 <= R <= 500, eta=1]: { JPM: 300, CASH: -20099300 }.  Marked to market: 9609400
+Final holdings for ZI Agent 883 Type 7 [250 <= R <= 500, eta=1]: { JPM: -500, CASH: 60040200 }.  Marked to market: 10525700
+Final holdings for ZI Agent 884 Type 7 [250 <= R <= 500, eta=1]: { JPM: -300, CASH: 39897500 }.  Marked to market: 10188800
+Final holdings for ZI Agent 885 Type 7 [250 <= R <= 500, eta=1]: { CASH: 10027700 }.  Marked to market: 10027700
+Final holdings for ZI Agent 886 Type 7 [250 <= R <= 500, eta=1]: { JPM: -300, CASH: 40204000 }.  Marked to market: 10495300
+Final holdings for ZI Agent 887 Type 7 [250 <= R <= 500, eta=1]: { JPM: -300, CASH: 40006200 }.  Marked to market: 10297500
+Final holdings for ZI Agent 888 Type 7 [250 <= R <= 500, eta=1]: { JPM: -400, CASH: 50060800 }.  Marked to market: 10449200
+Final holdings for ZI Agent 889 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: -79900 }.  Marked to market: 9823000
+Final holdings for ZI Agent 890 Type 7 [250 <= R <= 500, eta=1]: { JPM: -200, CASH: 30038700 }.  Marked to market: 10232900
+Final holdings for ZI Agent 891 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: 81400 }.  Marked to market: 9984300
+Final holdings for ZI Agent 892 Type 7 [250 <= R <= 500, eta=1]: { JPM: -300, CASH: 39975800 }.  Marked to market: 10267100
+Final holdings for ZI Agent 893 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: 268200 }.  Marked to market: 10171100
+Final holdings for ZI Agent 894 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: -154100 }.  Marked to market: 9748800
+Final holdings for ZI Agent 895 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: 86700 }.  Marked to market: 9989600
+Final holdings for ZI Agent 896 Type 7 [250 <= R <= 500, eta=1]: { JPM: -400, CASH: 50049200 }.  Marked to market: 10437600
+Final holdings for ZI Agent 897 Type 7 [250 <= R <= 500, eta=1]: { JPM: 400, CASH: -30327200 }.  Marked to market: 9284400
+Final holdings for ZI Agent 898 Type 7 [250 <= R <= 500, eta=1]: { JPM: -200, CASH: 30049800 }.  Marked to market: 10244000
+Final holdings for ZI Agent 899 Type 7 [250 <= R <= 500, eta=1]: { JPM: 200, CASH: -10036200 }.  Marked to market: 9769600
+Final holdings for ZI Agent 900 Type 7 [250 <= R <= 500, eta=1]: { JPM: 200, CASH: -9994600 }.  Marked to market: 9811200
+Final holdings for ZI Agent 901 Type 7 [250 <= R <= 500, eta=1]: { JPM: -300, CASH: 40036700 }.  Marked to market: 10328000
+Final holdings for ZI Agent 902 Type 7 [250 <= R <= 500, eta=1]: { CASH: 10026100 }.  Marked to market: 10026100
+Final holdings for ZI Agent 903 Type 7 [250 <= R <= 500, eta=1]: { JPM: 400, CASH: -30023800 }.  Marked to market: 9587800
+Final holdings for ZI Agent 904 Type 7 [250 <= R <= 500, eta=1]: { CASH: 10069600 }.  Marked to market: 10069600
+Final holdings for ZI Agent 905 Type 7 [250 <= R <= 500, eta=1]: { JPM: -300, CASH: 40084300 }.  Marked to market: 10375600
+Final holdings for ZI Agent 906 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: 318800 }.  Marked to market: 10221700
+Final holdings for ZI Agent 907 Type 7 [250 <= R <= 500, eta=1]: { JPM: -800, CASH: 89845000 }.  Marked to market: 10621800
+Final holdings for ZI Agent 908 Type 7 [250 <= R <= 500, eta=1]: { JPM: -200, CASH: 29836400 }.  Marked to market: 10030600
+Final holdings for ZI Agent 909 Type 7 [250 <= R <= 500, eta=1]: { JPM: -100, CASH: 19866000 }.  Marked to market: 9963100
+Final holdings for ZI Agent 910 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: 75500 }.  Marked to market: 9978400
+Final holdings for ZI Agent 911 Type 7 [250 <= R <= 500, eta=1]: { JPM: 200, CASH: -9901900 }.  Marked to market: 9903900
+Final holdings for ZI Agent 912 Type 7 [250 <= R <= 500, eta=1]: { CASH: 10076300 }.  Marked to market: 10076300
+Final holdings for ZI Agent 913 Type 7 [250 <= R <= 500, eta=1]: { CASH: 10017500 }.  Marked to market: 10017500
+Final holdings for ZI Agent 914 Type 7 [250 <= R <= 500, eta=1]: { CASH: 10052000 }.  Marked to market: 10052000
+Final holdings for ZI Agent 915 Type 7 [250 <= R <= 500, eta=1]: { JPM: -100, CASH: 20047900 }.  Marked to market: 10145000
+Final holdings for ZI Agent 916 Type 7 [250 <= R <= 500, eta=1]: { JPM: -100, CASH: 19803100 }.  Marked to market: 9900200
+Final holdings for ZI Agent 917 Type 7 [250 <= R <= 500, eta=1]: { JPM: 300, CASH: -19845900 }.  Marked to market: 9862800
+Final holdings for ZI Agent 918 Type 7 [250 <= R <= 500, eta=1]: { JPM: -100, CASH: 20109500 }.  Marked to market: 10206600
+Final holdings for ZI Agent 919 Type 7 [250 <= R <= 500, eta=1]: { JPM: -200, CASH: 29937400 }.  Marked to market: 10131600
+Final holdings for ZI Agent 920 Type 7 [250 <= R <= 500, eta=1]: { JPM: -500, CASH: 60016400 }.  Marked to market: 10501900
+Final holdings for ZI Agent 921 Type 7 [250 <= R <= 500, eta=1]: { JPM: 200, CASH: -10051800 }.  Marked to market: 9754000
+Final holdings for ZI Agent 922 Type 7 [250 <= R <= 500, eta=1]: { JPM: -500, CASH: 60100600 }.  Marked to market: 10586100
+Final holdings for ZI Agent 923 Type 7 [250 <= R <= 500, eta=1]: { JPM: -400, CASH: 49885300 }.  Marked to market: 10273700
+Final holdings for ZI Agent 924 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: 68400 }.  Marked to market: 9971300
+Final holdings for ZI Agent 925 Type 7 [250 <= R <= 500, eta=1]: { JPM: -300, CASH: 39873700 }.  Marked to market: 10165000
+Final holdings for ZI Agent 926 Type 7 [250 <= R <= 500, eta=1]: { CASH: 10048300 }.  Marked to market: 10048300
+Final holdings for ZI Agent 927 Type 7 [250 <= R <= 500, eta=1]: { JPM: 200, CASH: -9808400 }.  Marked to market: 9997400
+Final holdings for ZI Agent 928 Type 7 [250 <= R <= 500, eta=1]: { JPM: -300, CASH: 39995700 }.  Marked to market: 10287000
+Final holdings for ZI Agent 929 Type 7 [250 <= R <= 500, eta=1]: { JPM: -100, CASH: 19747000 }.  Marked to market: 9844100
+Final holdings for ZI Agent 930 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: 137500 }.  Marked to market: 10040400
+Final holdings for ZI Agent 931 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: -125200 }.  Marked to market: 9777700
+Final holdings for ZI Agent 932 Type 7 [250 <= R <= 500, eta=1]: { CASH: 9995600 }.  Marked to market: 9995600
+Final holdings for ZI Agent 933 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: 71500 }.  Marked to market: 9974400
+Final holdings for ZI Agent 934 Type 7 [250 <= R <= 500, eta=1]: { JPM: -200, CASH: 29809800 }.  Marked to market: 10004000
+Final holdings for ZI Agent 935 Type 7 [250 <= R <= 500, eta=1]: { JPM: 300, CASH: -20019400 }.  Marked to market: 9689300
+Final holdings for ZI Agent 936 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: 34700 }.  Marked to market: 9937600
+Final holdings for ZI Agent 937 Type 7 [250 <= R <= 500, eta=1]: { CASH: 9836200 }.  Marked to market: 9836200
+Final holdings for ZI Agent 938 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: 101000 }.  Marked to market: 10003900
+Final holdings for ZI Agent 939 Type 7 [250 <= R <= 500, eta=1]: { JPM: 300, CASH: -19933100 }.  Marked to market: 9775600
+Final holdings for ZI Agent 940 Type 7 [250 <= R <= 500, eta=1]: { JPM: -100, CASH: 19826200 }.  Marked to market: 9923300
+Final holdings for ZI Agent 941 Type 7 [250 <= R <= 500, eta=1]: { JPM: 400, CASH: -30000600 }.  Marked to market: 9611000
+Final holdings for ZI Agent 942 Type 7 [250 <= R <= 500, eta=1]: { JPM: 200, CASH: -9896400 }.  Marked to market: 9909400
+Final holdings for ZI Agent 943 Type 7 [250 <= R <= 500, eta=1]: { JPM: -100, CASH: 20057600 }.  Marked to market: 10154700
+Final holdings for ZI Agent 944 Type 7 [250 <= R <= 500, eta=1]: { JPM: 300, CASH: -19973400 }.  Marked to market: 9773700
+Final holdings for ZI Agent 945 Type 7 [250 <= R <= 500, eta=1]: { JPM: -400, CASH: 49895000 }.  Marked to market: 10283400
+Final holdings for ZI Agent 946 Type 7 [250 <= R <= 500, eta=1]: { JPM: -100, CASH: 19936100 }.  Marked to market: 10033200
+Final holdings for ZI Agent 947 Type 7 [250 <= R <= 500, eta=1]: { JPM: -200, CASH: 30075700 }.  Marked to market: 10269900
+Final holdings for ZI Agent 948 Type 7 [250 <= R <= 500, eta=1]: { JPM: -100, CASH: 19977700 }.  Marked to market: 10074800
+Final holdings for ZI Agent 949 Type 7 [250 <= R <= 500, eta=1]: { JPM: -100, CASH: 20136900 }.  Marked to market: 10234000
+Final holdings for ZI Agent 950 Type 7 [250 <= R <= 500, eta=1]: { JPM: -300, CASH: 40196700 }.  Marked to market: 10488000
+Final holdings for ZI Agent 951 Type 7 [250 <= R <= 500, eta=1]: { JPM: -300, CASH: 40054200 }.  Marked to market: 10345500
+Final holdings for ZI Agent 952 Type 7 [250 <= R <= 500, eta=1]: { JPM: -300, CASH: 39921200 }.  Marked to market: 10212500
+Final holdings for ZI Agent 953 Type 7 [250 <= R <= 500, eta=1]: { CASH: 10162200 }.  Marked to market: 10162200
+Final holdings for ZI Agent 954 Type 7 [250 <= R <= 500, eta=1]: { CASH: 10031000 }.  Marked to market: 10031000
+Final holdings for ZI Agent 955 Type 7 [250 <= R <= 500, eta=1]: { JPM: -200, CASH: 30078000 }.  Marked to market: 10272200
+Final holdings for ZI Agent 956 Type 7 [250 <= R <= 500, eta=1]: { JPM: -200, CASH: 30052900 }.  Marked to market: 10247100
+Final holdings for ZI Agent 957 Type 7 [250 <= R <= 500, eta=1]: { JPM: 200, CASH: -10124700 }.  Marked to market: 9681100
+Final holdings for ZI Agent 958 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: -68300 }.  Marked to market: 9834600
+Final holdings for ZI Agent 959 Type 7 [250 <= R <= 500, eta=1]: { JPM: -300, CASH: 40102800 }.  Marked to market: 10394100
+Final holdings for ZI Agent 960 Type 7 [250 <= R <= 500, eta=1]: { JPM: 500, CASH: -40128000 }.  Marked to market: 9386500
+Final holdings for ZI Agent 961 Type 7 [250 <= R <= 500, eta=1]: { JPM: -100, CASH: 19946100 }.  Marked to market: 10043200
+Final holdings for ZI Agent 962 Type 7 [250 <= R <= 500, eta=1]: { CASH: 9793900 }.  Marked to market: 9793900
+Final holdings for ZI Agent 963 Type 7 [250 <= R <= 500, eta=1]: { JPM: -400, CASH: 49850600 }.  Marked to market: 10239000
+Final holdings for ZI Agent 964 Type 7 [250 <= R <= 500, eta=1]: { JPM: -100, CASH: 19964400 }.  Marked to market: 10061500
+Final holdings for ZI Agent 965 Type 7 [250 <= R <= 500, eta=1]: { JPM: 500, CASH: -39944200 }.  Marked to market: 9570300
+Final holdings for ZI Agent 966 Type 7 [250 <= R <= 500, eta=1]: { JPM: -200, CASH: 30027900 }.  Marked to market: 10222100
+Final holdings for ZI Agent 967 Type 7 [250 <= R <= 500, eta=1]: { JPM: 200, CASH: -9969000 }.  Marked to market: 9836800
+Final holdings for ZI Agent 968 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: 79900 }.  Marked to market: 9982800
+Final holdings for ZI Agent 969 Type 7 [250 <= R <= 500, eta=1]: { JPM: -100, CASH: 20056200 }.  Marked to market: 10153300
+Final holdings for ZI Agent 970 Type 7 [250 <= R <= 500, eta=1]: { JPM: -200, CASH: 29923900 }.  Marked to market: 10118100
+Final holdings for ZI Agent 971 Type 7 [250 <= R <= 500, eta=1]: { JPM: 200, CASH: -9864800 }.  Marked to market: 10068200
+Final holdings for ZI Agent 972 Type 7 [250 <= R <= 500, eta=1]: { JPM: -400, CASH: 49891900 }.  Marked to market: 10280300
+Final holdings for ZI Agent 973 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: 58000 }.  Marked to market: 9960900
+Final holdings for ZI Agent 974 Type 7 [250 <= R <= 500, eta=1]: { JPM: -200, CASH: 30109200 }.  Marked to market: 10303400
+Final holdings for ZI Agent 975 Type 7 [250 <= R <= 500, eta=1]: { JPM: 200, CASH: -9927200 }.  Marked to market: 9878600
+Final holdings for ZI Agent 976 Type 7 [250 <= R <= 500, eta=1]: { JPM: -200, CASH: 29950100 }.  Marked to market: 10144300
+Final holdings for ZI Agent 977 Type 7 [250 <= R <= 500, eta=1]: { JPM: -200, CASH: 29803500 }.  Marked to market: 9997700
+Final holdings for ZI Agent 978 Type 7 [250 <= R <= 500, eta=1]: { JPM: 300, CASH: -20038000 }.  Marked to market: 9670700
+Final holdings for ZI Agent 979 Type 7 [250 <= R <= 500, eta=1]: { JPM: 200, CASH: -10070300 }.  Marked to market: 9735500
+Final holdings for ZI Agent 980 Type 7 [250 <= R <= 500, eta=1]: { CASH: 9948500 }.  Marked to market: 9948500
+Final holdings for ZI Agent 981 Type 7 [250 <= R <= 500, eta=1]: { JPM: 200, CASH: -10138400 }.  Marked to market: 9667400
+Final holdings for ZI Agent 982 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: 26300 }.  Marked to market: 9929200
+Final holdings for ZI Agent 983 Type 7 [250 <= R <= 500, eta=1]: { JPM: -200, CASH: 30145800 }.  Marked to market: 10340000
+Final holdings for ZI Agent 984 Type 7 [250 <= R <= 500, eta=1]: { JPM: 300, CASH: -20128100 }.  Marked to market: 9580600
+Final holdings for ZI Agent 985 Type 7 [250 <= R <= 500, eta=1]: { JPM: -200, CASH: 30230800 }.  Marked to market: 10425000
+Final holdings for ZI Agent 986 Type 7 [250 <= R <= 500, eta=1]: { JPM: -400, CASH: 49991600 }.  Marked to market: 10380000
+Final holdings for ZI Agent 987 Type 7 [250 <= R <= 500, eta=1]: { JPM: 300, CASH: -19881900 }.  Marked to market: 9826800
+Final holdings for ZI Agent 988 Type 7 [250 <= R <= 500, eta=1]: { JPM: 600, CASH: -49916100 }.  Marked to market: 9501300
+Final holdings for ZI Agent 989 Type 7 [250 <= R <= 500, eta=1]: { CASH: 9793300 }.  Marked to market: 9793300
+Final holdings for ZI Agent 990 Type 7 [250 <= R <= 500, eta=1]: { JPM: -100, CASH: 20003300 }.  Marked to market: 10100400
+Final holdings for ZI Agent 991 Type 7 [250 <= R <= 500, eta=1]: { JPM: -200, CASH: 29974500 }.  Marked to market: 10168700
+Final holdings for ZI Agent 992 Type 7 [250 <= R <= 500, eta=1]: { JPM: -300, CASH: 40037000 }.  Marked to market: 10328300
+Final holdings for ZI Agent 993 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: -143500 }.  Marked to market: 9759400
+Final holdings for ZI Agent 994 Type 7 [250 <= R <= 500, eta=1]: { JPM: -400, CASH: 50033900 }.  Marked to market: 10422300
+Final holdings for ZI Agent 995 Type 7 [250 <= R <= 500, eta=1]: { JPM: -200, CASH: 29893200 }.  Marked to market: 10087400
+Final holdings for ZI Agent 996 Type 7 [250 <= R <= 500, eta=1]: { JPM: -100, CASH: 19942200 }.  Marked to market: 10039300
+Final holdings for ZI Agent 997 Type 7 [250 <= R <= 500, eta=1]: { CASH: 9853200 }.  Marked to market: 9853200
+Final holdings for ZI Agent 998 Type 7 [250 <= R <= 500, eta=1]: { CASH: 10021400 }.  Marked to market: 10021400
+Final holdings for ZI Agent 999 Type 7 [250 <= R <= 500, eta=1]: { JPM: 100, CASH: 177000 }.  Marked to market: 10079900
+Final holdings for ZI Agent 1000 Type 7 [250 <= R <= 500, eta=1]: { JPM: 200, CASH: -9976300 }.  Marked to market: 9829500

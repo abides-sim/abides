@@ -6,8 +6,6 @@ from util.util import log_print
 
 from copy import deepcopy
 import jsons as js
-import numpy as np
-import pandas as pd
 import sys
 
 # The TradingAgent class (via FinancialAgent, via Agent) is intended as the
@@ -57,6 +55,9 @@ class TradingAgent(FinancialAgent):
     # When a last trade price comes in after market close, the trading agent
     # automatically records it as the daily close price for a symbol.
     self.daily_close_price = {}
+    
+    self.nav_diff = 0
+    self.basket_size = 0
 
     # The agent remembers the last known bids and asks (with variable depth,
     # showing only aggregate volume at each price level) when it receives
@@ -152,7 +153,6 @@ class TradingAgent(FinancialAgent):
     # the market open and closed times, and is the market not already closed.
     return (self.mkt_open and self.mkt_close) and not self.mkt_closed
 
-
   def receiveMessage (self, currentTime, msg):
     super().receiveMessage(currentTime, msg)
 
@@ -243,7 +243,8 @@ class TradingAgent(FinancialAgent):
   # This activity is not logged.
   def getCurrentSpread (self, symbol, depth=1):
     self.sendMessage(self.exchangeID, Message({ "msg" : "QUERY_SPREAD", "sender": self.id,
-                                                "symbol" : symbol, "depth" : depth })) 
+                                                "symbol" : symbol, "depth" : depth }))
+
 
   # Used by any Trading Agent subclass to query the recent order stream for a symbol.
   def getOrderStream (self, symbol, length=1):
@@ -267,12 +268,12 @@ class TradingAgent(FinancialAgent):
       if order.symbol in new_holdings: new_holdings[order.symbol] += q
       else: new_holdings[order.symbol] = q
 
-      # Compute before and after at-risk capital.
-      at_risk = self.markToMarket(self.holdings) - self.holdings['CASH']
-      new_at_risk = self.markToMarket(new_holdings) - new_holdings['CASH']
-
       # If at_risk is lower, always allow.  Otherwise, new_at_risk must be below starting cash.
       if not ignore_risk:
+        # Compute before and after at-risk capital.
+        at_risk = self.markToMarket(self.holdings) - self.holdings['CASH']
+        new_at_risk = self.markToMarket(new_holdings) - new_holdings['CASH']
+
         if (new_at_risk > at_risk) and (new_at_risk > self.starting_cash):
           log_print ("TradingAgent ignored limit order due to at-risk constraints: {}\n{}", order, self.fmtHoldings(self.holdings))
           return
@@ -440,15 +441,18 @@ class TradingAgent(FinancialAgent):
   # particular strategy.
 
 
-  # Extract the current known best bid and ask.  This does NOT request new information.
-  def getKnownBidAsk (self, symbol) :
-    bid = self.known_bids[symbol][0][0] if self.known_bids[symbol] else None
-    ask = self.known_asks[symbol][0][0] if self.known_asks[symbol] else None
-
-    bid_vol = self.known_bids[symbol][0][1] if self.known_bids[symbol] else 0
-    ask_vol = self.known_asks[symbol][0][1] if self.known_asks[symbol] else 0
-
-    return bid, bid_vol, ask, ask_vol
+  # Extract the current known bid and asks. This does NOT request new information.
+  def getKnownBidAsk (self, symbol, best=True):
+    if best:
+      bid = self.known_bids[symbol][0][0] if self.known_bids[symbol] else None
+      ask = self.known_asks[symbol][0][0] if self.known_asks[symbol] else None
+      bid_vol = self.known_bids[symbol][0][1] if self.known_bids[symbol] else 0
+      ask_vol = self.known_asks[symbol][0][1] if self.known_asks[symbol] else 0
+      return bid, bid_vol, ask, ask_vol
+    else:
+      bids = self.known_bids[symbol] if self.known_bids[symbol] else None
+      asks = self.known_asks[symbol] if self.known_asks[symbol] else None
+      return bids, asks
 
 
   # Extract the current bid and ask liquidity within a certain proportion of the
@@ -488,6 +492,8 @@ class TradingAgent(FinancialAgent):
   # Marks holdings to market (including cash).
   def markToMarket (self, holdings):
     cash = holdings['CASH']
+    
+    cash += self.basket_size * self.nav_diff
 
     for symbol, shares in holdings.items():
       if symbol == 'CASH': continue

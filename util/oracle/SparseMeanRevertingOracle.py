@@ -58,7 +58,6 @@ class SparseMeanRevertingOracle(MeanRevertingOracle):
     for symbol in symbols:
       s = symbols[symbol]
       log_print ("SparseMeanRevertingOracle computing initial fundamental value for {}", symbol)
-      print ("SparseMeanRevertingOracle computing initial fundamental value for {}", symbol)
       self.r[symbol] = (mkt_open, s['r_bar'])
       self.f_log[symbol] = [{ 'FundamentalTime' : mkt_open, 'FundamentalValue' : s['r_bar'] }]
 
@@ -227,4 +226,3 @@ class SparseMeanRevertingOracle(MeanRevertingOracle):
  
     # Reminder: all simulator prices are specified in integer cents.
     return obs
- 

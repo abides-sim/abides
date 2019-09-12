@@ -1,144 +1,147 @@
-from Kernel import Kernel
-
-from agent.MarketReplayAgent import MarketReplayAgent
-from agent.ExchangeAgent import ExchangeAgent
-from agent.ExperimentalAgent import ExperimentalAgent
-
-from util import util
-from util.oracle.RandomOrderBookOracle import RandomOrderBookOracle
-from util.order import LimitOrder
-
-import datetime as dt
+import argparse
 import numpy as np
 import pandas as pd
 import sys
-import argparse
+import os
+import datetime as dt
 
-parser = argparse.ArgumentParser(description='Options for Market Replay Agent Config.')
+from Kernel import Kernel
+from util import util
+from util.order import LimitOrder
+from util.oracle.OrderBookOracle import OrderBookOracle
+from agent.ExchangeAgent import ExchangeAgent
+from agent.examples.MarketReplayAgent import MarketReplayAgent
 
-# General Config for all agents
-parser.add_argument('-c', '--config', required=True,
+########################################################################################################################
+############################################### GENERAL CONFIG #########################################################
+
+parser = argparse.ArgumentParser(description='Detailed options for market replay config.')
+
+parser.add_argument('-c',
+                    '--config',
+                    required=True,
                     help='Name of config file to execute')
-parser.add_argument('-s', '--seed', type=int, default=None,
-                    help='numpy.random.seed() for simulation')
-parser.add_argument('-l', '--log_dir', default=None,
+parser.add_argument('-l',
+                    '--log_dir',
+                    default=None,
                     help='Log directory name (default: unix timestamp at program start)')
-parser.add_argument('-v', '--verbose', action='store_true',
-                    help='Maximum verbosity!')
-parser.add_argument('-o', '--log_orders', action='store_true',
+parser.add_argument('-o',
+                    '--log_orders',
+                    action='store_true',
                     help='Log every order-related action by every agent.')
-parser.add_argument('--config_help', action='store_true',
+parser.add_argument('-s',
+                    '--seed',
+                    type=int,
+                    default=None,
+                    help='numpy.random.seed() for simulation')
+parser.add_argument('-v',
+                    '--verbose',
+                    action='store_true',
+                    help='Maximum verbosity!')
+parser.add_argument('--config_help',
+                    action='store_true',
                     help='Print argument options for this config file')
 
 args, remaining_args = parser.parse_known_args()
 
-log_orders = args.log_orders
-
 if args.config_help:
-  parser.print_help()
-  sys.exit()
+    parser.print_help()
+    sys.exit()
 
-# Simulation Start Time
-simulation_start_time = dt.datetime.now()
-print ("Simulation Start Time: {}".format(simulation_start_time))
-
-# Random Seed Config
-seed = args.seed
-if not seed: seed = int(pd.Timestamp.now().timestamp() * 1000000) % (2**32 - 1)
+log_dir = args.log_dir  # Requested log directory.
+seed = args.seed  # Random seed specification on the command line.
+log_orders = args.log_orders
+if not seed: seed = int(pd.Timestamp.now().timestamp() * 1000000) % (2 ** 32 - 1)
 np.random.seed(seed)
-print ("Configuration seed: {}".format(seed))
-
-random_state = np.random.RandomState(seed=np.random.randint(low=1))
 
 util.silent_mode = not args.verbose
 LimitOrder.silent_mode = not args.verbose
-print ("Silent mode: {}".format(util.silent_mode))
 
-######################## Agents Config #########################################################################
+simulation_start_time = dt.datetime.now()
+print("Simulation Start Time: {}".format(simulation_start_time))
+print("Configuration seed: {}\n".format(seed))
+########################################################################################################################
+############################################### AGENTS CONFIG ##########################################################
 
-# 1) Symbols
-symbols = ['AAPL']
-print("Symbols traded: {}".format(symbols))
+# Historical date to simulate.
+historical_date = pd.to_datetime('2019-06-28')
+symbol = 'JPM'
 
-# 2) Historical Date to simulate
-date = '2019-06-19'
-date_pd = pd.to_datetime(date)
-print("Historical Simulation Date: {}".format(date))
+agent_count, agents, agent_types = 0, [], []
 
-agents = []
+# 1) Exchange Agent
+mkt_open = historical_date + pd.to_timedelta('09:30:00')
+mkt_close = historical_date + pd.to_timedelta('16:00:00')
+agents.extend([ExchangeAgent(id=0,
+                             name="Exchange Agent",
+                             type="ExchangeAgent",
+                             mkt_open=mkt_open,
+                             mkt_close=mkt_close,
+                             symbols=[symbol],
+                             log_orders=log_orders,
+                             pipeline_delay=0,
+                             computation_delay=0,
+                             stream_history=10,
+                             book_freq=0,
+                             random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32,
+                                                                                       dtype='uint64')))])
+agent_types.extend("ExchangeAgent")
+agent_count += 1
 
-# 3) ExchangeAgent Config
-num_exchanges = 1
-mkt_open  = date_pd + pd.to_timedelta('09:30:00')
-mkt_close = date_pd + pd.to_timedelta('09:35:00')
-print("ExchangeAgent num_exchanges: {}".format(num_exchanges))
-print("ExchangeAgent mkt_open: {}".format(mkt_open))
-print("ExchangeAgent mkt_close: {}".format(mkt_close))
+# 2) Market Replay Agent
+"""
+oracle = OrderBookOracle (symbol           = symbol,
+                          start_time       = mkt_open,
+                          end_time         = mkt_close,
+                          orders_file_path = os.getcwd() + '\data\sample_orders_file.csv')
+"""
 
-ea = ExchangeAgent(id         = 0,
-                   name       = 'Exchange_Agent',
-                   type       = 'ExchangeAgent',
-                   mkt_open   = mkt_open,
-                   mkt_close  = mkt_close,
-                   symbols    = symbols,
-                   log_orders = log_orders,
-                   book_freq  = None,
-                   pipeline_delay = 0,
-                   computation_delay = 0,
-                   stream_history = 10,
-                   random_state = random_state)
+symbol = 'JPM'
+date = '20190628'
+file_name = f'DOW30/{symbol}/{symbol}.{date}'
+orders_file_path = f'/efs/data/{file_name}'
 
-agents.extend([ea])
+oracle = OrderBookOracle(symbol=symbol,
+                         date=historical_date,
+                         start_time=mkt_open,
+                         end_time=mkt_close,
+                         orders_file_path=orders_file_path)
 
-# 4) MarketReplayAgent Config
-market_replay_agents = [MarketReplayAgent(id     = 1,
-                                          name    = "Market_Replay_Agent",
-                                          type    = 'MarketReplayAgent',
-                                          symbol  = symbols[0],
-                                          log_orders = log_orders,
-                                          date    = date,
-                                          starting_cash = 0,
-                                          random_state = random_state)]
-agents.extend(market_replay_agents)
+agents.extend([MarketReplayAgent(id=1,
+                                 name="MARKET_REPLAY_AGENT",
+                                 type='MarketReplayAgent',
+                                 symbol=symbol,
+                                 log_orders=log_orders,
+                                 date=historical_date,
+                                 starting_cash=0,
+                                 random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32,
+                                                                                           dtype='uint64')))])
+agent_types.extend("MarketReplayAgent")
+agent_count += 1
 
-# 5) ExperimentalAgent Config
-experimental_agents = [ExperimentalAgent(id      = 2,
-                               name    = "Experimental_Agent",
-                               symbol  = symbols[0],
-                               starting_cash = 10000000,
-                               log_orders = log_orders,
-                               execution_timestamp = pd.Timestamp("2019-06-19 09:32:00"),
-                               quantity = 1000,
-                               is_buy_order = True,
-                               limit_price = 50000,
-                               random_state = random_state)]
-agents.extend(experimental_agents)
-#######################################################################################################################
+########################################################################################################################
+########################################### KERNEL AND OTHER CONFIG ####################################################
 
-# 6) Kernel Parameters
-kernel = Kernel("Market Replay Kernel", random_state = random_state)
+kernel = Kernel("Market Replay Kernel", random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32,
+                                                                                                  dtype='uint64')))
 
-kernelStartTime = date_pd + pd.to_timedelta('09:30:00')
-kernelStopTime = date_pd + pd.to_timedelta('09:35:00')
+kernelStartTime = mkt_open
+kernelStopTime = historical_date + pd.to_timedelta('16:01:00')
+
 defaultComputationDelay = 0
-latency = np.zeros((3, 3))
-noise = [ 0.0 ]
+latency = np.zeros((agent_count, agent_count))
+noise = [0.0]
 
-oracle = RandomOrderBookOracle(symbol = 'AAPL',
-                               market_open_ts =  mkt_open,
-                               market_close_ts = mkt_close,
-                               buy_price_range = [9000, 10500],
-                               sell_price_range = [9500, 11000],
-                               quantity_range = [5000, 50000],
-                               seed=seed)
-
-kernel.runner(agents = agents, startTime = kernelStartTime,
-              stopTime = kernelStopTime, agentLatency = latency,
-              latencyNoise = noise,
-              defaultComputationDelay = defaultComputationDelay,
+kernel.runner(agents=agents,
+              startTime=kernelStartTime,
+              stopTime=kernelStopTime,
+              agentLatency=latency,
+              latencyNoise=noise,
+              defaultComputationDelay=defaultComputationDelay,
               defaultLatency=0,
-              oracle = oracle, log_dir = args.log_dir)
+              oracle=oracle,
+              log_dir=args.log_dir)
 
 simulation_end_time = dt.datetime.now()
-print ("Simulation End Time: {}".format(simulation_end_time))
-print ("Time taken to run simulation: {}".format(simulation_end_time - simulation_start_time))
+print("Simulation End Time: {}".format(simulation_end_time))
+print("Time taken to run simulation: {}".format(simulation_end_time - simulation_start_time))

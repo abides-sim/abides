@@ -40,12 +40,11 @@ class MeanRevertingOracle:
       s = symbols[symbol]
       log_print ("MeanRevertingOracle computing fundamental value series for {}", symbol)
       self.r[symbol] = self.generate_fundamental_value_series(symbol=symbol, **s)
-
+    
     now = dt.datetime.now()
 
     log_print ("MeanRevertingOracle initialized for symbols {}", symbols)
     log_print ("MeanRevertingOracle initialization took {}", now - then)
-
 
   def generate_fundamental_value_series(self, symbol, r_bar, kappa, sigma_s):
     # Generates the fundamental value series for a single stock symbol.  r_bar is the
@@ -128,4 +127,3 @@ class MeanRevertingOracle:
  
     # Reminder: all simulator prices are specified in integer cents.
     return obs
- 

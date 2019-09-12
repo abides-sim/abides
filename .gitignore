@@ -4,4 +4,8 @@ batch_output/
 cache/
 local/
 log/
+.idea/
 venv/
+.idea/
+.ipynb/
+.ipynb_checkpoints/

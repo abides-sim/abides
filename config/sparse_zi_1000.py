@@ -39,7 +39,7 @@ if args.config_help:
   sys.exit()
 
 # Historical date to simulate.  Required even if not relevant.
-historical_date = pd.to_datetime('2014-01-28')
+historical_date = pd.to_datetime('2019-06-28')
 
 # Requested log directory.
 log_dir = args.log_dir
@@ -118,7 +118,7 @@ defaultComputationDelay = 1000000000        # one second
 
 # This is a list of symbols the exchange should trade.  It can handle any number.
 # It keeps a separate order book for each symbol.  The example data includes
-# only IBM.  This config uses generated data, so the symbol doesn't really matter.
+# only JPM.  This config uses generated data, so the symbol doesn't really matter.
 
 # megashock_lambda_a is used to select spacing for megashocks (using an exponential
 # distribution equivalent to a centralized Poisson process).  Megashock mean
@@ -126,11 +126,11 @@ defaultComputationDelay = 1000000000        # one second
 
 # Note: sigma_s is no longer used by the agents or the fundamental (for sparse discrete simulation).
 
-symbols = { 'IBM' : { 'r_bar' : 1e5, 'kappa' : 1.67e-12, 'agent_kappa' : 1.67e-15, 'sigma_s' : 0, 'fund_vol' : 1e-4, 'megashock_lambda_a' : 2.77778e-13, 'megashock_mean' : 1e3, 'megashock_var' : 5e4, 'random_state' : np.random.RandomState(seed=np.random.randint(low=0,high=2**32)) } }
+symbols = { 'JPM' : { 'r_bar' : 1e5, 'kappa' : 1.67e-12, 'agent_kappa' : 1.67e-15, 'sigma_s' : 0, 'fund_vol' : 1e-4, 'megashock_lambda_a' : 2.77778e-13, 'megashock_mean' : 1e3, 'megashock_var' : 5e4, 'random_state' : np.random.RandomState(seed=np.random.randint(low=0,high=2**32, dtype='uint64')) } }
  
 
 ### Configure the Kernel.
-kernel = Kernel("Base Kernel", random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32)))
+kernel = Kernel("Base Kernel", random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32, dtype='uint64')))
 
 
 
@@ -157,7 +157,7 @@ oracle = SparseMeanRevertingOracle(mkt_open, mkt_close, symbols)
 
 # Create the exchange.
 num_exchanges = 1
-agents.extend([ ExchangeAgent(j, "Exchange Agent {}".format(j), "ExchangeAgent", mkt_open, mkt_close, [s for s in symbols], log_orders=log_orders, book_freq=book_freq, pipeline_delay = 0, computation_delay = 0, stream_history = 10, random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32)))
+agents.extend([ ExchangeAgent(j, "Exchange Agent {}".format(j), "ExchangeAgent", mkt_open, mkt_close, [s for s in symbols], log_orders=log_orders, book_freq=book_freq, pipeline_delay = 0, computation_delay = 0, stream_history = 10, random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32, dtype='uint64')))
                 for j in range(agent_count, agent_count + num_exchanges) ])
 agent_types.extend(["ExchangeAgent" for j in range(num_exchanges)])
 agent_count += num_exchanges
@@ -170,38 +170,22 @@ agent_count += num_exchanges
 starting_cash = 10000000
 
 # Here are the zero intelligence agents.
-symbol = 'IBM'
+symbol = 'JPM'
 s = symbols[symbol]
 
 # Tuples are: (# agents, R_min, R_max, eta).
 
 # Some configs for ZI agents only (among seven parameter settings).
 
-# 4 agents
-#zi = [ (1, 0, 250, 1), (1, 0, 500, 1), (1, 0, 1000, 0.8), (1, 0, 1000, 1), (0, 0, 2000, 0.8), (0, 250, 500, 0.8), (0, 250, 500, 1) ]
-
-# 28 agents
-#zi = [ (4, 0, 250, 1), (4, 0, 500, 1), (4, 0, 1000, 0.8), (4, 0, 1000, 1), (4, 0, 2000, 0.8), (4, 250, 500, 0.8), (4, 250, 500, 1) ]
-
-# 65 agents
-#zi = [ (10, 0, 250, 1), (10, 0, 500, 1), (9, 0, 1000, 0.8), (9, 0, 1000, 1), (9, 0, 2000, 0.8), (9, 250, 500, 0.8), (9, 250, 500, 1) ]
-
-# 100 agents
-zi = [ (15, 0, 250, 1), (15, 0, 500, 1), (14, 0, 1000, 0.8), (14, 0, 1000, 1), (14, 0, 2000, 0.8), (14, 250, 500, 0.8), (14, 250, 500, 1) ]
-
 # 1000 agents
-#zi = [ (143, 0, 250, 1), (143, 0, 500, 1), (143, 0, 1000, 0.8), (143, 0, 1000, 1), (143, 0, 2000, 0.8), (143, 250, 500, 0.8), (142, 250, 500, 1) ]
-
-# 10000 agents
-#zi = [ (1429, 0, 250, 1), (1429, 0, 500, 1), (1429, 0, 1000, 0.8), (1429, 0, 1000, 1), (1428, 0, 2000, 0.8), (1428, 250, 500, 0.8), (1428, 250, 500, 1) ]
-
+zi = [ (143, 0, 250, 1), (143, 0, 500, 1), (143, 0, 1000, 0.8), (143, 0, 1000, 1), (143, 0, 2000, 0.8), (143, 250, 500, 0.8), (142, 250, 500, 1) ]
 
 # ZI strategy split.  Note that agent arrival rates are quite small, because our minimum
 # time step is a nanosecond, and we want the agents to arrive more on the order of
 # minutes.
 for i,x in enumerate(zi):
   strat_name = "Type {} [{} <= R <= {}, eta={}]".format(i+1, x[1], x[2], x[3])
-  agents.extend([ ZeroIntelligenceAgent(j, "ZI Agent {} {}".format(j, strat_name), "ZeroIntelligenceAgent {}".format(strat_name), random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32)),log_orders=log_orders, symbol=symbol, starting_cash=starting_cash, sigma_n=sigma_n, r_bar=s['r_bar'], kappa=s['agent_kappa'], sigma_s=s['fund_vol'], q_max=10, sigma_pv=5e6, R_min=x[1], R_max=x[2], eta=x[3], lambda_a=1e-12) for j in range(agent_count,agent_count+x[0]) ])
+  agents.extend([ ZeroIntelligenceAgent(j, "ZI Agent {} {}".format(j, strat_name), "ZeroIntelligenceAgent {}".format(strat_name), random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32, dtype='uint64')),log_orders=log_orders, symbol=symbol, starting_cash=starting_cash, sigma_n=sigma_n, r_bar=s['r_bar'], kappa=s['agent_kappa'], sigma_s=s['fund_vol'], q_max=10, sigma_pv=5e6, R_min=x[1], R_max=x[2], eta=x[3], lambda_a=1e-12) for j in range(agent_count,agent_count+x[0]) ])
   agent_types.extend([ "ZeroIntelligenceAgent {}".format(strat_name) for j in range(x[0]) ])
   agent_count += x[0]
 

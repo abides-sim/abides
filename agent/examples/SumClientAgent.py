@@ -1,5 +1,5 @@
 from agent.Agent import Agent
-from agent.SumServiceAgent import SumServiceAgent
+from agent.examples.SumServiceAgent import SumServiceAgent
 from message.Message import Message
 from util.util import log_print
 

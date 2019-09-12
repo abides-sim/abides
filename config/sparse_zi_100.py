@@ -1,10 +1,8 @@
 from Kernel import Kernel
 from agent.ExchangeAgent import ExchangeAgent
-from agent.HeuristicBeliefLearningAgent import HeuristicBeliefLearningAgent
-from agent.examples.ImpactAgent import ImpactAgent
 from agent.ZeroIntelligenceAgent import ZeroIntelligenceAgent
 from util.order import LimitOrder
-from util.oracle.MeanRevertingOracle import MeanRevertingOracle
+from util.oracle.SparseMeanRevertingOracle import SparseMeanRevertingOracle
 from util import util
 
 import numpy as np
@@ -12,28 +10,19 @@ import pandas as pd
 import sys
 
 
-DATA_DIR = "~/data"
-
-
 # Some config files require additional command line parameters to easily
 # control agent or simulation hyperparameters during coarse parallelization.
 import argparse
 
-parser = argparse.ArgumentParser(description='Detailed options for momentum config.')
+parser = argparse.ArgumentParser(description='Detailed options for sparse_zi config.')
 parser.add_argument('-b', '--book_freq', default=None,
                     help='Frequency at which to archive order book for visualization')
 parser.add_argument('-c', '--config', required=True,
                     help='Name of config file to execute')
-parser.add_argument('-g', '--greed', type=float, default=0.25,
-                    help='Impact agent greed')
-parser.add_argument('-i', '--impact', action='store_false',
-                    help='Do not actually fire an impact trade.')
 parser.add_argument('-l', '--log_dir', default=None,
                     help='Log directory name (default: unix timestamp at program start)')
 parser.add_argument('-n', '--obs_noise', type=float, default=1000000,
                     help='Observation noise variance for zero intelligence agents (sigma^2_n)')
-parser.add_argument('-r', '--shock_variance', type=float, default=500000,
-                    help='Shock variance for mean reversion process (sigma^2_s)')
 parser.add_argument('-o', '--log_orders', action='store_true',
                     help='Log every order-related action by every agent.')
 parser.add_argument('-s', '--seed', type=int, default=None,
@@ -50,7 +39,7 @@ if args.config_help:
   sys.exit()
 
 # Historical date to simulate.  Required even if not relevant.
-historical_date = pd.to_datetime('2014-01-28')
+historical_date = pd.to_datetime('2019-06-28')
 
 # Requested log directory.
 log_dir = args.log_dir
@@ -59,16 +48,9 @@ log_dir = args.log_dir
 book_freq = args.book_freq
 
 # Observation noise variance for zero intelligence agents.
+# This is a property of the agents, not the stock.
+# Later, it could be a matrix across both.
 sigma_n = args.obs_noise
-
-# Shock variance of mean reversion process.
-sigma_s = args.shock_variance
-
-# Impact agent greed.
-greed = args.greed
-
-# Should the impact agent actually trade?
-impact = args.impact
 
 # Random seed specification on the command line.  Default: None (by clock).
 # If none, we select one via a specific random method and pass it to seed()
@@ -102,9 +84,6 @@ print ("Silent mode: {}".format(util.silent_mode))
 print ("Logging orders: {}".format(log_orders))
 print ("Book freq: {}".format(book_freq))
 print ("ZeroIntelligenceAgent noise: {:0.4f}".format(sigma_n))
-print ("ImpactAgent greed: {:0.2f}".format(greed))
-print ("ImpactAgent firing: {}".format(impact))
-print ("Shock variance: {:0.4f}".format(sigma_s))
 print ("Configuration seed: {}\n".format(seed))
 
 
@@ -127,7 +106,7 @@ kernelStopTime = midnight + pd.to_timedelta('17:00:00')
 # This will configure the kernel with a default computation delay
 # (time penalty) for each agent's wakeup and recvMsg.  An agent
 # can change this at any time for itself.  (nanoseconds)
-defaultComputationDelay = 0        # no delay for this config
+defaultComputationDelay = 1000000000        # one second
 
 
 # IMPORTANT NOTE CONCERNING AGENT IDS: the id passed to each agent must:
@@ -139,15 +118,19 @@ defaultComputationDelay = 0        # no delay for this config
 
 # This is a list of symbols the exchange should trade.  It can handle any number.
 # It keeps a separate order book for each symbol.  The example data includes
-# only IBM.  This config uses generated data, so the symbol doesn't really matter.
+# only JPM.  This config uses generated data, so the symbol doesn't really matter.
 
-# If shock variance must differ for each traded symbol, it can be overridden here.
-symbols = { 'IBM' : { 'r_bar' : 100000, 'kappa' : 0.05, 'sigma_s' : sigma_s } }
+# megashock_lambda_a is used to select spacing for megashocks (using an exponential
+# distribution equivalent to a centralized Poisson process).  Megashock mean
+# and variance control the size (bimodal distribution) of the individual shocks.
 
+# Note: sigma_s is no longer used by the agents or the fundamental (for sparse discrete simulation).
 
+symbols = { 'JPM' : { 'r_bar' : 1e5, 'kappa' : 1.67e-12, 'agent_kappa' : 1.67e-15, 'sigma_s' : 0, 'fund_vol' : 1e-4, 'megashock_lambda_a' : 2.77778e-13, 'megashock_mean' : 1e3, 'megashock_var' : 5e4, 'random_state' : np.random.RandomState(seed=np.random.randint(low=0,high=2**32, dtype='uint64')) } }
+ 
 
 ### Configure the Kernel.
-kernel = Kernel("Base Kernel", random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32)))
+kernel = Kernel("Base Kernel", random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32, dtype='uint64')))
 
 
 
@@ -163,18 +146,18 @@ agent_types = []
 # Let's open the exchange at 9:30 AM.
 mkt_open = midnight + pd.to_timedelta('09:30:00')
 
-# And close it at 9:30:00.000001 (i.e. 1,000 nanoseconds or "time steps")
-mkt_close = midnight + pd.to_timedelta('09:30:00.000001')
+# And close it at 4:00 PM.
+mkt_close = midnight + pd.to_timedelta('16:00:00')
 
 
 # Configure an appropriate oracle for all traded stocks.
 # All agents requiring the same type of Oracle will use the same oracle instance.
-oracle = MeanRevertingOracle(mkt_open, mkt_close, symbols)
+oracle = SparseMeanRevertingOracle(mkt_open, mkt_close, symbols)
 
 
 # Create the exchange.
 num_exchanges = 1
-agents.extend([ ExchangeAgent(j, "Exchange Agent {}".format(j), "ExchangeAgent", mkt_open, mkt_close, [s for s in symbols], log_orders=log_orders, book_freq=book_freq, pipeline_delay = 0, computation_delay = 0, stream_history = 10, random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32)))
+agents.extend([ ExchangeAgent(j, "Exchange Agent {}".format(j), "ExchangeAgent", mkt_open, mkt_close, [s for s in symbols], log_orders=log_orders, book_freq=book_freq, pipeline_delay = 0, computation_delay = 0, stream_history = 10, random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32, dtype='uint64')))
                 for j in range(agent_count, agent_count + num_exchanges) ])
 agent_types.extend(["ExchangeAgent" for j in range(num_exchanges)])
 agent_count += num_exchanges
@@ -187,107 +170,59 @@ agent_count += num_exchanges
 starting_cash = 10000000
 
 # Here are the zero intelligence agents.
-symbol = 'IBM'
+symbol = 'JPM'
 s = symbols[symbol]
 
-# Tuples are: (# agents, R_min, R_max, eta, L).  L for HBL only.
+# Tuples are: (# agents, R_min, R_max, eta).
 
 # Some configs for ZI agents only (among seven parameter settings).
 
-# 4 agents
-#zi = [ (1, 0, 250, 1), (1, 0, 500, 1), (1, 0, 1000, 0.8), (1, 0, 1000, 1), (0, 0, 2000, 0.8), (0, 250, 500, 0.8), (0, 250, 500, 1) ]
-#hbl = []
-
-# 28 agents
-#zi = [ (4, 0, 250, 1), (4, 0, 500, 1), (4, 0, 1000, 0.8), (4, 0, 1000, 1), (4, 0, 2000, 0.8), (4, 250, 500, 0.8), (4, 250, 500, 1) ]
-#hbl = []
-
-# 65 agents
-#zi = [ (10, 0, 250, 1), (10, 0, 500, 1), (9, 0, 1000, 0.8), (9, 0, 1000, 1), (9, 0, 2000, 0.8), (9, 250, 500, 0.8), (9, 250, 500, 1) ]
-#hbl = []
-
 # 100 agents
-#zi = [ (15, 0, 250, 1), (15, 0, 500, 1), (14, 0, 1000, 0.8), (14, 0, 1000, 1), (14, 0, 2000, 0.8), (14, 250, 500, 0.8), (14, 250, 500, 1) ]
-#hbl = []
+zi = [ (15, 0, 250, 1), (15, 0, 500, 1), (14, 0, 1000, 0.8), (14, 0, 1000, 1), (14, 0, 2000, 0.8), (14, 250, 500, 0.8), (14, 250, 500, 1) ]
 
-# 1000 agents
-#zi = [ (143, 0, 250, 1), (143, 0, 500, 1), (143, 0, 1000, 0.8), (143, 0, 1000, 1), (143, 0, 2000, 0.8), (143, 250, 500, 0.8), (142, 250, 500, 1) ]
-#hbl = []
-
-# 10000 agents
-#zi = [ (1429, 0, 250, 1), (1429, 0, 500, 1), (1429, 0, 1000, 0.8), (1429, 0, 1000, 1), (1428, 0, 2000, 0.8), (1428, 250, 500, 0.8), (1428, 250, 500, 1) ]
-#hbl = []
-
-
-# Some configs for HBL agents only (among four parameter settings).
-
-# 4 agents
-#zi = []
-#hbl = [ (1, 250, 500, 1, 2), (1, 250, 500, 1, 3), (1, 250, 500, 1, 5), (1, 250, 500, 1, 8) ] 
-
-# 28 agents
-#zi = []
-#hbl = [ (7, 250, 500, 1, 2), (7, 250, 500, 1, 3), (7, 250, 500, 1, 5), (7, 250, 500, 1, 8) ] 
-
-# 1000 agents
-#zi = []
-#hbl = [ (250, 250, 500, 1, 2), (250, 250, 500, 1, 3), (250, 250, 500, 1, 5), (250, 250, 500, 1, 8) ]
-
-
-# Some configs that mix both types of agents.
-
-# 28 agents
-#zi = [ (3, 0, 250, 1), (3, 0, 500, 1), (3, 0, 1000, 0.8), (3, 0, 1000, 1), (3, 0, 2000, 0.8), (3, 250, 500, 0.8), (2, 250, 500, 1) ]
-#hbl = [ (2, 250, 500, 1, 2), (2, 250, 500, 1, 3), (2, 250, 500, 1, 5), (2, 250, 500, 1, 8) ]
-
-# 65 agents
-#zi = [ (7, 0, 250, 1), (7, 0, 500, 1), (7, 0, 1000, 0.8), (7, 0, 1000, 1), (7, 0, 2000, 0.8), (7, 250, 500, 0.8), (7, 250, 500, 1) ]
-#hbl = [ (4, 250, 500, 1, 2), (4, 250, 500, 1, 3), (4, 250, 500, 1, 5), (4, 250, 500, 1, 8) ] 
-
-# 1000 agents
-zi = [ (100, 0, 250, 1), (100, 0, 500, 1), (100, 0, 1000, 0.8), (100, 0, 1000, 1), (100, 0, 2000, 0.8), (100, 250, 500, 0.8), (100, 250, 500, 1) ]
-hbl = [ (75, 250, 500, 1, 2), (75, 250, 500, 1, 3), (75, 250, 500, 1, 5), (75, 250, 500, 1, 8) ] 
-
-
-
-# ZI strategy split.
+# ZI strategy split.  Note that agent arrival rates are quite small, because our minimum
+# time step is a nanosecond, and we want the agents to arrive more on the order of
+# minutes.
 for i,x in enumerate(zi):
   strat_name = "Type {} [{} <= R <= {}, eta={}]".format(i+1, x[1], x[2], x[3])
-  agents.extend([ ZeroIntelligenceAgent(j, "ZI Agent {} {}".format(j, strat_name), "ZeroIntelligenceAgent {}".format(strat_name), random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32)),log_orders=log_orders, symbol=symbol, starting_cash=starting_cash, sigma_n=sigma_n, r_bar=s['r_bar'], kappa=s['kappa'], sigma_s=s['sigma_s'], q_max=10, sigma_pv=5000000, R_min=x[1], R_max=x[2], eta=x[3], lambda_a=0.005) for j in range(agent_count,agent_count+x[0]) ])
+  agents.extend([ ZeroIntelligenceAgent(j, "ZI Agent {} {}".format(j, strat_name), "ZeroIntelligenceAgent {}".format(strat_name), random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32, dtype='uint64')),log_orders=log_orders, symbol=symbol, starting_cash=starting_cash, sigma_n=sigma_n, r_bar=s['r_bar'], kappa=s['agent_kappa'], sigma_s=s['fund_vol'], q_max=10, sigma_pv=5e6, R_min=x[1], R_max=x[2], eta=x[3], lambda_a=1e-12) for j in range(agent_count,agent_count+x[0]) ])
   agent_types.extend([ "ZeroIntelligenceAgent {}".format(strat_name) for j in range(x[0]) ])
   agent_count += x[0]
 
-# HBL strategy split.
-for i,x in enumerate(hbl):
-  strat_name = "Type {} [{} <= R <= {}, eta={}, L={}]".format(i+1, x[1], x[2], x[3], x[4])
-  agents.extend([ HeuristicBeliefLearningAgent(j, "HBL Agent {} {}".format(j, strat_name), "HeuristicBeliefLearningAgent {}".format(strat_name), random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32)), log_orders=log_orders, symbol=symbol, starting_cash=starting_cash, sigma_n=sigma_n, r_bar=s['r_bar'], kappa=s['kappa'], sigma_s=s['sigma_s'], q_max=10, sigma_pv=5000000, R_min=x[1], R_max=x[2], eta=x[3], lambda_a=0.005, L=x[4]) for j in range(agent_count,agent_count+x[0]) ])
-  agent_types.extend([ "HeuristicBeliefLearningAgent {}".format(strat_name) for j in range(x[0]) ])
-  agent_count += x[0]
-
-
-
-# Impact agent.
-
-# 200 time steps in...
-impact_time = midnight + pd.to_timedelta('09:30:00.0000002')
-
-i = agent_count
-agents.append(ImpactAgent(i, "Impact Agent {}".format(i), "ImpactAgent", symbol = "IBM", starting_cash = starting_cash, greed = greed, impact = impact, impact_time = impact_time, random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32))))
-agent_types.append("Impact Agent {}".format(i))
-agent_count += 1
-
 
 ### Configure a simple message latency matrix for the agents.  Each entry is the minimum
-# nanosecond delay on communication [from][to] agent ID.
+### nanosecond delay on communication [from][to] agent ID.
 
-# Square numpy array with dimensions equal to total agent count.  In this config,
-# there should not be any communication delay.
-latency = np.zeros((len(agent_types),len(agent_types)))
+# Square numpy array with dimensions equal to total agent count.  Most agents are handled
+# at init, drawn from a uniform distribution from:
+# Times Square (3.9 miles from NYSE, approx. 21 microseconds at the speed of light) to:
+# Pike Place Starbucks in Seattle, WA (2402 miles, approx. 13 ms at the speed of light).
+# Other agents can be explicitly set afterward (and the mirror half of the matrix is also).
+
+# This configures all agents to a starting latency as described above.
+latency = np.random.uniform(low = 21000, high = 13000000, size=(len(agent_types),len(agent_types)))
+
+# Overriding the latency for certain agent pairs happens below, as does forcing mirroring
+# of the matrix to be symmetric.
+for i, t1 in zip(range(latency.shape[0]), agent_types):
+  for j, t2 in zip(range(latency.shape[1]), agent_types):
+    # Three cases for symmetric array.  Set latency when j > i, copy it when i > j, same agent when i == j.
+    if j > i:
+      # Presently, strategy agents shouldn't be talking to each other, so we set them to extremely high latency.
+      if (t1 == "ZeroIntelligenceAgent" and t2 == "ZeroIntelligenceAgent"):
+        latency[i,j] = 1000000000 * 60 * 60 * 24    # Twenty-four hours.
+    elif i > j:
+      # This "bottom" half of the matrix simply mirrors the top.
+      latency[i,j] = latency[j,i]
+    else:
+      # This is the same agent.  How long does it take to reach localhost?  In our data center, it actually
+      # takes about 20 microseconds.
+      latency[i,j] = 20000
+
 
 # Configure a simple latency noise model for the agents.
 # Index is ns extra delay, value is probability of this delay being applied.
-# In this config, there is no latency (noisy or otherwise).
-noise = [ 1.0 ]
+noise = [ 0.25, 0.25, 0.20, 0.15, 0.10, 0.05 ]
 
 
 

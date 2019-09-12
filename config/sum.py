@@ -1,9 +1,8 @@
 from Kernel import Kernel
-from agent.SumClientAgent import SumClientAgent
-from agent.SumServiceAgent import SumServiceAgent
+from agent.examples.SumClientAgent import SumClientAgent
+from agent.examples.SumServiceAgent import SumServiceAgent
 from util import util
 
-import datetime as dt
 import numpy as np
 import pandas as pd
 import sys

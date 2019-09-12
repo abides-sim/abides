@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
 
-import datetime, os, queue, sys
-from message.Message import Message, MessageType
+import os, queue, sys
+from message.Message import MessageType
 
 from util.util import log_print
+
 
 class Kernel:
 

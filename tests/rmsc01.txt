@@ -1,0 +1,129 @@
+---------------
+Hardware Specs:
+---------------
+Mac (system_profiler SPHardwareDataType) or lshw -short
+
+Processor Name: Intel Core i7
+Processor Speed: 2.6 GHz
+Number of Processors: 1
+Total Number of Cores: 6
+L2 Cache (per Core): 256 KB
+L3 Cache: 12 MB
+Memory: 16 GB
+
+------------------
+Simulation Results:
+------------------
+./scripts/rmsc.sh
+
+Configuration seed: 123456789
+
+Event Queue elapsed: 0 days 00:00:21.622589, messages: 128918, messages per second: 5962.2
+Mean ending value by agent type:
+    MarketMakerAgent:               7126691
+    ZeroIntelligenceAgent:          120720
+    HeuristicBeliefLearningAgent:   194437
+    MomentumAgent:                  -779277
+
+Time taken to run simulation: 0:00:25.482590
+
+Final holdings for MARKET_MAKER_AGENT_1: { JPM: -1305, CASH: 145973256 }.  Marked to market: 17126691
+Final holdings for ZI_AGENT_2: { JPM: 181, CASH: -7659044 }.  Marked to market: 10250544
+Final holdings for ZI_AGENT_3: { JPM: 600, CASH: -49023600 }.  Marked to market: 10216200
+Final holdings for ZI_AGENT_4: { JPM: -100, CASH: 20394600 }.  Marked to market: 10526200
+Final holdings for ZI_AGENT_5: { JPM: -400, CASH: 50004600 }.  Marked to market: 10497000
+Final holdings for ZI_AGENT_6: { JPM: -200, CASH: 29967600 }.  Marked to market: 10178000
+Final holdings for ZI_AGENT_7: { JPM: 100, CASH: -276200 }.  Marked to market: 9592500
+Final holdings for ZI_AGENT_8: { JPM: -17, CASH: 12552041 }.  Marked to market: 10880380
+Final holdings for ZI_AGENT_9: { CASH: 10119400 }.  Marked to market: 10119400
+Final holdings for ZI_AGENT_10: { CASH: 10135500 }.  Marked to market: 10135500
+Final holdings for ZI_AGENT_11: { JPM: 116, CASH: -1245665 }.  Marked to market: 10205623
+Final holdings for ZI_AGENT_12: { JPM: 416, CASH: -31561819 }.  Marked to market: 9487813
+Final holdings for ZI_AGENT_13: { JPM: 200, CASH: -10251600 }.  Marked to market: 9453000
+Final holdings for ZI_AGENT_14: { JPM: -67, CASH: 16487854 }.  Marked to market: 9861085
+Final holdings for ZI_AGENT_15: { JPM: -100, CASH: 20399900 }.  Marked to market: 10531500
+Final holdings for ZI_AGENT_16: { JPM: 399, CASH: -29531239 }.  Marked to market: 9836096
+Final holdings for ZI_AGENT_17: { JPM: -200, CASH: 29664700 }.  Marked to market: 9960100
+Final holdings for ZI_AGENT_18: { JPM: 200, CASH: -9828600 }.  Marked to market: 9876000
+Final holdings for ZI_AGENT_19: { JPM: -300, CASH: 40180700 }.  Marked to market: 10496300
+Final holdings for ZI_AGENT_20: { JPM: 200, CASH: -10200600 }.  Marked to market: 9537000
+Final holdings for ZI_AGENT_21: { JPM: 200, CASH: -9482362 }.  Marked to market: 10264238
+Final holdings for ZI_AGENT_22: { JPM: 417, CASH: -31171407 }.  Marked to market: 9833454
+Final holdings for ZI_AGENT_23: { JPM: 414, CASH: -31672932 }.  Marked to market: 9183486
+Final holdings for ZI_AGENT_24: { JPM: -500, CASH: 60487600 }.  Marked to market: 11155100
+Final holdings for ZI_AGENT_25: { JPM: 200, CASH: -9887300 }.  Marked to market: 9884300
+Final holdings for ZI_AGENT_26: { JPM: -300, CASH: 40445800 }.  Marked to market: 10945900
+Final holdings for ZI_AGENT_27: { JPM: -100, CASH: 20310600 }.  Marked to market: 10481500
+Final holdings for ZI_AGENT_28: { CASH: 9815600 }.  Marked to market: 9815600
+Final holdings for ZI_AGENT_29: { JPM: -500, CASH: 60540600 }.  Marked to market: 11208100
+Final holdings for ZI_AGENT_30: { JPM: 600, CASH: -49555100 }.  Marked to market: 9707500
+Final holdings for ZI_AGENT_31: { JPM: 412, CASH: -31271686 }.  Marked to market: 9406310
+Final holdings for ZI_AGENT_32: { JPM: -199, CASH: 30177597 }.  Marked to market: 10393415
+Final holdings for ZI_AGENT_33: { JPM: -400, CASH: 50074500 }.  Marked to market: 10600900
+Final holdings for ZI_AGENT_34: { JPM: -482, CASH: 58343840 }.  Marked to market: 10650904
+Final holdings for ZI_AGENT_35: { CASH: 9918300 }.  Marked to market: 9918300
+Final holdings for ZI_AGENT_36: { JPM: -200, CASH: 30114200 }.  Marked to market: 10409400
+Final holdings for ZI_AGENT_37: { JPM: -67, CASH: 16485869 }.  Marked to market: 9870758
+Final holdings for ZI_AGENT_38: { JPM: 200, CASH: -9724200 }.  Marked to market: 9942400
+Final holdings for ZI_AGENT_39: { JPM: -301, CASH: 39807427 }.  Marked to market: 10209194
+Final holdings for ZI_AGENT_40: { JPM: 215, CASH: -10843459 }.  Marked to market: 10298136
+Final holdings for ZI_AGENT_41: { JPM: 317, CASH: -21181937 }.  Marked to market: 10101842
+Final holdings for ZI_AGENT_42: { JPM: 200, CASH: -9821500 }.  Marked to market: 9915300
+Final holdings for ZI_AGENT_43: { JPM: 351, CASH: -24150317 }.  Marked to market: 10431256
+Final holdings for ZI_AGENT_44: { JPM: -234, CASH: 33620912 }.  Marked to market: 10583846
+Final holdings for ZI_AGENT_45: { JPM: -299, CASH: 39539517 }.  Marked to market: 9983068
+Final holdings for ZI_AGENT_46: { JPM: 100, CASH: -150600 }.  Marked to market: 9744200
+Final holdings for ZI_AGENT_47: { JPM: -199, CASH: 30509360 }.  Marked to market: 10964575
+Final holdings for ZI_AGENT_48: { JPM: 401, CASH: -29340394 }.  Marked to market: 10301664
+Final holdings for ZI_AGENT_49: { JPM: 513, CASH: -41111357 }.  Marked to market: 9311926
+Final holdings for ZI_AGENT_50: { JPM: -34, CASH: 13187232 }.  Marked to market: 9834084
+Final holdings for ZI_AGENT_51: { JPM: 499, CASH: -40215161 }.  Marked to market: 9045121
+Final holdings for HBL_AGENT_52: { JPM: -300, CASH: 40322700 }.  Marked to market: 10723200
+Final holdings for HBL_AGENT_53: { JPM: 500, CASH: -39778400 }.  Marked to market: 9554100
+Final holdings for HBL_AGENT_54: { CASH: 10408637 }.  Marked to market: 10408637
+Final holdings for HBL_AGENT_55: { JPM: -601, CASH: 70577971 }.  Marked to market: 11248453
+Final holdings for HBL_AGENT_56: { JPM: -100, CASH: 20418600 }.  Marked to market: 10549800
+Final holdings for HBL_AGENT_57: { JPM: -384, CASH: 48182600 }.  Marked to market: 10202312
+Final holdings for HBL_AGENT_58: { JPM: 201, CASH: -9955167 }.  Marked to market: 9897603
+Final holdings for HBL_AGENT_59: { JPM: 97, CASH: 616707 }.  Marked to market: 10189443
+Final holdings for HBL_AGENT_60: { JPM: 99, CASH: 269174 }.  Marked to market: 10004141
+Final holdings for HBL_AGENT_61: { JPM: 3, CASH: 9543309 }.  Marked to market: 9840153
+Final holdings for HBL_AGENT_62: { JPM: 100, CASH: 246400 }.  Marked to market: 10075500
+Final holdings for HBL_AGENT_63: { JPM: 3, CASH: 9679226 }.  Marked to market: 9974099
+Final holdings for HBL_AGENT_64: { JPM: 134, CASH: -2849042 }.  Marked to market: 10353040
+Final holdings for HBL_AGENT_65: { JPM: -232, CASH: 33458626 }.  Marked to market: 10523570
+Final holdings for HBL_AGENT_66: { JPM: -300, CASH: 39559600 }.  Marked to market: 9902200
+Final holdings for HBL_AGENT_67: { CASH: 10150200 }.  Marked to market: 10150200
+Final holdings for HBL_AGENT_68: { JPM: -100, CASH: 19557100 }.  Marked to market: 9723800
+Final holdings for HBL_AGENT_69: { JPM: -121, CASH: 22721058 }.  Marked to market: 10778116
+Final holdings for HBL_AGENT_70: { JPM: -631, CASH: 72800224 }.  Marked to market: 10509166
+Final holdings for HBL_AGENT_71: { JPM: -28, CASH: 12904744 }.  Marked to market: 10146100
+Final holdings for HBL_AGENT_72: { JPM: 214, CASH: -11092596 }.  Marked to market: 10012512
+Final holdings for HBL_AGENT_73: { JPM: 231, CASH: -12711682 }.  Marked to market: 10084322
+Final holdings for HBL_AGENT_74: { JPM: 300, CASH: -19988400 }.  Marked to market: 9627000
+Final holdings for HBL_AGENT_75: { JPM: -400, CASH: 50197168 }.  Marked to market: 10692768
+Final holdings for HBL_AGENT_76: { JPM: 396, CASH: -29401648 }.  Marked to market: 9690680
+Final holdings for MOMENTUM_AGENT_77: { CASH: 8679226 }.  Marked to market: 8679226
+Final holdings for MOMENTUM_AGENT_78: { CASH: 9056590 }.  Marked to market: 9056590
+Final holdings for MOMENTUM_AGENT_79: { CASH: 9622636 }.  Marked to market: 9622636
+Final holdings for MOMENTUM_AGENT_80: { CASH: 9056590 }.  Marked to market: 9056590
+Final holdings for MOMENTUM_AGENT_81: { CASH: 9433954 }.  Marked to market: 9433954
+Final holdings for MOMENTUM_AGENT_82: { CASH: 9245272 }.  Marked to market: 9245272
+Final holdings for MOMENTUM_AGENT_83: { CASH: 8490544 }.  Marked to market: 8490544
+Final holdings for MOMENTUM_AGENT_84: { CASH: 9245272 }.  Marked to market: 9245272
+Final holdings for MOMENTUM_AGENT_85: { CASH: 9811318 }.  Marked to market: 9811318
+Final holdings for MOMENTUM_AGENT_86: { CASH: 9811318 }.  Marked to market: 9811318
+Final holdings for MOMENTUM_AGENT_87: { CASH: 9433954 }.  Marked to market: 9433954
+Final holdings for MOMENTUM_AGENT_88: { CASH: 9811318 }.  Marked to market: 9811318
+Final holdings for MOMENTUM_AGENT_89: { CASH: 9245272 }.  Marked to market: 9245272
+Final holdings for MOMENTUM_AGENT_90: { CASH: 9056590 }.  Marked to market: 9056590
+Final holdings for MOMENTUM_AGENT_91: { CASH: 8679226 }.  Marked to market: 8679226
+Final holdings for MOMENTUM_AGENT_92: { CASH: 8679226 }.  Marked to market: 8679226
+Final holdings for MOMENTUM_AGENT_93: { CASH: 8477952 }.  Marked to market: 8477952
+Final holdings for MOMENTUM_AGENT_94: { CASH: 9809701 }.  Marked to market: 9809701
+Final holdings for MOMENTUM_AGENT_95: { CASH: 8858206 }.  Marked to market: 8858206
+Final holdings for MOMENTUM_AGENT_96: { CASH: 9429103 }.  Marked to market: 9429103
+Final holdings for MOMENTUM_AGENT_97: { JPM: -18, CASH: 10082809 }.  Marked to market: 8305615
+Final holdings for MOMENTUM_AGENT_98: { JPM: -6, CASH: 10027603 }.  Marked to market: 9435205
+Final holdings for MOMENTUM_AGENT_99: { JPM: -2, CASH: 10009201 }.  Marked to market: 9811735
+Final holdings for MOMENTUM_AGENT_100: { JPM: -2, CASH: 10008984 }.  Marked to market: 9811518

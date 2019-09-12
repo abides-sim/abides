@@ -1,28 +1,29 @@
 from agent.TradingAgent import TradingAgent
-from message.Message import Message
-from util.util import log_print
 
-import numpy as np
 import pandas as pd
-import sys
 
+
+# Extends Impact agent to fire large order evenly over a predetermined time period
+# Need to add: (1) duration, (2) number of wakeups, (3) desired execution size
 class ImpactAgent(TradingAgent):
 
-  def __init__(self, id, name, type, symbol = None, starting_cash = None, greed = None, within = 0.01,
-               impact = True, impact_time = None, random_state = None):
+  def __init__(self, id, name, type, symbol = None, starting_cash = None, within = 0.01,
+               impact = True, impact_time = None, impact_duration = 0, impact_trades = 0,
+               impact_vol = None, random_state = None):
     # Base class init.
     super().__init__(id, name, type, starting_cash = starting_cash, random_state = random_state)
 
     self.symbol = symbol    # symbol to trade
     self.trading = False    # ready to trade
-    self.traded = False     # has made its one trade
+    self.traded = False     # has made its t trade
 
     # The amount of available "nearby" liquidity to consume when placing its order.
-    self.greed = greed      # trade this proportion of liquidity
     self.within = within    # within this range of the inside price
 
-    # When should we make the impact trade?
-    self.impact_time = impact_time
+    self.impact_time = impact_time          # When should we make the impact trade?
+    self.impact_duration = impact_duration  # How long the agent should wait to submit the next trade
+    self.impact_trades = impact_trades      # The number of trades to execute across
+    self.impact_vol = impact_vol            # The total volume to execute across all trades
 
     # The agent begins in its "complete" state, not waiting for
     # any special event or condition.
@@ -73,11 +74,14 @@ class ImpactAgent(TradingAgent):
     # after market close.
     #
     # Also, if we already made our one trade, do nothing except monitor prices.
+    #if self.traded >= self.impact_trades or (self.mkt_closed and (not self.symbol in self.daily_close_price)):
     if self.traded or (self.mkt_closed and (not self.symbol in self.daily_close_price)):
       self.getLastTrade()
       self.state = 'AWAITING_LAST_TRADE'
       return
 
+    #if self.traded < self.impact_trades:
+      #self.setWakeup(currentTime + impact_duration)
 
     # The impact agent will place one order based on the current spread.
     self.getCurrentSpread()
@@ -98,13 +102,16 @@ class ImpactAgent(TradingAgent):
       if msg.body['msg'] == 'QUERY_SPREAD':
         # Place our one trade.
         bid, bid_vol, ask, ask_vol = self.getKnownBidAsk(self.symbol)
-        bid_liq, ask_liq = self.getKnownLiquidity(self.symbol, within=self.within)
+        #bid_liq, ask_liq = self.getKnownLiquidity(self.symbol, within=self.within)
+        print('within: ' + str(self.within))
+        bid_liq, ask_liq = self.getKnownLiquidity(self.symbol, within=0.75)
 
         # Buy order.
-        direction, shares, price = True, int(round(ask_liq * self.greed)), ask
+        #direction, shares, price = True, int(round(ask_liq * self.greed)), ask
 
         # Sell order.  This should be a parameter, but isn't yet.
-        #direction, shares, price = False, int(round(bid_liq * self.greed)), bid
+        #direction, shares = False, int(round(bid_liq * self.greed))
+        direction, shares = False, int(round(bid_liq * 0.5))
 
         # Compute the limit price we must offer to ensure our order executes immediately.
         # This is essentially a workaround for the lack of true market orders in our
@@ -113,7 +120,7 @@ class ImpactAgent(TradingAgent):
 
         # Actually place the order only if self.impact is true.
         if self.impact: 
-          print ("Impact agent firing: {} {} @ {}".format('BUY' if direction else 'SELL', shares, self.dollarize(price)))
+          print ("Impact agent firing: {} {} @ {} @ {}".format('BUY' if direction else 'SELL', shares, self.dollarize(price), currentTime))
           self.placeLimitOrder (self.symbol, shares, direction, price)
         else:
           print ("Impact agent would fire: {} {} @ {} (but self.impact = False)".format('BUY' if direction else 'SELL', shares, self.dollarize(price)))
@@ -140,6 +147,7 @@ class ImpactAgent(TradingAgent):
       t += v
 
       # If we have accumulated enough shares, return this price.
+      # Need to also return if greater than the number of desired shares
       if t >= shares: return p
 
     # Not enough shares.  Just return worst price (highest ask, lowest bid).
