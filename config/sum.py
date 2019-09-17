@@ -116,7 +116,7 @@ agent_count += 1
 ### Configure a population of sum client agents.
 a, b = agent_count, agent_count + num_clients
 
-agents.extend([ SumClientAgent(i, "Sum Client Agent {}".format(i), "SumClientAgent", random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32))) for i in range(a,b) ])
+agents.extend([ SumClientAgent(i, "Sum Client Agent {}".format(i), "SumClientAgent", peer_list = [ x for x in range(a,b) if x != i ], random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32))) for i in range(a,b) ])
 agent_types.extend([ "SumClientAgent" for i in range(a,b) ])
 agent_count += num_clients
 
@@ -139,14 +139,11 @@ latency = np.random.uniform(low = 21000, high = 13000000, size=(len(agent_types)
 for i, t1 in zip(range(latency.shape[0]), agent_types):
   for j, t2 in zip(range(latency.shape[1]), agent_types):
     # Three cases for symmetric array.  Set latency when j > i, copy it when i > j, same agent when i == j.
-    if j > i:
-      # Client agents shouldn't be talking to each other, so we set them to extremely high latency.
-      if (t1 == "SumClientAgent" and t2 == "SumClientAgent"):
-        latency[i,j] = 1000000000 * 60 * 60 * 24    # Twenty-four hours.
-    elif i > j:
+    # The j > i case is handled in the initialization above, unless we need to override specific agents.
+    if i > j:
       # This "bottom" half of the matrix simply mirrors the top.
       latency[i,j] = latency[j,i]
-    else:
+    elif i == j:
       # This is the same agent.  How long does it take to reach localhost?  In our data center, it actually
       # takes about 20 microseconds.
       latency[i,j] = 20000

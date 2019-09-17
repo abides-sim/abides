@@ -12,9 +12,15 @@ import pandas as pd
 
 class SumClientAgent(Agent):
 
-  def __init__(self, id, name, type, random_state=None):
+  def __init__(self, id, name, type, peer_list=None, random_state=None):
     # Base class init.
     super().__init__(id, name, type, random_state)
+
+    self.peer_list = peer_list
+    self.peer_exchange_complete = False
+
+    self.peers_received = {}
+    self.peer_sum = 0
 
 
   ### Simulation lifecycle messages.
@@ -39,15 +45,37 @@ class SumClientAgent(Agent):
     # Allow the base Agent to do whatever it needs to.
     super().wakeup(currentTime)
 
-    # This agent only needs one wakeup call at simulation start.  Afterwards,
-    # it will simply request new sums when answers are delivered to previous
-    # queries.
+    # This agent only needs one wakeup call at simulation start.  At this time,
+    # each client agent will send a number to each agent in its peer list.
+    # Each number will be sampled independently.  That is, client agent 1 will
+    # send n2 to agent 2, n3 to agent 3, and so forth.
 
-    # At that wakeup, it places its first sum query.
-    n1, n2 = [self.random_state.randint(low = 0, high = 100) for i in range(2)]
+    # Once a client agent has received these initial random numbers from all
+    # agents in the peer list, it will make its first request from the sum
+    # service.  Afterwards, it will simply request new sums when answers are
+    # delivered to previous queries.
 
-    self.sendMessage(self.serviceAgentID, Message({ "msg" : "SUM_QUERY", "sender": self.id,
-                                                    "n1" : n1, "n2" : n2 })) 
+    # At the first wakeup, initiate peer exchange.
+    if not self.peer_exchange_complete:
+      n = [self.random_state.randint(low = 0, high = 100) for i in range(len(self.peer_list))]
+      log_print ("agent {} peer list: {}", self.id, self.peer_list)
+      log_print ("agent {} numbers to exchange: {}", self.id, n)
+
+      for idx, peer in enumerate(self.peer_list):
+        self.sendMessage(peer, Message({ "msg" : "PEER_EXCHANGE", "sender": self.id, "n" : n[idx] }))
+
+    else:
+      # For subsequent (self-induced) wakeups, place a sum query.
+      n1, n2 = [self.random_state.randint(low = 0, high = 100) for i in range(2)]
+
+      log_print ("agent {} transmitting numbers {} and {} with peer sum {}", self.id, n1, n2, self.peer_sum)
+
+      # Add the sum of the peer exchange values to both numbers.
+      n1 += self.peer_sum
+      n2 += self.peer_sum
+
+      self.sendMessage(self.serviceAgentID, Message({ "msg" : "SUM_QUERY", "sender": self.id,
+                                                      "n1" : n1, "n2" : n2 })) 
 
     return
 
@@ -56,7 +84,22 @@ class SumClientAgent(Agent):
     # Allow the base Agent to do whatever it needs to.
     super().receiveMessage(currentTime, msg)
 
-    if msg.body['msg'] == "SUM_QUERY_RESPONSE":
+    if msg.body['msg'] == "PEER_EXCHANGE":
+
+      # Ensure we don't somehow record the same peer twice.
+      if msg.body['sender'] not in self.peers_received:
+        self.peers_received[msg.body['sender']] = True
+        self.peer_sum += msg.body['n']
+
+        if len(self.peers_received) == len(self.peer_list):
+          # We just heard from the final peer.  Initiate our first sum request.
+          log_print ("agent {} heard from final peer.  peers_received = {}, peer_sum = {}",
+                     self.id, self.peers_received, self.peer_sum)
+
+          self.peer_exchange_complete = True
+          self.setWakeup(currentTime + pd.Timedelta('1ns'))
+
+    elif msg.body['msg'] == "SUM_QUERY_RESPONSE":
       log_print("Agent {} received sum query response: {}", self.id, msg)
 
       # Now schedule a new query.
