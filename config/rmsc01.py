@@ -18,7 +18,7 @@ from util.order import LimitOrder
 from util.oracle.SparseMeanRevertingOracle import SparseMeanRevertingOracle
 
 from agent.ExchangeAgent import ExchangeAgent
-from agent.examples.MarketMakerAgent import MarketMakerAgent
+from agent.market_makers.MarketMakerAgent import MarketMakerAgent
 from agent.examples.MomentumAgent import MomentumAgent
 
 from agent.ZeroIntelligenceAgent import ZeroIntelligenceAgent
@@ -97,7 +97,7 @@ agents.extend([ExchangeAgent(id=0,
                              pipeline_delay=0,
                              computation_delay=0,
                              stream_history=10,
-                             book_freq='all',
+                             book_freq=0,
                              random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32,
                                                                                        dtype='uint64')))])
 agent_types.extend("ExchangeAgent")

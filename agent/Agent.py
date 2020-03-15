@@ -164,6 +164,8 @@ class Agent:
   def writeLog (self, dfLog, filename=None):
     self.kernel.writeLog(self.id, dfLog, filename)
 
+  def saveState (self, state):
+    self.kernel.saveState(self.id, state)
 
   ### Internal methods that should not be modified without a very good reason.
 

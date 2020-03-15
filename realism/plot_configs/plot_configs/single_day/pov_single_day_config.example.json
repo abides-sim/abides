@@ -1,0 +1,54 @@
+{
+  "ONLY_EXECUTED": false,
+  "CLIPPED_START_TIME": "10:45:00",
+  "CLIPPED_FINISH_TIME": "11:45:00",
+  "PLOT_DATA": [
+    {
+      "participation_of_volume": 0.01,
+      "no_execution_exchange_path": "/home/ec2-user/efs/_abides/dev/dd/abides-pov-agent/log/execution_no_value_0_1mHz_11_POV_20190627/EXCHANGE_AGENT.bz2",
+      "no_execution_orderbook_path": "/home/ec2-user/efs/_abides/dev/dd/abides-pov-agent/log/execution_no_value_0_1mHz_11_POV_20190627/ORDERBOOK_POV_FULL.bz2",
+      "yes_execution_exchange_path": "/home/ec2-user/efs/_abides/dev/dd/abides-pov-agent/log/execution_yes_value_0_1mHz_11_POV_0.01_20190627/EXCHANGE_AGENT.bz2",
+      "yes_execution_orderbook_path": "/home/ec2-user/efs/_abides/dev/dd/abides-pov-agent/log/execution_yes_value_0_1mHz_11_POV_0.01_20190627/ORDERBOOK_POV_FULL.bz2",
+      "seed": 11
+    },
+    {
+      "participation_of_volume": 0.05,
+      "no_execution_exchange_path": "/home/ec2-user/efs/_abides/dev/dd/abides-pov-agent/log/execution_no_value_0_1mHz_11_POV_20190627/EXCHANGE_AGENT.bz2",
+      "no_execution_orderbook_path": "/home/ec2-user/efs/_abides/dev/dd/abides-pov-agent/log/execution_no_value_0_1mHz_11_POV_20190627/ORDERBOOK_POV_FULL.bz2",
+      "yes_execution_exchange_path": "/home/ec2-user/efs/_abides/dev/dd/abides-pov-agent/log/execution_yes_value_0_1mHz_11_POV_0.05_20190627/EXCHANGE_AGENT.bz2",
+      "yes_execution_orderbook_path": "/home/ec2-user/efs/_abides/dev/dd/abides-pov-agent/log/execution_yes_value_0_1mHz_11_POV_0.05_20190627/ORDERBOOK_POV_FULL.bz2",
+      "seed": 11
+    },
+    {
+      "participation_of_volume": 0.1,
+      "no_execution_exchange_path": "/home/ec2-user/efs/_abides/dev/dd/abides-pov-agent/log/execution_no_value_0_1mHz_11_POV_20190627/EXCHANGE_AGENT.bz2",
+      "no_execution_orderbook_path": "/home/ec2-user/efs/_abides/dev/dd/abides-pov-agent/log/execution_no_value_0_1mHz_11_POV_20190627/ORDERBOOK_POV_FULL.bz2",
+      "yes_execution_exchange_path": "/home/ec2-user/efs/_abides/dev/dd/abides-pov-agent/log/execution_yes_value_0_1mHz_11_POV_0.1_20190627/EXCHANGE_AGENT.bz2",
+      "yes_execution_orderbook_path": "/home/ec2-user/efs/_abides/dev/dd/abides-pov-agent/log/execution_yes_value_0_1mHz_11_POV_0.1_20190627/ORDERBOOK_POV_FULL.bz2",
+      "seed": 11
+    },
+    {
+      "participation_of_volume": 0.5,
+      "no_execution_exchange_path": "/home/ec2-user/efs/_abides/dev/dd/abides-pov-agent/log/execution_no_value_0_1mHz_11_POV_20190627/EXCHANGE_AGENT.bz2",
+      "no_execution_orderbook_path": "/home/ec2-user/efs/_abides/dev/dd/abides-pov-agent/log/execution_no_value_0_1mHz_11_POV_20190627/ORDERBOOK_POV_FULL.bz2",
+      "yes_execution_exchange_path": "/home/ec2-user/efs/_abides/dev/dd/abides-pov-agent/log/execution_yes_value_0_1mHz_11_POV_0.5_20190627/EXCHANGE_AGENT.bz2",
+      "yes_execution_orderbook_path": "/home/ec2-user/efs/_abides/dev/dd/abides-pov-agent/log/execution_yes_value_0_1mHz_11_POV_0.5_20190627/ORDERBOOK_POV_FULL.bz2",
+      "seed": 11
+    }
+  ],
+  "CACHE_FILE": "cache/single_day_value_0_1mHz_consolidated_20190627.pkl",
+  "USE_CACHE": true,
+  "PLOT_PARAMS_DICT": {
+    "baseline_label": "Baseline",
+    "execution_label": "POV ",
+    "shade_start_datetime": "2019-06-27 11:00:00",
+    "shade_end_datetime": "2019-06-27 11:30:00",
+    "spread_lookback": "1min",
+    "output_file_path": "visualizations/single_day_value_0_1mHz_20190627.png",
+    "execution_agent_name": "POV_EXECUTION_AGENT",
+    "experiment_name": "value_0_1mHz",
+    "log_dir": "/home/ec2-user/efs/_abides/dev/dd/abides-pov-agent/log"
+  },
+  "SPREAD_PLOT_LOG_SCALE": true,
+  "ORDERBOOK_IMBALANCE_PLOT_LOG_SCALE": true
+}

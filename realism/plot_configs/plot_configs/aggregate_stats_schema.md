@@ -1,0 +1,21 @@
+## Schema
+
+| Column                                                  | Description                                                               | Units                                                                             |
+|---------------------------------------------------------|---------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| pov                                                     | Participation of volume for execution order                               | -                                                                                 |
+| start\_mid\_price\_orig (\$)                            | Mid price of symbol with no execution order when execution order starts   | \$                                                                                |
+| end\_mid\_price\_orig (\$)                              | Mid price of symbol with no execution order when execution order finishes | \$                                                                                |
+| end\_mid\_price\_execution (\$)                         | Mid price of symbol with execution order when execution order finishes    | \$                                                                                |
+| end\_mid\_price\_execution (bps)                        | Mid price of symbol with execution order when execution order finishes    | $10000 \times ( end\_mid\_price\_execution\ (\$) /\ end\_mid\_price\_orig\ (\$))$ |
+| mid\_price\_difference (\$)                             | `end_mid_price_execution` $-$ `end_mid_price_orig`                        | \$                                                                                |
+| mid\_price\_impact_bps                                  | As above, relative to `end_mid_price_orig` in basis points                | $10000 \times ( mid\_price\_difference\ (\$) /\ end\_mid\_price\_orig \ (\$))$    |
+| daily\_VWAP\_price (\$)                                 | Volume weighted average price over the whole day for no execution order   | \$                                                                                |
+| daily\_VWAP\_price (bps)                                | As above, relative to `end_mid_price_orig` in basis points                | $10000 \times ( daily\_VWAP\_price\ (\$) /\ end\_mid\_price\_orig \ (\$))$        |
+| mean\_daily\_spread (\$)                                | Mean spread for the trading day                                           | \$                                                                                |
+| mean\_daily\_spread (bps)                               | As above, relative to `end_mid_price_orig` in basis points                | $10000 \times ( mean\_daily\_spread\ (\$) /\ end\_mid\_price\_orig \ (\$))$       |
+| VWAP + half spread (\$)                                 | Daily VWAP price plus half the mean daily spread                          | \$                                                                                |
+| VWAP + half spread (bps)                                | As above in basis points                                                  | $10000 \times ( VWAP + half spread \ (\$) /\ end\_mid\_price\_orig \ (\$))$       |
+| execution\_impact\_from\_VWAP\_plus\_half\_spread (\$)  | $end\_mid\_price\_execution\ (\$) - VWAP\ \text{+}\ half\ spread\ (\$)$   | \$                                                                                |
+| execution\_impact\_from\_VWAP\_plus\_half\_spread (bps) | $end\_mid\_price\_execution\ (bps) - VWAP\ \text{+}\ half\ spread\ (bps)$ | -                                                                                 |
+| execution\_agent\_vwap (\$)                             | Volume weighted average price of the execution agent's transactions       | \$                                                                                |
+| execution\_agent\_vwap (bps)                            | As above in basis points                                                  | $10000 \times ( execution\_agent\_vwap \ (\$) /\ end\_mid\_price\_orig \ (\$))$   |

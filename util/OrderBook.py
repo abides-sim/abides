@@ -7,7 +7,10 @@ from message.Message import Message
 from util.util import log_print, be_silent
 
 from copy import deepcopy
-
+import pandas as pd
+from pandas.io.json import json_normalize
+from pprint import pprint
+from functools import reduce
 
 class OrderBook:
 
@@ -28,8 +31,8 @@ class OrderBook:
         # Create an order history for the exchange to report to certain agent types.
         self.history = [{}]
 
-        self.mid_price_dict, self.bid_levels_price_dict, self.bid_levels_size_dict, self.ask_levels_price_dict, \
-        self.ask_levels_size_dict = dict(), dict(), dict(), dict(), dict()
+        # Last timestamp the orderbook for that symbol was updated
+        self.last_update_ts = None
 
     def handleLimitOrder(self, order):
         # Matches a limit order or adds it to the order book.  Handles partial matches piecewise,
@@ -48,6 +51,7 @@ class OrderBook:
         self.history[0][order.order_id] = {'entry_time': self.owner.currentTime,
                                            'quantity': order.quantity, 'is_buy_order': order.is_buy_order,
                                            'limit_price': order.limit_price, 'transactions': [],
+                                           'modifications': [],
                                            'cancellations': []}
 
         matching = True
@@ -143,7 +147,7 @@ class OrderBook:
                     row[quote] = volume
                     self.quotes_seen.add(quote)
                 self.book_log.append(row)
-        self.updateOrderbookLevelDicts()
+        self.last_update_ts = self.owner.currentTime
         self.prettyPrint()
 
     def executeOrder(self, order):
@@ -303,7 +307,7 @@ class OrderBook:
                         self.owner.sendMessage(order.agent_id,
                                                Message({"msg": "ORDER_CANCELLED", "order": cancelled_order}))
                         # We found the order and cancelled it, so stop looking.
-                        self.updateOrderbookLevelDicts()
+                        self.last_update_ts = self.owner.currentTime
                         return
 
     def modifyOrder(self, order, new_order):
@@ -318,7 +322,7 @@ class OrderBook:
                         book[i][0] = new_order
                         for idx, orders in enumerate(self.history):
                             if new_order.order_id not in orders: continue
-                            self.history[idx][new_order.order_id]['transactions'].append(
+                            self.history[idx][new_order.order_id]['modifications'].append(
                                 (self.owner.currentTime, new_order.quantity))
                             log_print("MODIFIED: order {}", order)
                             log_print("SENT: notifications of order modification to agent {} for order {}",
@@ -329,7 +333,6 @@ class OrderBook:
             self.bids = book
         else:
             self.asks = book
-        self.updateOrderbookLevelDicts()
         self.last_update_ts = self.owner.currentTime
 
     # Get the inside bid price(s) and share volume available at each price, to a limit
@@ -357,6 +360,44 @@ class OrderBook:
             book.append((price, qty))
 
         return book
+
+    def get_transacted_volume(self, lookback_period='10min'):
+        """ Method retrieves the total transacted volume for a symbol over a lookback period finishing at the current
+            simulation time. """
+
+        unrolled_history = []
+        for elem in self.history:
+            for _, val in elem.items():
+                unrolled_history.append(val)
+
+        unrolled_history_df = json_normalize(unrolled_history)
+
+        if unrolled_history_df.empty:
+            return 0
+
+        executed_transactions = unrolled_history_df[
+            unrolled_history_df['transactions'].map(lambda d: len(d)) > 0]  # remove cells that are an empty list
+
+        #  Reshape into DataFrame with columns ['execution_time', 'quantity']
+        unrolled_transactions = executed_transactions['transactions'].apply(pd.Series)
+        unrolled_transactions = reduce(lambda col1, col2: pd.concat([col1, col2], axis=0),
+                                       [unrolled_transactions[col] for col in unrolled_transactions.columns])
+        unrolled_transactions = unrolled_transactions.dropna()
+        unrolled_transactions = unrolled_transactions.apply(pd.Series)
+        unrolled_transactions = unrolled_transactions.rename(columns={
+            0: 'execution_time',
+            1: 'quantity'
+        })
+        unrolled_transactions = unrolled_transactions.sort_values(by=['execution_time'])
+        unrolled_transactions = unrolled_transactions.drop_duplicates(keep='last')
+
+        #  Get transacted volume in time window
+        lookback_pd = pd.to_timedelta(lookback_period)
+        window_start = self.owner.currentTime - lookback_pd
+        executed_within_lookback_period = unrolled_transactions[unrolled_transactions['execution_time'] >= window_start]
+        transacted_volume = executed_within_lookback_period['quantity'].sum()
+
+        return transacted_volume
 
     # These could be moved to the LimitOrder class.  We could even operator overload them
     # into >, <, ==, etc.
@@ -408,20 +449,3 @@ class OrderBook:
         if silent: return book
 
         log_print(book)
-
-    def updateOrderbookLevelDicts(self):
-        depth = 10
-        if self.asks and self.bids:
-            self.mid_price_dict[self.owner.currentTime] = (self.asks[0][0].limit_price + self.bids[0][0].limit_price) / 2
-        bid_list, ask_list = self.getInsideBids(depth), self.getInsideAsks(depth)
-        bldp, blds, sldp, slds = {}, {}, {}, {}
-        for level, order in enumerate(ask_list):
-            level += 1
-            sldp[level], slds[level] = order[0], order[1]
-        self.ask_levels_price_dict[self.owner.currentTime] = sldp
-        self.ask_levels_size_dict[self.owner.currentTime] = slds
-        for level, order in enumerate(bid_list):
-            level += 1
-            bldp[level], blds[level] = order[0], order[1]
-        self.bid_levels_price_dict[self.owner.currentTime] = bldp
-        self.bid_levels_size_dict[self.owner.currentTime] = blds

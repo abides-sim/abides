@@ -5,7 +5,7 @@
 class Order:
 
   order_id = 0
-  order_ids = []
+  _order_ids = []
 
   def __init__(self, agent_id, time_placed, symbol, quantity, is_buy_order, order_id=None):
     self.agent_id = agent_id
@@ -24,7 +24,7 @@ class Order:
 
     # Order ID: either self generated or assigned
     self.order_id = self.generateOrderId() if not order_id else order_id
-    Order.order_ids.append(self.order_id)
+    Order._order_ids.append(self.order_id)
 
     # Create placeholder fields that don't get filled in until certain
     # events happen.  (We could instead subclass to a special FilledOrder
@@ -33,7 +33,7 @@ class Order:
 
   def generateOrderId(self):
     # generates a unique order ID if the order ID is not specified
-    if not Order.order_id in Order.order_ids:
+    if not Order.order_id in Order._order_ids:
       oid = Order.order_id
     else:
       Order.order_id += 1
