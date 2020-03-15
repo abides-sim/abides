@@ -70,6 +70,12 @@ class TradingAgent(FinancialAgent):
     # learning agent).
     self.stream_history = {}
 
+    # The agent records the total transacted volume in the exchange for a given symbol and lookback period
+    self.transacted_volume = {}
+
+    # Each agent can choose to log the orders executed
+    self.executed_orders = []
+
     # For special logging at the first moment the simulator kernel begins
     # running (which is well after agent init), it is useful to keep a simple
     # boolean flag.
@@ -153,6 +159,18 @@ class TradingAgent(FinancialAgent):
     # the market open and closed times, and is the market not already closed.
     return (self.mkt_open and self.mkt_close) and not self.mkt_closed
 
+  def requestDataSubscription(self, symbol, levels, freq):
+      self.sendMessage(recipientID = self.exchangeID,
+                       msg = Message({"msg": "MARKET_DATA_SUBSCRIPTION_REQUEST",
+                                      "sender": self.id, "symbol": symbol, "levels": levels, "freq": freq}))
+
+  # Used by any Trading Agent subclass to cancel subscription to market data from the Exchange Agent
+  def cancelDataSubscription(self, symbol):
+    self.sendMessage(recipientID=self.exchangeID,
+                     msg=Message({"msg": "MARKET_DATA_SUBSCRIPTION_CANCELLATION",
+                                  "sender": self.id, "symbol": symbol}))
+
+
   def receiveMessage (self, currentTime, msg):
     super().receiveMessage(currentTime, msg)
 
@@ -217,6 +235,13 @@ class TradingAgent(FinancialAgent):
 
       self.queryOrderStream(msg.body['symbol'], msg.body['orders'])
 
+    elif msg.body['msg'] == 'QUERY_TRANSACTED_VOLUME':
+      if msg.body['mkt_closed']: self.mkt_closed = True
+      self.query_transacted_volume(msg.body['symbol'], msg.body['transacted_volume'])
+
+    elif msg.body['msg'] == 'MARKET_DATA':
+      # Call the queryMarketData method, which subclasses may extend.
+      self.handleMarketData(msg)
 
     # Now do we know the market hours?
     have_mkt_hours = self.mkt_open is not None and self.mkt_close is not None
@@ -251,6 +276,10 @@ class TradingAgent(FinancialAgent):
     self.sendMessage(self.exchangeID, Message({ "msg" : "QUERY_ORDER_STREAM", "sender": self.id,
                                                 "symbol" : symbol, "length" : length }))
 
+  def get_transacted_volume(self, symbol, lookback_period='10min'):
+    """ Used by any trading agent subclass to query the total transacted volume in a given lookback period """
+    self.sendMessage(self.exchangeID, Message({ "msg": "QUERY_TRANSACTED_VOLUME", "sender": self.id,
+                                                "symbol": symbol, "lookback_period": lookback_period}))
 
   # Used by any Trading Agent subclass to place a limit order.  Parameters expect:
   # string (valid symbol), int (positive share quantity), bool (True == BUY), int (price in cents).
@@ -288,29 +317,74 @@ class TradingAgent(FinancialAgent):
                                                   "order" : order })) 
 
       # Log this activity.
-      if self.log_orders: self.logEvent('ORDER_SUBMITTED', js.dump(order))
+      if self.log_orders: self.logEvent('ORDER_SUBMITTED', js.dump(order, strip_privates=True))
     else:
       log_print ("TradingAgent ignored limit order of quantity zero: {}", order)
 
+  def placeMarketOrder(self, symbol, direction, quantity, ignore_risk=True):
+    """
+    Used by any Trading Agent subclass to place a market order. The market order is created as multiple limit orders
+    crossing the spread walking the book until all the quantities are matched.
+    :param    symbol (str):       name of the stock traded
+    :param    direction (str):    order direction ('BUY' or 'SELL')
+    :param    quantity (int):     order quantity
+    :param    log_orders (bool):  determines whether cash or risk limits should be enforced or ignored for the order
+    :return:
+    """
+    if quantity > 0:
+      new_holdings = self.holdings.copy()
+      q = quantity if direction == 'BUY' else -quantity
+      if symbol in new_holdings:
+        new_holdings[symbol] += q
+      else:
+        new_holdings[symbol] = q
+      if not ignore_risk:
+        at_risk = self.markToMarket(self.holdings) - self.holdings['CASH']
+        new_at_risk = self.markToMarket(new_holdings) - new_holdings['CASH']
+        if (new_at_risk > at_risk) and (new_at_risk > self.starting_cash):
+          log_print(f"TradingAgent ignored market order due to at-risk constraints: {symbol} {direction} {quantity}\n"
+                f"{self.fmtHoldings(self.holdings)}")
+          return
 
-  # Used by any Trading Agent subclass to cancel any order.  The order must currently
-  # appear in the agent's open orders list.
+      bids, asks = self.getKnownBidAsk(symbol, best=False)
+      ob_side = asks if direction == 'BUY' else bids
+      quotes = {}
+      if quantity > 0:
+          for price_level in ob_side:
+              level_price, level_size = price_level[0], price_level[1]
+              if quantity <= level_size:
+                  quotes[level_price] = quantity
+                  break
+              else:
+                  quotes[level_price] = level_size
+                  quantity -= level_size
+                  continue
+      log_print(f'[---- {self.name} - {self.currentTime} ----]: PLACING 1 MARKET ORDER AS MULTIPLE LIMIT ORDERS')
+      for quote in quotes.items():
+          p, q = quote[0], quote[1]
+          self.placeLimitOrder(symbol, quantity=q, is_buy_order=direction=='BUY', limit_price=p)
+          log_print(f'[---- {self.name} - {self.currentTime} ----]: LIMIT ORDER PLACED - {q} @ {p}')
+    else:
+      log_print(f"TradingAgent ignored market order of quantity zero: {symbol} {direction} {quantity}")
+
   def cancelOrder (self, order):
+    """Used by any Trading Agent subclass to cancel any order.  The order must currently
+    appear in the agent's open orders list."""
     self.sendMessage(self.exchangeID, Message({ "msg" : "CANCEL_ORDER", "sender": self.id,
                                                 "order" : order })) 
 
     # Log this activity.
-    if self.log_orders: self.logEvent('CANCEL_SUBMITTED', js.dump(order))
+    if self.log_orders: self.logEvent('CANCEL_SUBMITTED', js.dump(order, strip_privates=True))
 
-  # Used by any Trading Agent subclass to modify any existing limitorder.  The order must currently
-  # appear in the agent's open orders list.  Some additional tests might be useful here
-  # to ensure the old and new orders are the same in some way.
   def modifyOrder (self, order, newOrder):
+    """ Used by any Trading Agent subclass to modify any existing limit order.  The order must currently
+        appear in the agent's open orders list.  Some additional tests might be useful here
+        to ensure the old and new orders are the same in some way."""
     self.sendMessage(self.exchangeID, Message({ "msg" : "MODIFY_ORDER", "sender": self.id,
                                                 "order" : order, "new_order" : newOrder}))
 
     # Log this activity.
-    if self.log_orders: self.logEvent('MODIFY_ORDER', js.dump(order))
+    if self.log_orders: self.logEvent('MODIFY_ORDER', js.dump(order, strip_privates=True))
 
 
   # Handles ORDER_EXECUTED messages from an exchange agent.  Subclasses may wish to extend,
@@ -319,7 +393,7 @@ class TradingAgent(FinancialAgent):
     log_print ("Received notification of execution for: {}", order)
 
     # Log this activity.
-    if self.log_orders: self.logEvent('ORDER_EXECUTED', js.dump(order))
+    if self.log_orders: self.logEvent('ORDER_EXECUTED', js.dump(order, strip_privates=True))
 
     # At the very least, we must update CASH and holdings at execution time.
     qty = order.quantity if order.is_buy_order else -1 * order.quantity
@@ -359,7 +433,7 @@ class TradingAgent(FinancialAgent):
     log_print ("Received notification of acceptance for: {}", order)
 
     # Log this activity.
-    if self.log_orders: self.logEvent('ORDER_ACCEPTED', js.dump(order))
+    if self.log_orders: self.logEvent('ORDER_ACCEPTED', js.dump(order, strip_privates=True))
 
     # We may later wish to add a status to the open orders so an agent can tell whether
     # a given order has been accepted or not (instead of needing to override this method).
@@ -370,7 +444,7 @@ class TradingAgent(FinancialAgent):
     log_print ("Received notification of cancellation for: {}", order)
 
     # Log this activity.
-    if self.log_orders: self.logEvent('ORDER_CANCELLED', js.dump(order))
+    if self.log_orders: self.logEvent('ORDER_CANCELLED', js.dump(order, strip_privates=True))
 
     # Remove the cancelled order from the open orders list.  We may of course wish to have
     # additional logic here later, so agents can easily "look for" cancelled orders.  Of
@@ -427,6 +501,15 @@ class TradingAgent(FinancialAgent):
 
     self.book = book
 
+  def handleMarketData(self, msg):
+    '''
+    Handles Market Data messages for agents using subscription mechanism
+    '''
+    symbol = msg.body['symbol']
+    self.known_asks[symbol] = msg.body['asks']
+    self.known_bids[symbol] = msg.body['bids']
+    self.last_trade[symbol] = msg.body['last_transaction']
+
 
   # Handles QUERY_ORDER_STREAM messages from an exchange agent.
   def queryOrderStream (self, symbol, orders):
@@ -436,6 +519,9 @@ class TradingAgent(FinancialAgent):
     # trade).
     self.stream_history[self.symbol] = orders
 
+  def query_transacted_volume(self, symbol, transacted_volume):
+    """ Handles the QUERY_TRANSACTED_VOLUME messages from the exchange agent"""
+    self.transacted_volume[symbol] = transacted_volume
 
   # Utility functions that perform calculations from available knowledge, but implement no
   # particular strategy.
@@ -490,7 +576,7 @@ class TradingAgent(FinancialAgent):
 
 
   # Marks holdings to market (including cash).
-  def markToMarket (self, holdings):
+  def markToMarket (self, holdings, use_midpoint=False):
     cash = holdings['CASH']
     
     cash += self.basket_size * self.nav_diff
@@ -498,7 +584,15 @@ class TradingAgent(FinancialAgent):
     for symbol, shares in holdings.items():
       if symbol == 'CASH': continue
 
-      value = self.last_trade[symbol] * shares
+      if use_midpoint:
+        bid, ask, midpoint = self.getKnownBidAskMidpoint(symbol)
+        if bid is None or ask is None or midpoint is None:
+          value = self.last_trade[symbol] * shares
+        else:
+          value = midpoint
+      else:
+        value = self.last_trade[symbol] * shares
+
       cash += value
 
       self.logEvent('MARK_TO_MARKET', "{} {} @ {} == {}".format(shares, symbol,
@@ -514,6 +608,20 @@ class TradingAgent(FinancialAgent):
     if symbol in self.holdings: return self.holdings[symbol]
     return 0
 
+
+  # Get the known best bid, ask, and bid/ask midpoint from cached data.  No volume.
+  def getKnownBidAskMidpoint (self, symbol) :
+    bid = self.known_bids[symbol][0][0] if self.known_bids[symbol] else None
+    ask = self.known_asks[symbol][0][0] if self.known_asks[symbol] else None
+
+    midpoint = int(round((bid + ask) / 2)) if bid is not None and ask is not None else None
+
+    return bid, ask, midpoint
+
+  def get_average_transaction_price(self):
+    """ Calculates the average price paid (weighted by the order size) """
+    return round(sum(executed_order.quantity * executed_order.fill_price for executed_order in self.executed_orders) / \
+                 sum(executed_order.quantity for executed_order in self.executed_orders), 2)
 
   # Prints holdings.  Standard dictionary->string representation is almost fine, but it is
   # less confusing to see the CASH holdings in dollars and cents, instead of just integer

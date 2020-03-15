@@ -201,7 +201,7 @@ class SparseMeanRevertingOracle(MeanRevertingOracle):
   # value for a given equity at a given time step does not change, multiple agents
   # observing that value will receive different observations.
   #
-  # Only the Exchange or other privileged agents should use noisy=False.
+  # Only the Exchange or other privileged agents should use sigma_n==0.
   #
   # sigma_n is experimental observation variance.  NOTE: NOT STANDARD DEVIATION.
   #

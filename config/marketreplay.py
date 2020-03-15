@@ -2,13 +2,11 @@ import argparse
 import numpy as np
 import pandas as pd
 import sys
-import os
 import datetime as dt
 
 from Kernel import Kernel
 from util import util
 from util.order import LimitOrder
-from util.oracle.OrderBookOracle import OrderBookOracle
 from agent.ExchangeAgent import ExchangeAgent
 from agent.examples.MarketReplayAgent import MarketReplayAgent
 
@@ -21,14 +19,18 @@ parser.add_argument('-c',
                     '--config',
                     required=True,
                     help='Name of config file to execute')
+parser.add_argument('-t',
+                    '--ticker',
+                    required=True,
+                    help='Name of the stock/symbol')
+parser.add_argument('-d',
+                    '--date',
+                    required=True,
+                    help='Historical date')
 parser.add_argument('-l',
                     '--log_dir',
                     default=None,
                     help='Log directory name (default: unix timestamp at program start)')
-parser.add_argument('-o',
-                    '--log_orders',
-                    action='store_true',
-                    help='Log every order-related action by every agent.')
 parser.add_argument('-s',
                     '--seed',
                     type=int,
@@ -50,7 +52,6 @@ if args.config_help:
 
 log_dir = args.log_dir  # Requested log directory.
 seed = args.seed  # Random seed specification on the command line.
-log_orders = args.log_orders
 if not seed: seed = int(pd.Timestamp.now().timestamp() * 1000000) % (2 ** 32 - 1)
 np.random.seed(seed)
 
@@ -59,60 +60,57 @@ LimitOrder.silent_mode = not args.verbose
 
 simulation_start_time = dt.datetime.now()
 print("Simulation Start Time: {}".format(simulation_start_time))
-print("Configuration seed: {}\n".format(seed))
+print("Configuration seed: {}".format(seed))
+print("Log Directory: {}".format(log_dir))
 ########################################################################################################################
 ############################################### AGENTS CONFIG ##########################################################
 
 # Historical date to simulate.
-historical_date = pd.to_datetime('2019-06-28')
-symbol = 'JPM'
+historical_date = args.date
+historical_date_pd = pd.to_datetime(historical_date)
+symbol = args.ticker
+print("Symbol: {}".format(symbol))
+print("Date: {}\n".format(historical_date))
 
 agent_count, agents, agent_types = 0, [], []
 
 # 1) Exchange Agent
-mkt_open = historical_date + pd.to_timedelta('09:30:00')
-mkt_close = historical_date + pd.to_timedelta('16:00:00')
+mkt_open = historical_date_pd + pd.to_timedelta('09:00:00')
+mkt_close = historical_date_pd + pd.to_timedelta('16:00:00')
+
+print("Market Open : {}".format(mkt_open))
+print("Market Close: {}".format(mkt_close))
+
 agents.extend([ExchangeAgent(id=0,
-                             name="Exchange Agent",
+                             name="EXCHANGE_AGENT",
                              type="ExchangeAgent",
                              mkt_open=mkt_open,
                              mkt_close=mkt_close,
                              symbols=[symbol],
-                             log_orders=log_orders,
+                             log_orders=True,
                              pipeline_delay=0,
                              computation_delay=0,
                              stream_history=10,
-                             book_freq=0,
+                             book_freq='all',
                              random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32,
                                                                                        dtype='uint64')))])
 agent_types.extend("ExchangeAgent")
 agent_count += 1
 
 # 2) Market Replay Agent
-"""
-oracle = OrderBookOracle (symbol           = symbol,
-                          start_time       = mkt_open,
-                          end_time         = mkt_close,
-                          orders_file_path = os.getcwd() + '\data\sample_orders_file.csv')
-"""
-
-symbol = 'JPM'
-date = '20190628'
-file_name = f'DOW30/{symbol}/{symbol}.{date}'
+file_name = f'DOW30/{symbol}/{symbol}.{historical_date}'
 orders_file_path = f'/efs/data/{file_name}'
-
-oracle = OrderBookOracle(symbol=symbol,
-                         date=historical_date,
-                         start_time=mkt_open,
-                         end_time=mkt_close,
-                         orders_file_path=orders_file_path)
 
 agents.extend([MarketReplayAgent(id=1,
                                  name="MARKET_REPLAY_AGENT",
                                  type='MarketReplayAgent',
                                  symbol=symbol,
-                                 log_orders=log_orders,
-                                 date=historical_date,
+                                 log_orders=False,
+                                 date=historical_date_pd,
+                                 start_time=mkt_open,
+                                 end_time=mkt_close,
+                                 orders_file_path=orders_file_path,
+                                 processed_orders_folder_path='/efs/data/marketreplay/',
                                  starting_cash=0,
                                  random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32,
                                                                                            dtype='uint64')))])
@@ -125,8 +123,8 @@ agent_count += 1
 kernel = Kernel("Market Replay Kernel", random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32,
                                                                                                   dtype='uint64')))
 
-kernelStartTime = mkt_open
-kernelStopTime = historical_date + pd.to_timedelta('16:01:00')
+kernelStartTime = historical_date_pd
+kernelStopTime = historical_date_pd + pd.to_timedelta('17:00:00')
 
 defaultComputationDelay = 0
 latency = np.zeros((agent_count, agent_count))
@@ -139,7 +137,7 @@ kernel.runner(agents=agents,
               latencyNoise=noise,
               defaultComputationDelay=defaultComputationDelay,
               defaultLatency=0,
-              oracle=oracle,
+              oracle=None,
               log_dir=args.log_dir)
 
 simulation_end_time = dt.datetime.now()

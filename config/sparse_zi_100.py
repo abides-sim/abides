@@ -1,6 +1,7 @@
 from Kernel import Kernel
 from agent.ExchangeAgent import ExchangeAgent
 from agent.ZeroIntelligenceAgent import ZeroIntelligenceAgent
+from model.LatencyModel import LatencyModel
 from util.order import LimitOrder
 from util.oracle.SparseMeanRevertingOracle import SparseMeanRevertingOracle
 from util import util
@@ -132,6 +133,9 @@ symbols = { 'JPM' : { 'r_bar' : 1e5, 'kappa' : 1.67e-12, 'agent_kappa' : 1.67e-1
 ### Configure the Kernel.
 kernel = Kernel("Base Kernel", random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32, dtype='uint64')))
 
+### Obtain random state for whatever latency model will be used.
+latency_rstate = np.random.RandomState(seed=np.random.randint(low=0,high=2**32))
+
 
 
 ### Configure the agents.  When conducting "agent of change" experiments, the
@@ -190,6 +194,14 @@ for i,x in enumerate(zi):
   agent_count += x[0]
 
 
+latency = None
+noise = None
+latency_model = None
+
+USE_NEW_MODEL = True
+
+### BEGIN OLD LATENCY ATTRIBUTE CONFIGURATION ###
+
 ### Configure a simple message latency matrix for the agents.  Each entry is the minimum
 ### nanosecond delay on communication [from][to] agent ID.
 
@@ -199,37 +211,60 @@ for i,x in enumerate(zi):
 # Pike Place Starbucks in Seattle, WA (2402 miles, approx. 13 ms at the speed of light).
 # Other agents can be explicitly set afterward (and the mirror half of the matrix is also).
 
-# This configures all agents to a starting latency as described above.
-latency = np.random.uniform(low = 21000, high = 13000000, size=(len(agent_types),len(agent_types)))
+if not USE_NEW_MODEL:
+  # This configures all agents to a starting latency as described above.
+  latency = np.random.uniform(low = 21000, high = 13000000, size=(len(agent_types),len(agent_types)))
+  
+  # Overriding the latency for certain agent pairs happens below, as does forcing mirroring
+  # of the matrix to be symmetric.
+  for i, t1 in zip(range(latency.shape[0]), agent_types):
+    for j, t2 in zip(range(latency.shape[1]), agent_types):
+      # Three cases for symmetric array.  Set latency when j > i, copy it when i > j, same agent when i == j.
+      if j > i:
+        # Presently, strategy agents shouldn't be talking to each other, so we set them to extremely high latency.
+        if (t1 == "ZeroIntelligenceAgent" and t2 == "ZeroIntelligenceAgent"):
+          latency[i,j] = 1000000000 * 60 * 60 * 24    # Twenty-four hours.
+      elif i > j:
+        # This "bottom" half of the matrix simply mirrors the top.
+        latency[i,j] = latency[j,i]
+      else:
+        # This is the same agent.  How long does it take to reach localhost?  In our data center, it actually
+        # takes about 20 microseconds.
+        latency[i,j] = 20000
+  
+  
+  # Configure a simple latency noise model for the agents.
+  # Index is ns extra delay, value is probability of this delay being applied.
+  noise = [ 0.25, 0.25, 0.20, 0.15, 0.10, 0.05 ]
 
-# Overriding the latency for certain agent pairs happens below, as does forcing mirroring
-# of the matrix to be symmetric.
-for i, t1 in zip(range(latency.shape[0]), agent_types):
-  for j, t2 in zip(range(latency.shape[1]), agent_types):
-    # Three cases for symmetric array.  Set latency when j > i, copy it when i > j, same agent when i == j.
-    if j > i:
-      # Presently, strategy agents shouldn't be talking to each other, so we set them to extremely high latency.
-      if (t1 == "ZeroIntelligenceAgent" and t2 == "ZeroIntelligenceAgent"):
-        latency[i,j] = 1000000000 * 60 * 60 * 24    # Twenty-four hours.
-    elif i > j:
-      # This "bottom" half of the matrix simply mirrors the top.
-      latency[i,j] = latency[j,i]
-    else:
-      # This is the same agent.  How long does it take to reach localhost?  In our data center, it actually
-      # takes about 20 microseconds.
-      latency[i,j] = 20000
+### END OLD LATENCY ATTRIBUTE CONFIGURATION ###
 
 
-# Configure a simple latency noise model for the agents.
-# Index is ns extra delay, value is probability of this delay being applied.
-noise = [ 0.25, 0.25, 0.20, 0.15, 0.10, 0.05 ]
+### BEGIN NEW LATENCY MODEL CONFIGURATION ###
 
+else:
+  # Get a new-style cubic LatencyModel from the networking literature.
+  pairwise = (len(agent_types),len(agent_types))
+
+  model_args = { 'connected'   : True,
+
+                 # All in NYC.
+                 'min_latency' : np.random.uniform(low = 21000, high = 100000, size = pairwise),
+                 'jitter'      : 0.3,
+                 'jitter_clip' : 0.05,
+                 'jitter_unit' : 5,
+               }
+
+  latency_model = LatencyModel ( latency_model = 'cubic', random_state = latency_rstate, kwargs = model_args )
+
+### END NEW LATENCY MODEL CONFIGURATION ###
 
 
 # Start the kernel running.
 kernel.runner(agents = agents, startTime = kernelStartTime,
-              stopTime = kernelStopTime, agentLatency = latency,
-              latencyNoise = noise,
+              stopTime = kernelStopTime,
+              agentLatencyModel = latency_model,
+              agentLatency = latency, latencyNoise = noise,
               defaultComputationDelay = defaultComputationDelay,
               oracle = oracle, log_dir = log_dir)
 

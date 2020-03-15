@@ -51,11 +51,13 @@ class Kernel:
   def runner(self, agents = [], startTime = None, stopTime = None,
              num_simulations = 1, defaultComputationDelay = 1,
              defaultLatency = 1, agentLatency = None, latencyNoise = [ 1.0 ],
+             agentLatencyModel = None,
              seed = None, oracle = None, log_dir = None):
 
     # agents must be a list of agents for the simulation,
     #        based on class agent.Agent
     self.agents = agents
+    self.agent_saved_states = [None] * len(self.agents)
 
     # The kernel start and stop time (first and last timestamp in
     # the simulation, separate from anything like exchange open/close).
@@ -93,6 +95,14 @@ class Kernel:
     # TODO: this might someday change to pd.Timedelta objects.
     self.agentComputationDelays = [defaultComputationDelay] * len(agents)
 
+    # If an agentLatencyModel is defined, it will be used instead of
+    # the older, non-model-based attributes.
+    self.agentLatencyModel = agentLatencyModel
+
+    # If an agentLatencyModel is NOT defined, the older parameters:
+    # agentLatency (or defaultLatency) and latencyNoise should be specified.
+    # These should be considered deprecated and will be removed in the future.
+
     # If agentLatency is not defined, define it using the defaultLatency.
     # This matrix defines the communication delay between every pair of
     # agents.
@@ -105,9 +115,6 @@ class Kernel:
     # distribution with the peak at zero.  By default there is no noise
     # (100% chance to add zero ns extra delay).  Format is a list with
     # list index = ns extra delay, value = probability of this delay.
-    # TODO: This should probably become more sophisticated.  If not
-    # continuous, then at least a dictionary with key=delay and
-    # value=probability in case we want a more sparse delay function.
     self.latencyNoise = latencyNoise
 
     # The kernel maintains an accumulating additional delay parameter
@@ -301,6 +308,8 @@ class Kernel:
 
     print ("Simulation ending!")
 
+    return self.agent_saved_states
+
 
   def sendMessage(self, sender = None, recipient = None, msg = None, delay = 0):
     # Called by an agent to send a message to another agent.  The kernel
@@ -343,17 +352,28 @@ class Kernel:
     sentTime = self.currentTime + pd.Timedelta(self.agentComputationDelays[sender] + 
                                                self.currentAgentAdditionalDelay + delay)
 
-    # Apply communication delay per the agentLatency matrix [sender][recipient].
-    latency = self.agentLatency[sender][recipient]
-    noise = self.random_state.choice(len(self.latencyNoise), 1, self.latencyNoise)[0]
-    deliverAt = sentTime + pd.Timedelta(latency + noise)
+    # Apply communication delay per the agentLatencyModel, if defined, or the
+    # agentLatency matrix [sender][recipient] otherwise.
+    if self.agentLatencyModel is not None:
+      latency = self.agentLatencyModel.get_latency(sender_id = sender, recipient_id = recipient)
+      deliverAt = sentTime + pd.Timedelta(latency)
+      log_print ("Kernel applied latency {}, accumulated delay {}, one-time delay {} on sendMessage from: {} to {}, scheduled for {}",
+                 latency, self.currentAgentAdditionalDelay, delay, self.agents[sender].name, self.agents[recipient].name,
+                 self.fmtTime(deliverAt))
+    else:
+      latency = self.agentLatency[sender][recipient]
+      noise = self.random_state.choice(len(self.latencyNoise), 1, self.latencyNoise)[0]
+      deliverAt = sentTime + pd.Timedelta(latency + noise)
+      log_print ("Kernel applied latency {}, noise {}, accumulated delay {}, one-time delay {} on sendMessage from: {} to {}, scheduled for {}",
+                 latency, noise, self.currentAgentAdditionalDelay, delay, self.agents[sender].name, self.agents[recipient].name,
+                 self.fmtTime(deliverAt))
 
     # Finally drop the message in the queue with priority == delivery time.
     self.messages.put((deliverAt, (recipient, MessageType.MESSAGE, msg)))
 
-    log_print ("Kernel applied latency {}, noise {}, accumulated delay {}, one-time delay {} on sendMessage from: {} to {}, scheduled for {}",
-               latency, noise, self.currentAgentAdditionalDelay, delay, self.agents[sender].name, self.agents[recipient].name, self.fmtTime(deliverAt))
+    log_print ("Sent time: {}, current time {}, computation delay {}", sentTime, self.currentTime, self.agentComputationDelays[sender])
     log_print ("Message queued: {}", msg)
+
 
 
   def setWakeup(self, sender = None, requestedTime = None):
@@ -493,6 +513,10 @@ class Kernel:
     dfLog = pd.DataFrame(self.summaryLog)
 
     dfLog.to_pickle(os.path.join(path, file), compression='bz2')
+
+
+  def saveState (self, agent_id, state):
+    self.agent_saved_states[agent_id] = state
 
  
   @staticmethod
