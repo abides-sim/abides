@@ -69,7 +69,7 @@ class NoiseAgent(TradingAgent):
             "{} final report.  Holdings {}, end cash {}, start cash {}, final fundamental {}, surplus {}",
             self.name, H, self.holdings['CASH'], self.starting_cash, rT, surplus)
 
-        print("Final relative surplus", self.name, surplus)
+        log_print("Final relative surplus", self.name, surplus)
 
     def wakeup(self, currentTime):
         # Parent class handles discovery of exchange times and market_open wakeup call.

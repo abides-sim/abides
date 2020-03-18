@@ -123,13 +123,15 @@ class TradingAgent(FinancialAgent):
     cash = self.markToMarket(self.holdings)
 
     self.logEvent('ENDING_CASH', cash, True)
-    print ("Final holdings for {}: {}.  Marked to market: {}".format(self.name, self.fmtHoldings(self.holdings),
+    log_print ("Final holdings for {}: {}.  Marked to market: {}".format(self.name, self.fmtHoldings(self.holdings),
                                                                      cash))
     
     # Record final results for presentation/debugging.  This is an ugly way
     # to do this, but it is useful for now.
     mytype = self.type
     gain = cash - self.starting_cash
+
+    self.saveState(gain) # At the moment save the gain for each agent but in the future this will probably change
 
     if mytype in self.kernel.meanResultByAgentType:
       self.kernel.meanResultByAgentType[mytype] += gain

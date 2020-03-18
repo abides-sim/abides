@@ -22,8 +22,10 @@ setup(name='abides',
           'pytz',
           'scipy',
           'seaborn',
+          'plotly',
           'six',
           'tqdm',
-          'psutil'
+          'psutil',
+          'optuna'
       ]
       )

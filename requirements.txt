@@ -11,6 +11,8 @@ python-dateutil==2.8.0
 pytz==2019.1
 scipy==1.2.1
 seaborn==0.9.0
+plotly==4.5.4
 six==1.12.0
 tqdm==4.36.1
-psutil
+psutil==5.7.0
+optuna==1.2.0
