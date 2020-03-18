@@ -1,3 +1,11 @@
+# RMSC-3 (Reference Market Simulation Configuration):
+# - 1     Exchange Agent
+# - 1     POV Market Maker Agent
+# - 100   Value Agents
+# - 25    Momentum Agents
+# - 5000  Noise Agents
+# - 1     (Optional) POV Execution agent
+
 import argparse
 import numpy as np
 import pandas as pd
