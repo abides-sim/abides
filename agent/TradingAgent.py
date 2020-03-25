@@ -285,8 +285,8 @@ class TradingAgent(FinancialAgent):
   # string (valid symbol), int (positive share quantity), bool (True == BUY), int (price in cents).
   # The call may optionally specify an order_id (otherwise global autoincrement is used) and
   # whether cash or risk limits should be enforced or ignored for the order.
-  def placeLimitOrder (self, symbol, quantity, is_buy_order, limit_price, order_id=None, ignore_risk = True):
-    order = LimitOrder(self.id, self.currentTime, symbol, quantity, is_buy_order, limit_price, order_id)
+  def placeLimitOrder (self, symbol, quantity, is_buy_order, limit_price, order_id=None, ignore_risk = True, tag = None):
+    order = LimitOrder(self.id, self.currentTime, symbol, quantity, is_buy_order, limit_price, order_id, tag)
 
     if quantity > 0:
       # Test if this order can be permitted given our at-risk limits.
@@ -321,7 +321,7 @@ class TradingAgent(FinancialAgent):
     else:
       log_print ("TradingAgent ignored limit order of quantity zero: {}", order)
 
-  def placeMarketOrder(self, symbol, direction, quantity, ignore_risk=True):
+  def placeMarketOrder(self, symbol, direction, quantity, ignore_risk=True, tag = None):
     """
     Used by any Trading Agent subclass to place a market order. The market order is created as multiple limit orders
     crossing the spread walking the book until all the quantities are matched.
@@ -362,7 +362,7 @@ class TradingAgent(FinancialAgent):
       log_print(f'[---- {self.name} - {self.currentTime} ----]: PLACING 1 MARKET ORDER AS MULTIPLE LIMIT ORDERS')
       for quote in quotes.items():
           p, q = quote[0], quote[1]
-          self.placeLimitOrder(symbol, quantity=q, is_buy_order=direction=='BUY', limit_price=p)
+          self.placeLimitOrder(symbol, quantity=q, is_buy_order=direction=='BUY', limit_price=p, tag=tag)
           log_print(f'[---- {self.name} - {self.currentTime} ----]: LIMIT ORDER PLACED - {q} @ {p}')
     else:
       log_print(f"TradingAgent ignored market order of quantity zero: {symbol} {direction} {quantity}")
