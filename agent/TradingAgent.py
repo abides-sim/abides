@@ -129,6 +129,7 @@ class TradingAgent(FinancialAgent):
     # Record final results for presentation/debugging.  This is an ugly way
     # to do this, but it is useful for now.
     mytype = self.type
+    if mytype == 'OrderBookImbalanceAgent': mytype += f" {self.id}"
     gain = cash - self.starting_cash
 
     if mytype in self.kernel.meanResultByAgentType:
@@ -506,9 +507,35 @@ class TradingAgent(FinancialAgent):
     Handles Market Data messages for agents using subscription mechanism
     '''
     symbol = msg.body['symbol']
+
+    if symbol in self.known_bids:
+      print ("\nPrior known order book:\n")
+      self.printKnownOrderBook(self.known_bids[symbol], self.known_asks[symbol])
+    else:
+      print ("\nNo prior known order book.\n")
+
     self.known_asks[symbol] = msg.body['asks']
     self.known_bids[symbol] = msg.body['bids']
     self.last_trade[symbol] = msg.body['last_transaction']
+
+    print ("\nCurrent received order book:\n")
+    self.printKnownOrderBook(msg.body['bids'], msg.body['asks'])
+
+
+  def printKnownOrderBook(self, bids, asks):
+    '''
+    Sometimes we'd like to pretty-print the received order book data.
+    '''
+    print (f"{'BIDS':>10}{'PRICE':>10}{'ASKS':>10}")
+    print (f"------------------------------")
+
+    for i in range(len(asks)-1,-1,-1):
+      print (f"{' '*10}{asks[i][0]:>10}{asks[i][1]:>10}")
+
+    for i in range(len(bids)):
+      print (f"{bids[i][1]:>10}{bids[i][0]:>10}{' '*10}")
+
+    print (f"------------------------------")
 
 
   # Handles QUERY_ORDER_STREAM messages from an exchange agent.
