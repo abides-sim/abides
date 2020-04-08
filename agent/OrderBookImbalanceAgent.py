@@ -25,7 +25,7 @@ class OrderBookImbalanceAgent(TradingAgent):
     #                  For example, entry_threshold=0.1 causes long entry at 0.6 or short entry at 0.4.
     # Trail Dist: how far behind the peak bid_pct should the trailing stop follow?
 
-    def __init__(self, id, name, type, symbol=None, levels=10, entry_threshold=0.17, trail_dist=0.085, freq=3600000000000, starting_cash=1000000, log_orders=True, random_state=None):
+    def __init__(self, id, name, type, symbol=None, levels=10, entry_threshold=0.17, trail_dist=0.085, freq=3600000000000, comp_delay=1, starting_cash=1000000, log_orders=True, latency=None, unique_name=None, strat_start=None, random_state=None):
         super().__init__(id, name, type, starting_cash=starting_cash, log_orders=log_orders, random_state=random_state)
         self.symbol = symbol
         self.levels = levels
@@ -35,9 +35,19 @@ class OrderBookImbalanceAgent(TradingAgent):
         self.last_market_data_update = None
         self.is_long = False
         self.is_short = False
+        self.comp_delay = comp_delay
+        self.latency = latency
+        self.unique_name = unique_name
+        self.strat_start = strat_start
+
+        self.strat_started = False
+        self.prev_bid_pct = None
 
         self.trailing_stop = None
         self.plotme = []
+
+        with open("obi_analysis.csv", "w") as f:
+          f.write("Bid Pct,Bid-Ask Midpoint,Holdings,Order Placed\n")
 
 
     def kernelStarting(self, startTime):
@@ -46,11 +56,19 @@ class OrderBookImbalanceAgent(TradingAgent):
     def wakeup(self, currentTime):
         super().wakeup(currentTime)
         super().requestDataSubscription(self.symbol, levels=self.levels, freq=self.freq)
-        self.setComputationDelay(1)
+        self.setComputationDelay(self.comp_delay)
 
     def receiveMessage(self, currentTime, msg):
         super().receiveMessage(currentTime, msg)
         if msg.body['msg'] == 'MARKET_DATA':
+            if self.strat_start is not None:
+              if currentTime < self.strat_start:
+                return
+
+            if not self.strat_started:
+              print (f"OBI STRAT STARTS NOW")
+              self.strat_started = True
+
             self.cancelOrders()
 
             self.last_market_data_update = currentTime
@@ -67,11 +85,19 @@ class OrderBookImbalanceAgent(TradingAgent):
 
             if bid_liq == 0 or ask_liq == 0:
                 log_print("OBI agent inactive: zero bid or ask liquidity")
+                # TMP
+                print("OBI agent inactive: zero bid or ask liquidity")
                 return
             else:
                 # bid_pct encapsulates both sides of the question, as a normalized expression
                 # representing what fraction of total visible volume is on the buy side.
                 bid_pct = bid_liq / (bid_liq + ask_liq)
+
+                if self.prev_bid_pct: print (f"Prev bid_pct was: {self.prev_bid_pct}")
+                else: print (f"There was no prev bid_pct.")
+
+                print (f"bid_pct is: {bid_pct}")
+                self.prev_bid_pct = bid_pct
 
                 # If we are short, we need to decide if we should hold or exit.
                 if self.is_short:
@@ -130,6 +156,9 @@ class OrderBookImbalanceAgent(TradingAgent):
                 self.plotme.append( { 'currentTime' : self.currentTime, 'midpoint' : (asks[0][0] + bids[0][0]) / 2, 'bid_pct' : bid_pct } )
 
 
+            #TMP
+            target *= -1
+
             # Adjust holdings to target.
             holdings = self.holdings[self.symbol] if self.symbol in self.holdings else 0
             delta = target - holdings
@@ -137,12 +166,21 @@ class OrderBookImbalanceAgent(TradingAgent):
             price = self.computeRequiredPrice(direction, abs(delta), bids, asks)
 
             log_print("Current holdings: {}", self.holdings)
+            print(f"Current holdings: {self.holdings}")
 
             if delta == 0:
                 log_print("No adjustments to holdings needed.")
+                print(f"No adjustments to holdings needed.")
             else:
                 log_print("Adjusting holdings by {}", delta)
+                print(f"Adjusting holdings by {delta}")
                 self.placeLimitOrder(self.symbol, abs(delta), direction, price)
+
+            rpt = f"{bid_pct:0.4f},{int(round((bids[0][0]+asks[0][0])/2))},{holdings},{delta}"
+            print (rpt)
+
+            with open("obi_analysis.csv", "a") as f:
+              f.write(rpt + "\n")
 
 
     def getWakeFrequency(self):
@@ -181,6 +219,15 @@ class OrderBookImbalanceAgent(TradingAgent):
 
     # Lifecycle.
     def kernelTerminating(self):
+
+      # Mark to market.
+      cash = self.markToMarket(self.holdings)
+
+      # Record final results for further analysis.
+      gain = cash - self.starting_cash
+
+      print ("OBILatencyProfit, {}, {}, {}, {}".format(self.id, self.unique_name, self.latency, gain))
+
       # Plotting code is probably not needed here long term, but helps during development.
 
       #df = pd.DataFrame(self.plotme)
