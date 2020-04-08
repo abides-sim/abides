@@ -74,9 +74,15 @@ class ZeroIntelligenceAgent(TradingAgent):
 
         # Start with surplus as private valuation of shares held.
         if H > 0:
-            surplus = sum([self.theta[x + self.q_max - 1] for x in range(1, H + 1)])
+            try:
+                surplus = sum([self.theta[x + self.q_max - 1] for x in range(1, H + 1)])
+            except:
+                surplus = 0
         elif H < 0:
-            surplus = -sum([self.theta[x + self.q_max - 1] for x in range(H + 1, 1)])
+            try:
+                surplus = -sum([self.theta[x + self.q_max - 1] for x in range(H + 1, 1)])
+            except:
+                surplus = 0
         else:
             surplus = 0
 
