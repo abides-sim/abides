@@ -1,175 +1,42 @@
 from Kernel import Kernel
 from agent.ExchangeAgent import ExchangeAgent
+from agent.HeuristicBeliefLearningAgent import HeuristicBeliefLearningAgent
+from agent.NoiseAgent import NoiseAgent
 from agent.OrderBookImbalanceAgent import OrderBookImbalanceAgent
+from agent.SpoofingAgent import SpoofingAgent
 from agent.ValueAgent import ValueAgent
 from agent.ZeroIntelligenceAgent import ZeroIntelligenceAgent
-from agent.examples.MarketMakerAgent import MarketMakerAgent
+from agent.market_makers.MarketMakerAgent import MarketMakerAgent
 from agent.examples.MomentumAgent import MomentumAgent
+from model.LatencyModel import LatencyModel
 from statistics import median, mean, stdev
 from util.order import LimitOrder
 from util.oracle.SparseMeanRevertingOracle import SparseMeanRevertingOracle
 from util import util
 from util.model.QTable import QTable
 
+import datetime as dt
 import numpy as np
 import pandas as pd
 import sys
 
 from math import ceil, floor
 
-###### Helper functions for this configuration file.  Just commonly-used code ######
-###### that would otherwise have been repeated many times.                    ######
+simulation_start_time = dt.datetime.now()
+print("Simulation Start Time: {}".format(simulation_start_time))
 
-def get_rand_obj(seed_obj):
-  return np.random.RandomState(seed = seed_obj.randint(low = 0, high = 2**32))
-
-
-###### Wallclock tracking for overall experimental scheduling to CPUs.
-wallclock_start = pd.Timestamp('now')
-
-print ("\n====== Experimental wallclock elapsed: {} ======\n".format(
-                                pd.Timestamp('now') - wallclock_start))
+results ={}
 
 
-###### One-time configuration section.  This section sets up definitions that ######
-###### will apply to the entire experiment.  They will not be repeated or     ######
-###### reinitialized for each instance of the simulation contained within     ######
-###### this experiment.                                                       ######
+###### Constant list of latency parameter, to ease experimental code.         ######
+###### Maps latency index inputs to nanosecond parameter values.              ######
+LATENCIES = [ 1, 333, 1000, 2500, 5000, 7500, 10000, 15000, 20000, 25000, 50000, 75000,
+              100000, 250000, 500000, 750000, 1000000, 1500000, 2000000, 2500000, 3000000,
+              4000000, 5000000, 6000000, 7000000, 8000000, 9000000, 10000000, 11000000,
+              12000000, 13000000 ]
 
 
-### EXPERIMENT CONFIGURATION.
-obi_perf = []
-
-
-### DATE CONFIGURATION.
-
-# Since the simulator often pulls historical data, we use nanosecond
-# timestamps (pandas.Timestamp) for all simulation time tracking.
-# Thus our discrete time stamps are effectively nanoseconds, although
-# they can be interepreted otherwise for ahistorical (e.g. generated)
-# simulations.  These timestamps do require a valid date component.
-midnight = pd.to_datetime('2014-01-28')
-
-
-### STOCK SYMBOL CONFIGURATION.
-symbols = { 'IBM' : { 'r_bar' : 1e5, 'kappa' : 1.67e-12, 'agent_kappa' : 1.67e-15,
-                      'sigma_s' : 0, 'fund_vol' : 1e-4, 'megashock_lambda_a' : 2.77778e-13,
-                      'megashock_mean' : 1e3, 'megashock_var' : 5e4 }
-          }
-
-
-### INITIAL AGENT DISTRIBUTION.
-### You must instantiate the agents in the same order you record them
-### in the agent_types and agent_strats lists.  (Currently they are
-### parallel arrays.)
-###
-### When conducting "agent of change" experiments, the new agents should
-### be added at the END only.
-
-agent_types = []
-agent_strats = []
-
-### Count by agent type.
-num_exch = 1
-num_zi = 50
-num_val = 50
-num_obi = 1
-num_mm = 0
-num_mom = 0
-
-
-### EXCHANGE AGENTS
-mkt_open = midnight + pd.to_timedelta('09:30:00')
-mkt_close = midnight + pd.to_timedelta('16:00:00')
-
-### Record the type and strategy of the agents for reporting purposes.
-for i in range(num_exch):
-  agent_types.append("ExchangeAgent")
-  agent_strats.append("ExchangeAgent")
-
-
-### ZERO INTELLIGENCE AGENTS
-
-### ZeroIntelligence fixed parameters (i.e. not strategic).
-zi_obs_noise = 1000000    # a property of the agent, not an individual stock
-
-### Lay out the ZI strategies (parameter settings) that will be used in this
-### experiment, so we can assign particular numbers of agents to each strategy.
-### Tuples are: (R_min, R_max, eta).
-
-zi_strategy = [ (0, 250, 1), (0, 500, 1), (0, 1000, 0.8), (0, 1000, 1),
-                (0, 2000, 0.8), (250, 500, 0.8), (250, 500, 1) ]
-
-### Record the initial distribution of agents to ZI strategies.
-### Split the agents as evenly as possible among the strategy settings.
-zi = [ floor(num_zi / len(zi_strategy)) ] * len(zi_strategy)
-
-i = 0
-while sum(zi) < num_zi:
-  zi[i] += 1
-  i += 1
-
-### Record the type and strategy of the agents for reporting purposes.
-for i in range(len(zi_strategy)):
-  x = zi_strategy[i]
-  strat_name = "Type {} [{} <= R <= {}, eta={}]".format(i+1, x[0], x[1], x[2])
-  agent_types.extend([ 'ZeroIntelligenceAgent' ] * zi[i])
-  agent_strats.extend([ 'ZeroIntelligenceAgent ({})'.format(strat_name) ] * zi[i])
-
-
-### VALUE AGENTS
-
-### Value agent fixed parameters (i.e. not strategic).
-zi_obs_noise = 1000000    # a property of the agent, not an individual stock
-
-for i in range(num_val):
-  agent_types.extend([ 'ValueAgent' ])
-  agent_strats.extend([ 'ValueAgent' ])
-
-
-### OBI AGENTS
-
-### OBI fixed parameters (i.e. not strategic).
-
-### Record the type and strategy of the agents for reporting purposes.
-for i in range(num_obi):
-  agent_types.append("OBIAgent")
-  agent_strats.append("OBIAgent")
-
-
-### MARKET MAKER AGENTS
-
-### Market Maker fixed parameters (i.e. not strategic).
-
-### Record the type and strategy of the agents for reporting purposes.
-for i in range(num_mm):
-  agent_types.append("MarketMakerAgent")
-  agent_strats.append("MarketMakerAgent")
-
-
-### MOMENTUM AGENTS
-
-### Momentum Agent fixed parameters.
-
-### Record the type and strategy of the agents for reporting purposes.
-for i in range(num_mom):
-  agent_types.append("MomentumAgent")
-  agent_strats.append("MomentumAgent")
-
-
-### FINAL AGENT PREPARATION
-
-### Record the total number of agents here, so we can create a list of lists
-### of random seeds to use for the agents across the iterated simulations.
-### Also create an empty list of appropriate size to store agent state
-### across simulations (for those agents which require it).
-
-num_agents = num_exch + num_zi + num_obi + num_val + num_mm + num_mom
-
-agent_saved_states = [None] * num_agents
-
-
-### SIMULATION CONTROL SETTINGS.
+###### Read and parse command-line arguments.                                 ######
 
 # We allow some high-level parameters to be specified on the command line at
 # runtime, rather than being explicitly coded in the config file.  This really
@@ -206,6 +73,14 @@ parser.add_argument('-e', '--levels', type=int, default=10,
                     help='OBI order book levels to consider')
 parser.add_argument('-n', '--num_simulations', type=int, default=5,
                     help='Number of consecutive simulations in one episode.')
+
+parser.add_argument('-i', '--num_obi', type=int, default=1,
+                    help='Total number of OBI agents.')
+parser.add_argument('-a', '--obi_latency', type=int, default=1,
+                    help='OBI latency in nanoseconds.')
+parser.add_argument('-d', '--obi_computation_delay', type=int, default=1,
+                    help='OBI computation delay in nanoseconds.')
+
 
 
 args, remaining_args = parser.parse_known_args()
@@ -258,15 +133,231 @@ flat_range = args.flat_range
 entry_threshold = args.entry_threshold
 trail_dist = args.trail_dist
 levels = args.levels
+obi_latency = args.obi_latency
+num_obi = args.num_obi
+obi_delay = args.obi_computation_delay
 num_consecutive_simulations = args.num_simulations
 
 
 print ("Silent mode: {}".format(util.silent_mode))
 print ("Logging orders: {}".format(log_orders))
 print ("Book freq: {}".format(book_freq))
-print ("OBI Freq: {}, OB Levels: {}, Entry Thresh: {}, Trail Dist: {}".format(
-       obi_freq, levels, entry_threshold, trail_dist))
+print ("OBI Freq: {}, OB Levels: {}, Entry Thresh: {}, Trail Dist: {}, Latency: {}, CompDelay: {}, Num OBI: {}".format(
+       obi_freq, levels, entry_threshold, trail_dist, obi_latency, obi_delay, num_obi))
 print ("Configuration seed: {}\n".format(seed))
+
+
+
+###### Helper functions for this configuration file.  Just commonly-used code ######
+###### that would otherwise have been repeated many times.                    ######
+
+def get_rand_obj(seed_obj):
+  return np.random.RandomState(seed = seed_obj.randint(low = 0, high = 2**32))
+
+
+###### Wallclock tracking for overall experimental scheduling to CPUs.
+wallclock_start = pd.Timestamp('now')
+
+print ("\n====== Experimental wallclock elapsed: {} ======\n".format(
+                                pd.Timestamp('now') - wallclock_start))
+
+
+### SIMULATION CONTROL SETTINGS.
+
+###### One-time configuration section.  This section sets up definitions that ######
+###### will apply to the entire experiment.  They will not be repeated or     ######
+###### reinitialized for each instance of the simulation contained within     ######
+###### this experiment.                                                       ######
+
+
+### EXPERIMENT CONFIGURATION.
+#obi_perf = []
+
+
+### DATE CONFIGURATION.
+
+# Since the simulator often pulls historical data, we use nanosecond
+# timestamps (pandas.Timestamp) for all simulation time tracking.
+# Thus our discrete time stamps are effectively nanoseconds, although
+# they can be interepreted otherwise for ahistorical (e.g. generated)
+# simulations.  These timestamps do require a valid date component.
+midnight = pd.to_datetime('2014-01-28')
+
+
+### STOCK SYMBOL CONFIGURATION.
+symbols = { 'IBM' : { 'r_bar' : 1e5, 'kappa' : 1.67e-12, 'agent_kappa' : 1.67e-15,
+                      'sigma_s' : 0, 'fund_vol' : 1e-4, 'megashock_lambda_a' : 2.77778e-13,
+                      'megashock_mean' : 1e3, 'megashock_var' : 5e4 }
+          }
+
+
+### INITIAL AGENT DISTRIBUTION.
+### You must instantiate the agents in the same order you record them
+### in the agent_types and agent_strats lists.  (Currently they are
+### parallel arrays.)
+###
+### When conducting "agent of change" experiments, the new agents should
+### be added at the END only.
+
+agent_types = []
+agent_strats = []
+
+### Count by agent type.
+num_exch = 1
+num_noise = 0
+#num_noise = 12500
+#num_zi = 0
+num_zi = 500
+num_val = 500
+#num_val = 0
+#num_obi = 0
+num_obi = num_obi
+num_hbl = 0
+num_mm = 0
+num_mom = 0
+num_spoof = 1
+
+# One agent of each type is guaranteed to be at the minimum latency that is not "colocated".
+# (Not counting the exploiter agent.)
+#min_latency_agents = [1, 501, 1002]
+min_latency_agents = []
+
+# The experimental agent (exploiter) gets the special latency configured on the command line.
+exploiter_id = num_exch + num_noise + num_zi + num_val
+
+### EXCHANGE AGENTS
+mkt_open = midnight + pd.to_timedelta('09:30:00')
+mkt_close = midnight + pd.to_timedelta('16:00:00')
+#mkt_close = midnight + pd.to_timedelta('11:00:00')
+#mkt_open = midnight + pd.to_timedelta('09:30:00')
+#mkt_close = midnight + pd.to_timedelta('10:00:00')
+
+### Record the type and strategy of the agents for reporting purposes.
+exchange_ids = range(0,num_exch)
+for i in range(num_exch):
+  agent_types.append("ExchangeAgent")
+  agent_strats.append("ExchangeAgent")
+
+
+### NOISE AGENTS
+
+### Noise agent fixed parameters (i.e. not strategic).
+for i in range(num_noise):
+  agent_types.extend([ 'NoiseAgent' ])
+  agent_strats.extend([ 'NoiseAgent' ])
+
+
+### ZERO INTELLIGENCE AGENTS
+
+### ZeroIntelligence fixed parameters (i.e. not strategic).
+zi_obs_noise = 1000000    # a property of the agent, not an individual stock
+
+### Lay out the ZI strategies (parameter settings) that will be used in this
+### experiment, so we can assign particular numbers of agents to each strategy.
+### Tuples are: (R_min, R_max, eta).
+
+zi_strategy = [ (0, 250, 1), (0, 500, 1), (0, 1000, 0.8), (0, 1000, 1),
+                (0, 2000, 0.8), (250, 500, 0.8), (250, 500, 1) ]
+
+### Record the initial distribution of agents to ZI strategies.
+### Split the agents as evenly as possible among the strategy settings.
+zi = [ floor(num_zi / len(zi_strategy)) ] * len(zi_strategy)
+
+i = 0
+while sum(zi) < num_zi:
+  zi[i] += 1
+  i += 1
+
+### Record the type and strategy of the agents for reporting purposes.
+for i in range(len(zi_strategy)):
+  x = zi_strategy[i]
+  strat_name = "Type {} [{} <= R <= {}, eta={}]".format(i+1, x[0], x[1], x[2])
+  agent_types.extend([ 'ZeroIntelligenceAgent' ] * zi[i])
+  agent_strats.extend([ 'ZeroIntelligenceAgent ({})'.format(strat_name) ] * zi[i])
+
+
+### VALUE AGENTS
+
+### Value agent fixed parameters (i.e. not strategic).
+zi_obs_noise = 1000000    # a property of the agent, not an individual stock
+bg_comp_delay = 1000000000
+
+for i in range(num_val):
+  agent_types.extend([ 'ValueAgent' ])
+  agent_strats.extend([ 'ValueAgent' ])
+
+
+### OBI AGENTS
+
+### OBI fixed parameters (i.e. not strategic).
+obi_strat_start = midnight + pd.to_timedelta('10:00:00')
+
+### Record the type and strategy of the agents for reporting purposes.
+obi_ids = range(num_exch + num_noise + num_zi + num_val, num_exch + num_noise + num_zi + num_val + num_obi)
+if num_obi > 0:
+  agent_types.append("OBIAgent")
+  agent_strats.append("OBIAgent (Exploiter)")
+
+for i in range(1,num_obi):
+  agent_types.append("OBIAgent")
+  agent_strats.append("OBIAgent")
+
+
+### HBL AGENTS
+
+### HBL agent fixed parameters.
+
+for i in range(num_hbl):
+  agent_types.extend([ 'HBLAgent' ])
+  agent_strats.extend([ 'HBLAgent' ])
+
+
+### MARKET MAKER AGENTS
+
+### Market Maker fixed parameters (i.e. not strategic).
+
+### Record the type and strategy of the agents for reporting purposes.
+for i in range(num_mm):
+  agent_types.append("MarketMakerAgent")
+  agent_strats.append("MarketMakerAgent")
+
+
+### MOMENTUM AGENTS
+
+### Momentum Agent fixed parameters.
+
+### Record the type and strategy of the agents for reporting purposes.
+for i in range(num_mom):
+  agent_types.append("MomentumAgent")
+  agent_strats.append("MomentumAgent")
+
+
+### SPOOFING AGENTS
+
+### Spoofing Agent fixed parameters.
+spoof_strat_start = midnight + pd.to_timedelta('10:15:00')
+spoof_freq = 1000
+
+# Record the type and strategy of the agents for reporting purposes.
+num_prev_agents = num_exch + num_noise + num_zi + num_val + num_obi + num_hbl + num_mm + num_mom
+spoof_ids = range(num_prev_agents, num_prev_agents + num_spoof)
+for i in range(num_spoof):
+  agent_types.append("SpoofingAgent")
+  agent_strats.append("SpoofingAgent")
+
+
+### FINAL AGENT PREPARATION
+
+### Record the total number of agents here, so we can create a list of lists
+### of random seeds to use for the agents across the iterated simulations.
+### Also create an empty list of appropriate size to store agent state
+### across simulations (for those agents which require it).
+
+num_agents = num_exch + num_noise + num_zi + num_obi + num_val + num_mm + num_mom + num_hbl + num_spoof
+
+agent_saved_states = [None] * num_agents
+
+
 
 
 
@@ -299,33 +390,86 @@ agent_seeds = [ np.random.RandomState(seed=np.random.randint(low=0,high=2**32)) 
 # Other agents can be explicitly set afterward (and the mirror half of the matrix is also).
 
 # This configures all agents to a starting latency as described above.
-latency = np.random.uniform(low = 21000, high = 13000000, size=(len(agent_types),len(agent_types)))
+if False:
+  #latency = np.random.uniform(low = 21000, high = 13000000, size=(len(agent_types),len(agent_types)))
+  latency = np.random.uniform(low = 333, high = 13000000, size=(len(agent_types),len(agent_types)))
+  
+  # Overriding the latency for certain agent pairs happens below, as does forcing mirroring
+  # of the matrix to be symmetric.
+  for i, t1 in zip(range(latency.shape[0]), agent_types):
+    for j, t2 in zip(range(latency.shape[1]), agent_types):
+      # Three cases for symmetric array.  Set latency when j > i, copy it when i > j, same agent when i == j.
+      if j > i:
+        # Presently, strategy agents shouldn't be talking to each other, so we set them to extremely high latency.
+        if (t1 == "ZeroIntelligenceAgent" and t2 == "ZeroIntelligenceAgent"):
+          latency[i,j] = 1000000000 * 60 * 60 * 24    # Twenty-four hours.
+      elif i > j:
+        # This "bottom" half of the matrix simply mirrors the top.
+        latency[i,j] = latency[j,i]
+      else:
+        # This is the same agent.  How long does it take to reach localhost?  In our data center, it actually
+        # takes about 20 microseconds.
+        latency[i,j] = 20000
+  
+  # Experimental OBI to Exchange and back.
+  #latency[0,exploiter_id] = LATENCIES[obi_latency]
+  #latency[exploiter_id,0] = LATENCIES[obi_latency]
+  
+  print ("Exploiter OBI latency (ns): {}\n".format(LATENCIES[obi_latency]))
 
-# Overriding the latency for certain agent pairs happens below, as does forcing mirroring
-# of the matrix to be symmetric.
-for i, t1 in zip(range(latency.shape[0]), agent_types):
-  for j, t2 in zip(range(latency.shape[1]), agent_types):
-    # Three cases for symmetric array.  Set latency when j > i, copy it when i > j, same agent when i == j.
-    if j > i:
-      # Presently, strategy agents shouldn't be talking to each other, so we set them to extremely high latency.
-      if (t1 == "ZeroIntelligenceAgent" and t2 == "ZeroIntelligenceAgent"):
-        latency[i,j] = 1000000000 * 60 * 60 * 24    # Twenty-four hours.
-    elif i > j:
-      # This "bottom" half of the matrix simply mirrors the top.
-      latency[i,j] = latency[j,i]
-    else:
-      # This is the same agent.  How long does it take to reach localhost?  In our data center, it actually
-      # takes about 20 microseconds.
-      latency[i,j] = 20000
+  # Min latency agents.
+  #for a in min_latency_agents:
+    #latency[0,a] = 21000
+    #latency[a,0] = 21000
 
-# OBI to Exchange and back.
-latency[0,101] = 1
-latency[101,0] = 1
 
-# Configure a simple latency noise model for the agents.
-# Index is ns extra delay, value is probability of this delay being applied.
-noise = [ 0.25, 0.25, 0.20, 0.15, 0.10, 0.05 ]
+  # Configure a simple latency noise model for the agents.
+  # Index is ns extra delay, value is probability of this delay being applied.
+  noise = [ 0.25, 0.25, 0.20, 0.15, 0.10, 0.05 ]
 
+
+if True:
+  pairwise = (num_agents, num_agents)
+
+  min_latency = np.random.uniform(low = 1000000, high = 13000000, size = pairwise)
+  #min_latency = np.random.uniform(low = 333, high = 13000000, size = pairwise)
+
+  # Mirror the matrix (using the lower triangle as the reference).
+  min_latency = np.tril(min_latency) + np.triu(min_latency.T, 1)
+
+  # Make some agents special (in terms of network connectivity).
+  for idx, i in enumerate(obi_ids):
+    for j in exchange_ids:
+      lat = 21000 + (idx * 42000)
+      #lat = 12000000 + (idx * 100000)
+
+      min_latency[i,j] = lat
+      min_latency[j,i] = lat
+
+  for idx, i in enumerate(spoof_ids):
+    for j in exchange_ids:
+      lat = 333 + (idx * 333)
+
+      min_latency[i,j] = lat
+      min_latency[j,i] = lat
+
+  # Instantiate the latency model.
+  model_args = { 'connected'   : True,
+                 'min_latency' : min_latency,
+                 #'jitter'      : 0.3,
+                 #'jitter_clip' : 0.05,
+                 #'jitter_unit' : 5,
+                 #'jitter'      : 0,
+                 #'jitter_clip' : 1,
+                 #'jitter_unit' : 5,
+                 'jitter'      : 0.5,
+                 'jitter_clip' : 0.4,
+                 'jitter_unit' : 10,
+               }
+
+  latency_model = LatencyModel ( latency_model = 'cubic',
+                                 random_state = np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32, dtype='uint64')),
+                                 kwargs = model_args )
 
 
 ### FINAL GLOBAL CONFIGURATION FOR ALL SIMULATIONS
@@ -380,6 +524,7 @@ for sim in range(num_consecutive_simulations):   # eventually make this a stoppi
   agent_id = 0
 
   # Create the exchange.
+  print (f"Exch was supposed to be {exchange_ids}")
   for i in range(num_exch):
     agents.append( ExchangeAgent(agent_id, "{} {}".format(agent_types[agent_id], agent_id),
                                  agent_strats[agent_id], mkt_open, mkt_close,
@@ -387,13 +532,30 @@ for sim in range(num_consecutive_simulations):   # eventually make this a stoppi
                                  book_freq = book_freq, pipeline_delay = 0,
                                  computation_delay = 0, stream_history = 10,
                                  random_state = get_rand_obj(agent_seeds[agent_id])) )
+    print (f"{agent_id}")
     agent_id += 1
 
 
-  # Configure some zero intelligence agents.
+  # Configure some trading agents.
   starting_cash = 10000000       # Cash in this simulator is always in CENTS.
   symbol = 'IBM'
   s = symbols[symbol]
+
+
+  # Add the noise agents.
+  for i in range(num_noise):
+    agents.extend([ NoiseAgent(id=agent_id,
+                               name="NoiseAgent {}".format(agent_id),
+                               type="NoiseAgent",
+                               symbol=symbol,
+                               starting_cash=starting_cash,
+                               log_orders=log_orders,
+                               wakeup_time=util.get_wake_time(mkt_open, mkt_close),
+                               random_state = get_rand_obj(agent_seeds[agent_id])) ])
+    agent_id += 1
+
+
+  # Add some zero intelligent agents.
 
   # ZI strategy split.  Note that agent arrival rates are quite small, because our minimum
   # time step is a nanosecond, and we want the agents to arrive more on the order of
@@ -401,20 +563,27 @@ for sim in range(num_consecutive_simulations):   # eventually make this a stoppi
   for n, x in zip(zi, zi_strategy):
     strat_name = agent_strats[agent_id]
     while n > 0:
-      agents.append(ZeroIntelligenceAgent(agent_id, "ZI Agent {}".format(agent_id), strat_name, random_state = get_rand_obj(agent_seeds[agent_id]), log_orders=log_orders, symbol=symbol, starting_cash=starting_cash, sigma_n=zi_obs_noise, r_bar=s['r_bar'], kappa=s['agent_kappa'], sigma_s=s['fund_vol'], q_max=10, sigma_pv=5e6, R_min=x[0], R_max=x[1], eta=x[2], lambda_a=1e-12))
+      agents.append(ZeroIntelligenceAgent(agent_id, "ZI Agent {}".format(agent_id), strat_name, random_state = get_rand_obj(agent_seeds[agent_id]), log_orders=log_orders, symbol=symbol, starting_cash=starting_cash, sigma_n=zi_obs_noise, r_bar=s['r_bar'], kappa=s['agent_kappa'], sigma_s=s['fund_vol'], q_max=10, sigma_pv=5e6, R_min=x[0], R_max=x[1], eta=x[2], lambda_a=1e-12, comp_delay=bg_comp_delay))
       agent_id += 1
       n -= 1
 
   # Add value agents.
   for i in range(num_val):
-    agents.extend([ ValueAgent(agent_id, "Value Agent {}".format(agent_id), "ValueAgent", symbol = symbol, random_state = get_rand_obj(agent_seeds[agent_id]), log_orders=log_orders, starting_cash=starting_cash, sigma_n=zi_obs_noise, r_bar=s['r_bar'], kappa=s['agent_kappa'], sigma_s=s['fund_vol'], lambda_a=1e-12) ])
+    agents.extend([ ValueAgent(agent_id, "Value Agent {}".format(agent_id), "ValueAgent", symbol = symbol, random_state = get_rand_obj(agent_seeds[agent_id]), log_orders=log_orders, starting_cash=starting_cash, sigma_n=zi_obs_noise, r_bar=s['r_bar'], kappa=s['agent_kappa'], sigma_s=s['fund_vol'], lambda_a=1e-12, comp_delay=bg_comp_delay) ])
     agent_id += 1
 
 
   # Add an OBI agent to try to beat this market.
+  print (f"OBI was supposed to be {obi_ids}")
   for i in range(num_obi):
     random_state = get_rand_obj(agent_seeds[agent_id])
-    agents.extend([ OrderBookImbalanceAgent(agent_id, "OBI Agent {}".format(agent_id), "OrderBookImbalanceAgent", symbol = symbol, starting_cash = starting_cash, levels = levels, entry_threshold = entry_threshold, trail_dist = trail_dist, freq = obi_freq, random_state = random_state) ])
+    agents.extend([ OrderBookImbalanceAgent(agent_id, "OBI Agent {}".format(agent_id), agent_strats[agent_id], symbol = symbol, starting_cash = starting_cash, levels = levels, entry_threshold = entry_threshold, trail_dist = trail_dist, freq = obi_freq, comp_delay = obi_delay, latency=min_latency[agent_id,0], unique_name="{}_{}".format(log_dir,sim), strat_start = obi_strat_start, random_state = random_state) ])
+    print (f"{agent_id}")
+    agent_id += 1
+
+  # Add HBL agents.
+  for i in range(num_hbl):
+    agents.append(HeuristicBeliefLearningAgent(agent_id, "HBL Agent {}".format(agent_id), "HBLAgent", random_state = get_rand_obj(agent_seeds[agent_id]), log_orders=log_orders, symbol=symbol, starting_cash=starting_cash, sigma_n=zi_obs_noise, r_bar=s['r_bar'], kappa=s['agent_kappa'], sigma_s=s['fund_vol'], q_max=10, sigma_pv=5e6, R_min=x[0], R_max=x[1], eta=x[2], lambda_a=1e-12, L=8))
     agent_id += 1
 
   # Add market maker agents.
@@ -429,19 +598,46 @@ for sim in range(num_consecutive_simulations):   # eventually make this a stoppi
     agents.extend([ MomentumAgent(agent_id, "Momentum Agent {}".format(agent_id), "MomentumAgent", symbol=symbol, starting_cash=starting_cash, min_size=1, max_size=10, subscribe=True, log_orders=False, random_state = random_state) ])
     agent_id += 1
 
+  # Add spoofing agents.
+  print (f"Spoof was supposed to be {spoof_ids}")
+  for i in range(num_spoof):
+    random_state = get_rand_obj(agent_seeds[agent_id])
+    agents.extend([ SpoofingAgent(agent_id, "Spoofing Agent {}".format(agent_id), "SpoofingAgent", symbol=symbol, starting_cash=starting_cash, freq = spoof_freq, lurk_ticks=9, strat_start = spoof_strat_start, random_state = random_state) ])
+    print (f"{agent_id}")
+    agent_id += 1
+
 
   # Start the kernel running.  This call will not return until the
   # simulation is complete.  (Eventually this should be made
   # parallel for learning.)
-  agent_saved_states = kernel.runner(
+  saved_states, new_results = kernel.runner(
                 agents = agents, startTime = kernelStartTime,
-                stopTime = kernelStopTime, agentLatency = latency,
-                latencyNoise = noise,
+                stopTime = kernelStopTime,
+                #agentLatency = latency, latencyNoise = noise,
+		agentLatency = None, latencyNoise = None,
+		agentLatencyModel = latency_model,
                 defaultComputationDelay = defaultComputationDelay,
                 oracle = oracle, log_dir = "{}_{}".format(log_dir,sim))
 
-  obi_perf.append(agent_saved_states[0])
+  #obi_perf.append(agent_saved_states[0])
 
   print ("\n====== Experimental wallclock elapsed: {} ======\n".format(
                                   pd.Timestamp('now') - wallclock_start))
 
+  # NOTE: NO AGENT LATENCY MODEL (NEW STYLE).  NO SKIP_LOG.
+
+  for t in new_results:
+    if t in results: results[t] += new_results[t]
+    else: results[t] = new_results[t]
+
+
+print (f"\nFinal mean results across {num_consecutive_simulations} runs.\n")
+
+for t in sorted(results):
+  print (f"{t}: {int(round(results[t] / num_consecutive_simulations))}")
+
+print ()
+
+simulation_end_time = dt.datetime.now()
+print("Simulation End Time: {}".format(simulation_end_time))
+print("Time taken to run simulation: {}".format(simulation_end_time - simulation_start_time))
