@@ -9,7 +9,7 @@ import pandas as pd
 class ValueAgent(TradingAgent):
 
     def __init__(self, id, name, type, symbol='IBM', starting_cash=100000, sigma_n=10000,
-                 r_bar=100000, kappa=0.05, sigma_s=100000,
+                 r_bar=100000, kappa=0.05, sigma_s=100000, comp_delay=1000000000,
                  lambda_a=0.005, log_orders=False, random_state=None):
 
         # Base class init.
@@ -39,6 +39,9 @@ class ValueAgent(TradingAgent):
         # units have passed.
         self.prev_wake_time = None
 
+        # Agents should not have zero computation delay.
+        self.comp_delay = comp_delay
+
         self.percent_aggr = 0.1                 #percent of time that the agent will aggress the spread
         self.size = np.random.randint(20, 50)   #size that the agent will be placing
         self.depth_spread = 2
@@ -50,6 +53,7 @@ class ValueAgent(TradingAgent):
         super().kernelStarting(startTime)
 
         self.oracle = self.kernel.oracle
+        self.setComputationDelay(self.comp_delay)
 
     def kernelStopping(self):
         # Always call parent method to be safe.
@@ -255,3 +259,4 @@ class ValueAgent(TradingAgent):
 
     def getWakeFrequency(self):
         return pd.Timedelta(self.random_state.randint(low=0, high=100), unit='ns')
+
