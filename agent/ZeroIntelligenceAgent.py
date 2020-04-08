@@ -10,7 +10,7 @@ class ZeroIntelligenceAgent(TradingAgent):
 
     def __init__(self, id, name, type, symbol='IBM', starting_cash=100000, sigma_n=1000,
                  r_bar=100000, kappa=0.05, sigma_s=100000, q_max=10,
-                 sigma_pv=5000000, R_min=0, R_max=250, eta=1.0,
+                 sigma_pv=5000000, R_min=0, R_max=250, eta=1.0, comp_delay=1000000000,
                  lambda_a=0.005, log_orders=False, random_state=None):
 
         # Base class init.
@@ -41,6 +41,9 @@ class ZeroIntelligenceAgent(TradingAgent):
         self.r_t = r_bar
         self.sigma_t = 0
 
+        # Agents should not have zero computation delay.
+        self.comp_delay = comp_delay
+
         # The agent must track its previous wake time, so it knows how many time
         # units have passed.
         self.prev_wake_time = None
@@ -57,6 +60,9 @@ class ZeroIntelligenceAgent(TradingAgent):
         super().kernelStarting(startTime)
 
         self.oracle = self.kernel.oracle
+
+        self.setComputationDelay(self.comp_delay)
+
 
     def kernelStopping(self):
         # Always call parent method to be safe.
