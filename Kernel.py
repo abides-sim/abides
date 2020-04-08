@@ -51,7 +51,7 @@ class Kernel:
   def runner(self, agents = [], startTime = None, stopTime = None,
              num_simulations = 1, defaultComputationDelay = 1,
              defaultLatency = 1, agentLatency = None, latencyNoise = [ 1.0 ],
-             agentLatencyModel = None,
+             agentLatencyModel = None, skip_log = False,
              seed = None, oracle = None, log_dir = None):
 
     # agents must be a list of agents for the simulation,
@@ -75,6 +75,9 @@ class Kernel:
       self.log_dir = log_dir
     else:
       self.log_dir = str(int(self.kernelWallClockStart.timestamp()))
+
+    # Remember if we are requested to skip writing agent logs to disk.
+    self.skip_log = skip_log
 
     # The kernel maintains a current time for each agent to allow
     # simulation of per-agent computation delays.  The agent's time
@@ -481,6 +484,9 @@ class Kernel:
     # If filename is not None, it will be used as the filename.  Otherwise,
     # the Kernel will construct a filename based on the name of the Agent
     # requesting log archival.
+
+    # If the configuration requests no logs written, just return.
+    if self.skip_log: return
 
     path = os.path.join(".", "log", self.log_dir)
 
