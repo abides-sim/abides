@@ -303,15 +303,19 @@ class Kernel:
 
     # This should perhaps be elsewhere, as it is explicitly financial, but it
     # is convenient to have a quick summary of the results for now.
+    results = {}
+
     print ("Mean ending value by agent type:")
     for a in self.meanResultByAgentType:
       value = self.meanResultByAgentType[a]
       count = self.agentCountByType[a]
       print ("{}: {:d}".format(a, int(round(value / count))))
 
+      results[a] = int(round(value / count))
+
     print ("Simulation ending!")
 
-    return self.agent_saved_states
+    return self.agent_saved_states, results
 
 
   def sendMessage(self, sender = None, recipient = None, msg = None, delay = 0):
