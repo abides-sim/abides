@@ -52,6 +52,9 @@ class TradingAgent(FinancialAgent):
     # that can be used to make it happen.
     self.last_trade = {}
 
+    # used in subscription mode to record the timestamp for which the data was current in the ExchangeAgent
+    self.exchange_ts = {}
+
     # When a last trade price comes in after market close, the trading agent
     # automatically records it as the daily close price for a symbol.
     self.daily_close_price = {}
@@ -240,7 +243,6 @@ class TradingAgent(FinancialAgent):
       self.query_transacted_volume(msg.body['symbol'], msg.body['transacted_volume'])
 
     elif msg.body['msg'] == 'MARKET_DATA':
-      # Call the queryMarketData method, which subclasses may extend.
       self.handleMarketData(msg)
 
     # Now do we know the market hours?
@@ -509,6 +511,7 @@ class TradingAgent(FinancialAgent):
     self.known_asks[symbol] = msg.body['asks']
     self.known_bids[symbol] = msg.body['bids']
     self.last_trade[symbol] = msg.body['last_transaction']
+    self.exchange_ts[symbol] = msg.body['exchange_ts']
 
 
   # Handles QUERY_ORDER_STREAM messages from an exchange agent.

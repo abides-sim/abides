@@ -305,7 +305,8 @@ class ExchangeAgent(FinancialAgent):
                                               "symbol": symbol,
                                               "bids": self.order_books[symbol].getInsideBids(levels),
                                               "asks": self.order_books[symbol].getInsideAsks(levels),
-                                              "last_transaction": self.order_books[symbol].last_trade}))
+                                              "last_transaction": self.order_books[symbol].last_trade,
+                                              "exchange_ts": self.currentTime}))
           self.subscription_dict[agent_id][symbol][2] = orderbook_last_update
 
   def logOrderBookSnapshots(self, symbol):
