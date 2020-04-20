@@ -13,8 +13,8 @@ silent_mode = False
 class LimitOrder (Order):
 
 
-  def __init__ (self, agent_id, time_placed, symbol, quantity, is_buy_order, limit_price, order_id=None):
-    super().__init__(agent_id, time_placed, symbol, quantity, is_buy_order, order_id)
+  def __init__ (self, agent_id, time_placed, symbol, quantity, is_buy_order, limit_price, order_id=None, tag=None):
+    super().__init__(agent_id, time_placed, symbol, quantity, is_buy_order, order_id, tag=tag)
 
     # The limit price is the minimum price the agent will accept (for a sell order) or
     # the maximum price the agent will pay (for a buy order).
@@ -29,7 +29,8 @@ class LimitOrder (Order):
     # Until we make explicit market orders, we make a few assumptions that EXTREME prices on limit
     # orders are trying to represent a market order.  This only affects printing - they still hit
     # the order book like limit orders, which is wrong.
-    return "(Agent {} @ {}) : {} {} {} @ {}{}".format(self.agent_id, Kernel.fmtTime(self.time_placed),
+    return "(Agent {} @ {}{}) : {} {} {} @ {}{}".format(self.agent_id, Kernel.fmtTime(self.time_placed),
+                                                      f" [{self.tag}]" if self.tag is not None else "",
                                                       "BUY" if self.is_buy_order else "SELL", self.quantity, self.symbol,
                                                       dollarize(self.limit_price) if abs(self.limit_price) < sys.maxsize else 'MKT', filled)
 

@@ -288,8 +288,8 @@ class TradingAgent(FinancialAgent):
   # string (valid symbol), int (positive share quantity), bool (True == BUY), int (price in cents).
   # The call may optionally specify an order_id (otherwise global autoincrement is used) and
   # whether cash or risk limits should be enforced or ignored for the order.
-  def placeLimitOrder (self, symbol, quantity, is_buy_order, limit_price, order_id=None, ignore_risk = True):
-    order = LimitOrder(self.id, self.currentTime, symbol, quantity, is_buy_order, limit_price, order_id)
+  def placeLimitOrder (self, symbol, quantity, is_buy_order, limit_price, order_id=None, ignore_risk = True, tag = None):
+    order = LimitOrder(self.id, self.currentTime, symbol, quantity, is_buy_order, limit_price, order_id, tag)
 
     if quantity > 0:
       # Test if this order can be permitted given our at-risk limits.
@@ -324,7 +324,7 @@ class TradingAgent(FinancialAgent):
     else:
       log_print ("TradingAgent ignored limit order of quantity zero: {}", order)
 
-  def placeMarketOrder(self, symbol, quantity, is_buy_order, order_id=None, ignore_risk = True):
+  def placeMarketOrder(self, symbol, quantity, is_buy_order, order_id=None, ignore_risk = True, tag=None):
     """
       Used by any Trading Agent subclass to place a market order. The market order is created as multiple limit orders
       crossing the spread walking the book until all the quantities are matched.
@@ -352,7 +352,6 @@ class TradingAgent(FinancialAgent):
           log_print("TradingAgent ignored market order due to at-risk constraints: {}\n{}",
                     order, self.fmtHoldings(self.holdings))
           return
-
       self.orders[order.order_id] = deepcopy(order)
       self.sendMessage(self.exchangeID, Message({"msg" : "MARKET_ORDER", "sender": self.id, "order": order}))
       if self.log_orders: self.logEvent('ORDER_SUBMITTED', js.dump(order, strip_privates=True))

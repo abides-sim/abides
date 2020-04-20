@@ -7,7 +7,7 @@ class Order:
   order_id = 0
   _order_ids = []
 
-  def __init__(self, agent_id, time_placed, symbol, quantity, is_buy_order, order_id=None):
+  def __init__(self, agent_id, time_placed, symbol, quantity, is_buy_order, order_id=None, tag=None):
     self.agent_id = agent_id
 
     # Time at which the order was created by the agent.
@@ -31,6 +31,14 @@ class Order:
     # class that adds these later?)
     self.fill_price = None
 
+    # Tag: a free-form user-defined field that can contain any information relevant to the
+    #      entity placing the order.  Recommend keeping it alphanumeric rather than
+    #      shoving in objects, as it will be there taking memory for the lifetime of the
+    #      order and in all logging mechanisms.  Intent: for strategy agents to set tags
+    #      to help keep track of the intent of particular orders, to simplify their code.
+    self.tag = tag
+
+
   def generateOrderId(self):
     # generates a unique order ID if the order ID is not specified
     if not Order.order_id in Order._order_ids:
@@ -39,3 +47,5 @@ class Order:
       Order.order_id += 1
       oid = self.generateOrderId()
     return oid
+
+
