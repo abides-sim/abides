@@ -57,7 +57,13 @@ class Kernel:
     # agents must be a list of agents for the simulation,
     #        based on class agent.Agent
     self.agents = agents
-    self.agent_saved_states = [None] * len(self.agents)
+
+    # Simulation custom state in a freeform dictionary.  Allows config files
+    # that drive multiple simulations, or require the ability to generate
+    # special logs after simulation, to obtain needed output without special
+    # case code in the Kernel.  Per-agent state should be handled using the
+    # provided updateAgentState() method.
+    self.custom_state = {}
 
     # The kernel start and stop time (first and last timestamp in
     # the simulation, separate from anything like exchange open/close).
@@ -308,7 +314,7 @@ class Kernel:
 
     print ("Simulation ending!")
 
-    return self.agent_saved_states
+    return self.custom_state
 
 
   def sendMessage(self, sender = None, recipient = None, msg = None, delay = 0):
@@ -515,8 +521,17 @@ class Kernel:
     dfLog.to_pickle(os.path.join(path, file), compression='bz2')
 
 
-  def saveState (self, agent_id, state):
-    self.agent_saved_states[agent_id] = state
+  def updateAgentState (self, agent_id, state):
+    """ Called by an agent that wishes to replace its custom state in the dictionary
+        the Kernel will return at the end of simulation.  Shared state must be set directly,
+        and agents should coordinate that non-destructively.
+
+        Note that it is never necessary to use this kernel state dictionary for an agent
+        to remember information about itself, only to report it back to the config file.
+    """
+
+    if 'agent_state' not in self.custom_state: self.custom_state['agent_state'] = {}
+    self.custom_state['agent_state'][agent_id] = state
 
  
   @staticmethod

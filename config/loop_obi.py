@@ -166,8 +166,6 @@ for i in range(num_mom):
 
 num_agents = num_exch + num_zi + num_obi + num_val + num_mm + num_mom
 
-agent_saved_states = [None] * num_agents
-
 
 ### SIMULATION CONTROL SETTINGS.
 
@@ -440,7 +438,7 @@ for sim in range(num_consecutive_simulations):   # eventually make this a stoppi
                 defaultComputationDelay = defaultComputationDelay,
                 oracle = oracle, log_dir = "{}_{}".format(log_dir,sim))
 
-  obi_perf.append(agent_saved_states[0])
+  obi_perf.append(agent_saved_states['agent_state'][0])
 
   print ("\n====== Experimental wallclock elapsed: {} ======\n".format(
                                   pd.Timestamp('now') - wallclock_start))
