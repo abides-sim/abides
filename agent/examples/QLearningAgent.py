@@ -37,11 +37,11 @@ class QLearningAgent(TradingAgent):
 
 
 
-  # During kernelStopping, give the Kernel our saved_state for potential
+  # During kernelStopping, give the Kernel our saved state for potential
   # subsequent simulations during the same experiment.
   def kernelStopping (self):
     super().kernelStopping()
-    self.saveState(self.qtable)
+    self.updateAgentState(self.qtable)
 
 
   def wakeup (self, currentTime):
