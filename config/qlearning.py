@@ -122,7 +122,8 @@ for i in range(num_qlearners):
 
 num_agents = num_exch + num_zi + num_qlearners
 
-agent_saved_states = [None] * num_agents
+agent_saved_states = {}
+agent_saved_states['agent_state'] = [None] * num_agents
 
 
 ### SIMULATION CONTROL SETTINGS.
@@ -334,13 +335,13 @@ for sim in range(num_consecutive_simulations):   # eventually make this a stoppi
 
   # Add a QLearning agent to try to beat this market.
   for i in range(num_qlearners):
-    if agent_saved_states[agent_id] is None:
+    if agent_saved_states['agent_state'][agent_id] is None:
       random_state = get_rand_obj(agent_seeds[agent_id])
       qtable = QTable(dims = (2201, 3), alpha = 0.99, alpha_decay = 0.999,
                 alpha_min = 0, epsilon = 0.99, epsilon_decay = 0.999, epsilon_min = 0,
                 gamma = 0.98, random_state = random_state)
     else:
-      qtable = agent_saved_states[agent_id]
+      qtable = agent_saved_states['agent_state'][agent_id]
 
     agents.extend([ QLearningAgent(agent_id, "QLearning Agent {}".format(agent_id), "QLearningAgent", starting_cash = starting_cash, qtable = qtable, random_state = random_state) ])
     agent_id += 1

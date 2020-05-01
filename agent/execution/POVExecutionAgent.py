@@ -67,7 +67,7 @@ class POVExecutionAgent(TradingAgent):
                 and currentTime > self.start_time:
             qty = round(self.pov * self.transacted_volume[self.symbol])
             self.cancelOrders()
-            self.placeMarketOrder(self.symbol, self.direction, qty)
+            self.placeMarketOrder(self.symbol, qty, self.direction == 'BUY')
             log_print(f'[---- {self.name} - {currentTime} ----]: TOTAL TRANSACTED VOLUME IN THE LAST {self.look_back_period} = {self.transacted_volume[self.symbol]}')
             log_print(f'[---- {self.name} - {currentTime} ----]: MARKET ORDER PLACED - {qty}')
 
