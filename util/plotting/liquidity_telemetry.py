@@ -1,5 +1,6 @@
 import pandas as pd
 import sys
+import os
 
 sys.path.append('../..')
 sys.path.append('../formatting')
@@ -10,19 +11,25 @@ import matplotlib.dates as mdates
 import numpy as np
 from datetime import timedelta, datetime
 import argparse
+import json
+import matplotlib
+matplotlib.rcParams['agg.path.chunksize'] = 10000
 
-PLOT_PARAMS_DICT = {
-    'xmin': '10:50:00',
-    'xmax': '13:45:00',
-    'linewidth': 0.7,
-    'no_bids_color': 'blue',
-    'no_asks_color': 'red',
-    'transacted_volume_binwidth': 60,
-    'shade_start_time': '11:00:00',
-    'shade_end_time': '11:30:00'
-}
 
-LIQUDITIY_DROPOUT_BUFFER = 360  # Time in seconds used to "buffer" as indicating start and end of trading
+# PLOT_PARAMS_DICT = {
+#     'xmin': '09:32:00',
+#     'xmax': '13:30:00',
+#     'linewidth': 0.7,
+#     'no_bids_color': 'blue',
+#     'no_asks_color': 'red',
+#     'transacted_volume_binwidth': 120,
+#     'shade_start_time': '01:00:00',  # put outside xmin:xmax so not visible
+#     'shade_end_time': '01:30:00'
+# }
+
+PLOT_PARAMS_DICT = None
+
+LIQUIDITY_DROPOUT_BUFFER = 360  # Time in seconds used to "buffer" as indicating start and end of trading
 
 
 def create_orderbooks(exchange_path, ob_path):
@@ -83,7 +90,7 @@ def make_liquidity_dropout_events(processed_orderbook):
     return no_bid_idx, no_ask_idx
 
 
-def print_liquidity_stats(transacted_orders, no_bid_idx, no_ask_idx, liquidity_dropout_buffer=LIQUDITIY_DROPOUT_BUFFER):
+def print_liquidity_stats(transacted_orders, no_bid_idx, no_ask_idx, liquidity_dropout_buffer=LIQUIDITY_DROPOUT_BUFFER):
     """ Print statistics about liquidity to STDERR. """
 
     sys.stderr.write("Liquidity statistics:\n")
@@ -141,11 +148,13 @@ def make_plots(plot_inputs, plot_params_dict, title=None, out_file="liquidity_te
     shade_start = midnight + pd.to_timedelta(plot_params_dict['shade_start_time'])
     shade_end = midnight + pd.to_timedelta(plot_params_dict['shade_end_time'])
 
-    #  top plot -- mid price
-    plot_inputs['mid_price'][xmin:xmax].plot(ax=axes[0], color='black', label="Mid price")
+    #  top plot -- mid price + fundamental
+    if plot_inputs['fundamental'] is not None:
+        plot_inputs['fundamental'].loc[xmin:xmax].plot(ax=axes[0], color='blue', label="Fundamental")
+    plot_inputs['mid_price'].loc[xmin:xmax].plot(ax=axes[0], color='black', label="Mid price")
     axes[0].axvspan(shade_start, shade_end, alpha=0.2, color='grey')
     axes[0].xaxis.set_visible(False)
-    # axes[0].legend(fontsize='large')
+    axes[0].legend(fontsize='large')
     axes[0].set_ylabel("Mid-price ($)", fontsize='large')
     axes[0].set_xlim(xmin, xmax)
 
@@ -224,10 +233,32 @@ def make_plots(plot_inputs, plot_params_dict, title=None, out_file="liquidity_te
                 pad_inches=0.03)
 
 
+def load_fundamental(ob_path):
+    """ Retrives fundamental path from orderbook path. """
+
+    # get ticker name from ob path ORDERBOOK_TICKER_FULL.bz2
+    basename = os.path.basename(ob_path)
+    ticker = basename.split('_')[1]
+
+    # fundamental path from ticker fundamental_TICKER.bz2
+    fundamental_path = f'{os.path.dirname(ob_path)}/fundamental_{ticker}.bz2'
+
+    # load fundamental as pandas series
+    if os.path.exists(fundamental_path):
+        fundamental_df = pd.read_pickle(fundamental_path)
+        fundamental_ts = fundamental_df['FundamentalValue'].sort_index() / 100  # convert to USD from cents
+        fundamental_ts = fundamental_ts.loc[~fundamental_ts.index.duplicated(keep='last')]
+
+        return fundamental_ts
+    else:
+        return None
+
+
 def main(exchange_path, ob_path, title=None, outfile='liquidity_telemetry.png', verbose=False):
     """ Processes orderbook from files, creates the liquidity telemetry plot and (optionally) prints statistics. """
 
     processed_orderbook, transacted_orders, cleaned_orderbook = create_orderbooks(exchange_path, ob_path)
+    fundamental_ts = load_fundamental(ob_path)
 
     volume_hist = bin_and_sum(transacted_orders["SIZE"], PLOT_PARAMS_DICT['transacted_volume_binwidth'])
     counts, center, width = np_bar_plot_hist_input(volume_hist)
@@ -235,6 +266,7 @@ def main(exchange_path, ob_path, title=None, outfile='liquidity_telemetry.png', 
 
     plot_inputs = {
         "mid_price": cleaned_orderbook["MID_PRICE"],
+        "fundamental": fundamental_ts,
         "spread": cleaned_orderbook["SPREAD"],
         "order_volume_imbalance": cleaned_orderbook["ORDER_VOLUME_IMBALANCE"],
         "liquidity_events": {
@@ -286,6 +318,11 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose',
                         help="Print some summary statistics to stderr.",
                         action='store_true')
+    parser.add_argument('-c', '--plot-config',
+                        help='Name of config file to execute. '
+                             'See configs/telemetry_config.example.json for an example.',
+                        default='configs/telemetry_config.example.json',
+                        type=str)
 
     args, remaining_args = parser.parse_known_args()
 
@@ -294,5 +331,7 @@ if __name__ == '__main__':
     book = args.book
     title = args.plot_title
     verbose = args.verbose
+    with open(args.plot_config, 'r') as f:
+        PLOT_PARAMS_DICT = json.load(f)
 
     main(stream, book, title=title, outfile=out_filepath, verbose=verbose)
