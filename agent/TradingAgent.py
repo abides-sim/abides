@@ -355,7 +355,6 @@ class TradingAgent(FinancialAgent):
       self.orders[order.order_id] = deepcopy(order)
       self.sendMessage(self.exchangeID, Message({"msg" : "MARKET_ORDER", "sender": self.id, "order": order}))
       if self.log_orders: self.logEvent('ORDER_SUBMITTED', order.to_dict())
-
     else:
       log_print("TradingAgent ignored market order of quantity zero: {}", order)
 
