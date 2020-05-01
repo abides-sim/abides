@@ -164,8 +164,15 @@ class Agent:
   def writeLog (self, dfLog, filename=None):
     self.kernel.writeLog(self.id, dfLog, filename)
 
-  def saveState (self, state):
-    self.kernel.saveState(self.id, state)
+  def updateAgentState (self, state):
+    """ Agents should use this method to replace their custom state in the dictionary
+        the Kernel will return to the experimental config file at the end of the
+        simulation.  This is intended to be write-only, and agents should not use
+        it to store information for their own later use.
+    """
+
+    self.kernel.updateAgentState(self.id, state)
+
 
   ### Internal methods that should not be modified without a very good reason.
 
