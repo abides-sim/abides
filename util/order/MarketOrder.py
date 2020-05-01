@@ -1,7 +1,6 @@
 from util.order.Order import Order
 from Kernel import Kernel
 from agent.FinancialAgent import dollarize
-from pandas import Timestamp as pd_Timestamp
 from copy import deepcopy
 
 import sys
