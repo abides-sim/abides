@@ -129,7 +129,7 @@ LimitOrder.silent_mode = not args.verbose
 
 exchange_log_orders = True
 log_orders = False
-book_freq = '1S'
+book_freq = 0
 
 simulation_start_time = dt.datetime.now()
 print("Simulation Start Time: {}".format(simulation_start_time))
