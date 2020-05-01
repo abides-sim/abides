@@ -33,7 +33,7 @@ class AggressiveAgent(TradingAgent):
     def receiveMessage(self, currentTime, msg):
         super().receiveMessage(currentTime, msg)
         if self.state == 'AWAITING_SPREAD' and msg.body['msg'] == 'QUERY_SPREAD':
-            self.placeMarketOrder(self.symbol, self.direction, self.quantity)
+            self.placeMarketOrder(self.symbol, self.quantity, self.direction == 'BUY')
 
     def getWakeFrequency(self):
         return self.timestamp - self.mkt_open

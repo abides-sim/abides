@@ -77,7 +77,7 @@ class ExecutionAgent(TradingAgent):
 
     def placeOrders(self, currentTime):
         if currentTime == self.execution_time_horizon[-2]:
-            self.placeMarketOrder(symbol=self.symbol, direction=self.direction, quantity=self.rem_quantity)
+            self.placeMarketOrder(symbol=self.symbol, quantity=self.rem_quantity, is_buy_order=self.direction == 'BUY')
         elif currentTime in self.execution_time_horizon[:-2]:
             bid, _, ask, _ = self.getKnownBidAsk(self.symbol)
 
