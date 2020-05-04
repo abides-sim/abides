@@ -15,8 +15,7 @@ class Order:
     self.agent_id: int = agent_id
 
     # Time at which the order was created by the agent.
-    self.time_placed: pd_Timestamp = time_placed
-    # print(f'time placed: {self.time_placed}')
+    self.time_placed: pd_Timestamp = time_placed 
 
     # Equity symbol for the order.
     self.symbol: str = symbol
