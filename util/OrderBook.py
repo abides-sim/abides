@@ -4,12 +4,12 @@
 import sys
 
 from message.Message import Message
+from util.order.LimitOrder import LimitOrder
 from util.util import log_print, be_silent
 
 from copy import deepcopy
 import pandas as pd
 from pandas.io.json import json_normalize
-from pprint import pprint
 from functools import reduce
 
 class OrderBook:
@@ -149,6 +149,36 @@ class OrderBook:
                 self.book_log.append(row)
         self.last_update_ts = self.owner.currentTime
         self.prettyPrint()
+
+    def handleMarketOrder(self, order):
+
+        if order.symbol != self.symbol:
+            log_print("{} order discarded.  Does not match OrderBook symbol: {}", order.symbol, self.symbol)
+            return
+
+        if (order.quantity <= 0) or (int(order.quantity) != order.quantity):
+            log_print("{} order discarded.  Quantity ({}) must be a positive integer.", order.symbol, order.quantity)
+            return
+
+        orderbook_side = self.getInsideAsks() if order.is_buy_order else self.getInsideBids()
+
+        limit_orders = {} # limit orders to be placed (key=price, value=quantity)
+        order_quantity = order.quantity
+        for price_level in orderbook_side:
+            price, size = price_level[0], price_level[1]
+            if order_quantity <= size:
+                limit_orders[price] = order_quantity #i.e. the top of the book has enough volume for the full order
+                break
+            else:
+                limit_orders[price] = size # i.e. not enough liquidity at the top of the book for the full order
+                                           # therefore walk through the book until all the quantities are matched
+                order_quantity -= size
+                continue
+        log_print("{} placing market order as multiple limit orders", order.symbol, order.quantity)
+        for lo in limit_orders.items():
+            p, q = lo[0], lo[1]
+            limit_order = LimitOrder(order.agent_id, order.time_placed, order.symbol, q, order.is_buy_order, p)
+            self.handleLimitOrder(limit_order)
 
     def executeOrder(self, order):
         # Finds a single best match for this order, without regard for quantity.
