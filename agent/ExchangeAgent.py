@@ -416,4 +416,3 @@ class ExchangeAgent(FinancialAgent):
 
   def getMarketClose(self):
     return self.__mkt_close
-

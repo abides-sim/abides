@@ -4,7 +4,6 @@
 from util.order.Order import Order
 from Kernel import Kernel
 from agent.FinancialAgent import dollarize
-from pandas import Timestamp as pd_Timestamp
 from copy import deepcopy
 
 import sys
@@ -15,8 +14,8 @@ silent_mode = False
 
 class LimitOrder(Order):
 
-  def __init__(self, agent_id: int, time_placed: pd_Timestamp, symbol: str, quantity: float, is_buy_order: bool,
-         limit_price: int, order_id: int = None, tag: str = None):
+  def __init__(self, agent_id, time_placed, symbol, quantity, is_buy_order, limit_price, order_id=None, tag=None):
+    
     super().__init__(agent_id, time_placed, symbol, quantity, is_buy_order, order_id, tag=tag)
 
     # The limit price is the minimum price the agent will accept (for a sell order) or
