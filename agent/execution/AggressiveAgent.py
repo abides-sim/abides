@@ -1,5 +1,5 @@
 from agent.TradingAgent import TradingAgent
-
+from util.util import log_print
 
 class AggressiveAgent(TradingAgent):
     """
@@ -33,7 +33,8 @@ class AggressiveAgent(TradingAgent):
     def receiveMessage(self, currentTime, msg):
         super().receiveMessage(currentTime, msg)
         if self.state == 'AWAITING_SPREAD' and msg.body['msg'] == 'QUERY_SPREAD':
-            self.placeMarketOrder(self.symbol, self.direction, self.quantity)
+            self.placeMarketOrder(self.symbol, self.quantity, self.direction == 'BUY')
+            log_print('[---- {} - {} ----]: MARKET ORDER PLACED - quantity={}'.format(self.name, currentTime, self.quantity))
 
     def getWakeFrequency(self):
         return self.timestamp - self.mkt_open
