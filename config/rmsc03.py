@@ -82,7 +82,7 @@ parser.add_argument('-p',
 # market maker config
 parser.add_argument('--mm-pov',
                     type=float,
-                    default=0.1
+                    default=0.05
                     )
 parser.add_argument('--mm-window-size',
                     type=util.validate_window_size,
@@ -94,23 +94,27 @@ parser.add_argument('--mm-min-order-size',
                     )
 parser.add_argument('--mm-num-ticks',
                     type=int,
-                    default=1
+                    default=40
                     )
 parser.add_argument('--mm-wake-up-freq',
                     type=str,
-                    default='0.1S'
+                    default='10S'
                     )
 parser.add_argument('--mm-skew-beta',
                     type=float,
-                    default=0.001
+                    default=0
                     )
 parser.add_argument('--mm-level-spacing',
                     type=float,
-                    default=0.5
+                    default=5
                     )
 parser.add_argument('--mm-spread-alpha',
                     type=float,
                     default=0.85
+                    )
+parser.add_argument('--fund-vol',
+                    type=float,
+                    default=1e-4
                     )
 
 args, remaining_args = parser.parse_known_args()
@@ -158,7 +162,7 @@ lambda_a = 7e-11
 symbols = {symbol: {'r_bar': r_bar,
                     'kappa': 1.67e-16,
                     'sigma_s': 0,
-                    'fund_vol': 1e-3,
+                    'fund_vol': args.fund_vol,
                     'megashock_lambda_a': 2.77778e-13,
                     'megashock_mean': 1e3,
                     'megashock_var': 5e4,
@@ -229,17 +233,7 @@ wake_up_freq == How often the market maker wakes up
 """
 
 # each elem of mm_params is tuple (window_size, pov, num_ticks, wake_up_freq, min_order_size)
-# mm_params = [(args.mm_window_size, args.mm_pov, args.mm_num_ticks, args.mm_wake_up_freq, args.mm_min_order_size), ('adaptive', 0.0001, 100, '2min', 5)]
-# mm_params = [(args.mm_window_size, args.mm_pov, args.mm_num_ticks, args.mm_wake_up_freq, args.mm_min_order_size),
-             # (args.mm_window_size, 0.001, 50, '1min', 1)]
-
 mm_params = [(args.mm_window_size, args.mm_pov, args.mm_num_ticks, args.mm_wake_up_freq, args.mm_min_order_size)]
-
-# mm_params = [
-#     (args.mm_window_size, args.mm_pov, args.mm_num_ticks, args.mm_wake_up_freq, args.mm_min_order_size),
-#     (args.mm_window_size, args.mm_pov, 5, '20S', args.mm_min_order_size),
-#     (args.mm_window_size, args.mm_pov, 100, '2min', 50)
-# ]
 
 num_mm_agents = len(mm_params)
 mm_cancel_limit_delay = 50  # 50 nanoseconds
