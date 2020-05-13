@@ -28,7 +28,7 @@ class AdaptiveMarketMakerAgent(TradingAgent):
 
     def __init__(self, id, name, type, symbol, starting_cash, pov=0.05, min_order_size=20, window_size=5, anchor=ANCHOR_MIDDLE_STR,
                  num_ticks=20, level_spacing=0.5, wake_up_freq='1s', subscribe=False, subscribe_freq=10e9, subscribe_num_levels=1, cancel_limit_delay=50,
-                 skew_beta=0, spread_alpha=0.85, log_orders=False, random_state=None):
+                 skew_beta=0, spread_alpha=0.85, backstop_quantity=None, log_orders=False, random_state=None):
 
         super().__init__(id, name, type, starting_cash=starting_cash, log_orders=log_orders, random_state=random_state)
         self.is_adaptive = False
@@ -49,6 +49,7 @@ class AdaptiveMarketMakerAgent(TradingAgent):
 
         self.skew_beta = skew_beta  # parameter for determining order placement imbalance
         self.spread_alpha = spread_alpha  # parameter for exponentially weighted moving average of spread. 1 corresponds to ignoring old values, 0 corresponds to no updates
+        self.backstop_quantity = backstop_quantity  # how many orders to place at outside order level, to prevent liquidity dropouts. If None then place same as at other levels.
         self.log_orders = log_orders
 
         ## Internal variables
@@ -259,6 +260,18 @@ class AdaptiveMarketMakerAgent(TradingAgent):
         """
 
         bid_orders, ask_orders = self.computeOrdersToPlace(mid)
+
+        if self.backstop_quantity is not None:
+            bid_price = bid_orders[0]
+            log_print('{}: Placing BUY limit order of size {} @ price {}', self.name, self.backstop_quantity, bid_price)
+            self.placeLimitOrder(self.symbol, self.backstop_quantity, True, bid_price)
+            bid_orders = bid_orders[1:]
+
+            ask_price = ask_orders[-1]
+            log_print('{}: Placing SELL limit order of size {} @ price {}', self.name, self.backstop_quantity, ask_price)
+            self.placeLimitOrder(self.symbol, self.backstop_quantity, False, ask_price)
+            ask_orders = ask_orders[:-1]
+
         for bid_price in bid_orders:
             log_print('{}: Placing BUY limit order of size {} @ price {}', self.name, self.buy_order_size, bid_price)
             self.placeLimitOrder(self.symbol, self.buy_order_size, True, bid_price)

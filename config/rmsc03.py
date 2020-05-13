@@ -94,7 +94,7 @@ parser.add_argument('--mm-min-order-size',
                     )
 parser.add_argument('--mm-num-ticks',
                     type=int,
-                    default=40
+                    default=10
                     )
 parser.add_argument('--mm-wake-up-freq',
                     type=str,
@@ -110,8 +110,12 @@ parser.add_argument('--mm-level-spacing',
                     )
 parser.add_argument('--mm-spread-alpha',
                     type=float,
-                    default=0.85
+                    default=0.75
                     )
+parser.add_argument('--mm-backstop-quantity',
+                    type=float,
+                    default=50000)
+
 parser.add_argument('--fund-vol',
                     type=float,
                     default=1e-4
@@ -163,7 +167,7 @@ symbols = {symbol: {'r_bar': r_bar,
                     'kappa': 1.67e-16,
                     'sigma_s': 0,
                     'fund_vol': args.fund_vol,
-                    'megashock_lambda_a': 2.77778e-13,
+                    'megashock_lambda_a': 2.77778e-18,
                     'megashock_mean': 1e3,
                     'megashock_var': 5e4,
                     'random_state': np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32, dtype='uint64'))}}
@@ -252,6 +256,7 @@ agents.extend([AdaptiveMarketMakerAgent(id=j,
                                 skew_beta=args.mm_skew_beta,
                                 level_spacing=args.mm_level_spacing,
                                 spread_alpha=args.mm_spread_alpha,
+                                backstop_quantity=args.mm_backstop_quantity,
                                 log_orders=log_orders,
                                 random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32,
                                                                                           dtype='uint64')))
