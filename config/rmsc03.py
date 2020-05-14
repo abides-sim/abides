@@ -239,7 +239,9 @@ wake_up_freq == How often the market maker wakes up
 """
 
 # each elem of mm_params is tuple (window_size, pov, num_ticks, wake_up_freq, min_order_size)
-mm_params = [(args.mm_window_size, args.mm_pov, args.mm_num_ticks, args.mm_wake_up_freq, args.mm_min_order_size)]
+mm_params = [(args.mm_window_size, args.mm_pov, args.mm_num_ticks, args.mm_wake_up_freq, args.mm_min_order_size),
+             (args.mm_window_size, args.mm_pov, args.mm_num_ticks, args.mm_wake_up_freq, args.mm_min_order_size)
+             ]
 
 num_mm_agents = len(mm_params)
 mm_cancel_limit_delay = 50  # 50 nanoseconds
