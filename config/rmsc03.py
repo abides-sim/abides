@@ -157,10 +157,8 @@ starting_cash = 10000000  # Cash in this simulator is always in CENTS.
 
 r_bar = 1e5
 sigma_n = r_bar / 10
-#sigma_n = r_bar / 2
 kappa = 1.67e-15
 lambda_a = 7e-11
-# lambda_a = 7e-10
 
 # Oracle
 symbols = {symbol: {'r_bar': r_bar,
@@ -175,6 +173,10 @@ symbols = {symbol: {'r_bar': r_bar,
 oracle = SparseMeanRevertingOracle(mkt_open, mkt_close, symbols)
 
 # 1) Exchange Agent
+
+#  How many orders in the past to store for transacted volume computation
+stream_history_length = int(pd.to_timedelta(args.mm_wake_up_freq).total_seconds() * 100)
+
 agents.extend([ExchangeAgent(id=0,
                              name="EXCHANGE_AGENT",
                              type="ExchangeAgent",
@@ -184,7 +186,7 @@ agents.extend([ExchangeAgent(id=0,
                              log_orders=exchange_log_orders,
                              pipeline_delay=0,
                              computation_delay=0,
-                             stream_history=int(1e3),
+                             stream_history=stream_history_length,
                              book_freq=book_freq,
                              wide_book=True,
                              random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32, dtype='uint64')))])
