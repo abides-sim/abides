@@ -184,7 +184,7 @@ agents.extend([ExchangeAgent(id=0,
                              log_orders=exchange_log_orders,
                              pipeline_delay=0,
                              computation_delay=0,
-                             stream_history=int(1e5),
+                             stream_history=int(1e3),
                              book_freq=book_freq,
                              wide_book=True,
                              random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32, dtype='uint64')))])
