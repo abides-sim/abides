@@ -1,6 +1,6 @@
 import pandas as pd
 from datetime import datetime
-from convert_order_stream import dir_path
+from util.formatting.convert_order_stream import dir_path
 import argparse
 from dateutil.parser import parse
 from datetime import timedelta

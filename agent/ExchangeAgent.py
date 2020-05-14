@@ -27,7 +27,7 @@ class ExchangeAgent(FinancialAgent):
                computation_delay = 1, stream_history = 0, log_orders = False, random_state = None):
 
     super().__init__(id, name, type, random_state)
-
+    self.log_events = True
     # Do not request repeated wakeup calls.
     self.reschedule = False
 

@@ -4,14 +4,14 @@ import numpy as np
 
 sys.path.append('../util/formatting')
 sys.path.append('../util')
-from convert_order_book import process_orderbook, is_wide_book
-from convert_order_stream import convert_stream_to_format
+from util.formatting.convert_order_book import process_orderbook, is_wide_book
+from util.formatting.convert_order_stream import convert_stream_to_format
 import itertools
 from bisect import bisect
 from matplotlib.cm import get_cmap
 import os
 import warnings
-from util import get_value_from_timestamp
+from util.util import get_value_from_timestamp
 
 
 MID_PRICE_CUTOFF = 10000  # Price above which mid price is set as `NaN` and subsequently forgotten. WARNING: This
@@ -129,7 +129,7 @@ def make_orderbook_for_analysis(stream_path, orderbook_path, num_levels=5, ignor
         *[[f'ask_price_{level}', f'ask_size_{level}', f'bid_price_{level}', f'bid_size_{level}'] for level in
           range(1, num_levels + 1)]))
     merged = pd.merge(stream_processed, ob_processed, left_index=True, right_index=True, how='left')
-    merge_cols = ['PRICE', 'SIZE', 'BUY_SELL_FLAG', 'TYPE'] + columns
+    merge_cols = ['ORDER_ID', 'PRICE', 'SIZE', 'BUY_SELL_FLAG', 'TYPE'] + columns
     merged = merged[merge_cols]
     merged['PRICE'] = merged['PRICE'] / 100
 

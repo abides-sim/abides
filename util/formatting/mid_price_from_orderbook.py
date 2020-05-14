@@ -1,5 +1,5 @@
-from convert_order_book import process_orderbook, is_wide_book
-from convert_order_stream import dir_path
+from util.formatting.convert_order_book import process_orderbook, is_wide_book
+from util.formatting.convert_order_stream import dir_path
 import pandas as pd
 import os
 import argparse
