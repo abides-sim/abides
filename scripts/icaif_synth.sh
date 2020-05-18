@@ -2,8 +2,8 @@
 
 stock='ABM'
 date=20200101
-seeds=$(seq 100 200)
-num_parallel_runs=50
+seeds=$(seq 1 300)
+num_parallel_runs=2
 
 for seed in ${seeds[*]}
   do

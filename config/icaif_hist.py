@@ -86,7 +86,7 @@ parser.add_argument('-p',
 # market maker config
 parser.add_argument('--mm-pov',
                     type=float,
-                    default=0.05
+                    default=0.025
                     )
 parser.add_argument('--mm-window-size',
                     type=util.validate_window_size,
@@ -169,8 +169,10 @@ symbols = {
 
 oracle = ExternalFileOracle(symbols)
 
-r_bar = oracle.fundamentals[symbol].values[0]
+r_bar = util.get_value_from_timestamp(oracle.fundamentals[symbol], mkt_open)
+print('r_bar: {}'.format(r_bar))
 sigma_n = r_bar / 10
+print('sigma_n: {}'.format(sigma_n))
 kappa = 1.67e-15
 lambda_a = 7e-11
 

@@ -82,7 +82,7 @@ parser.add_argument('-p',
 # market maker config
 parser.add_argument('--mm-pov',
                     type=float,
-                    default=0.05
+                    default=0.025
                     )
 parser.add_argument('--mm-window-size',
                     type=util.validate_window_size,
@@ -158,7 +158,7 @@ starting_cash = 10000000  # Cash in this simulator is always in CENTS.
 r_bar = 1e5
 sigma_n = r_bar / 10
 kappa = 1.67e-15
-lambda_a = 7e-11
+lambda_a = 7e-10
 
 # Oracle
 symbols = {symbol: {'r_bar': r_bar,
