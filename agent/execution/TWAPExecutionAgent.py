@@ -31,8 +31,8 @@ class TWAPExecutionAgent(ExecutionAgent):
         child_quantity = int(self.quantity / len(self.execution_time_horizon))
         for b in bins:
             schedule[b] = child_quantity
-        log_print(f'[---- {self.name}  - Schedule ----]:')
-        log_print(f'[---- {self.name}  - Total Number of Orders ----]: {len(schedule)}')
+        log_print('[---- {} {} - Schedule ----]:'.format(self.name, self.currentTime))
+        log_print('[---- {} {} - Total Number of Orders ----]: {}'.format(self.name, self.currentTime, len(schedule)))
         for t, q in schedule.items():
-            log_print(f"From: {t.left.time()}, To: {t.right.time()}, Quantity: {q}")
+            log_print("From: {}, To: {}, Quantity: {}".format(t.left.time(), t.right.time(), q))
         return schedule

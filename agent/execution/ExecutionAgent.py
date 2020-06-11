@@ -64,32 +64,36 @@ class ExecutionAgent(TradingAgent):
         self.executed_orders.append(executed_order)
         executed_qty = sum(executed_order.quantity for executed_order in self.executed_orders)
         self.rem_quantity = self.quantity - executed_qty
-        log_print(f'[---- {self.name} - {currentTime} ----]: LIMIT ORDER EXECUTED - {executed_order.quantity} @ {executed_order.fill_price}')
-        log_print(f'[---- {self.name} - {currentTime} ----]: EXECUTED QUANTITY: {executed_qty}')
-        log_print(f'[---- {self.name} - {currentTime} ----]: REMAINING QUANTITY (NOT EXECUTED): {self.rem_quantity}')
-        log_print(f'[---- {self.name} - {currentTime} ----]: % EXECUTED: {round((1 - self.rem_quantity / self.quantity) * 100, 2)} \n')
+        log_print('[---- {} - {} ----]: LIMIT ORDER EXECUTED - {} @ {}'.format(self.name, currentTime,
+                                                                               executed_order.quantity,
+                                                                               executed_order.fill_price))
+        log_print('[---- {} - {} ----]: EXECUTED QUANTITY: {}'.format(self.name, currentTime, executed_qty))
+        log_print('[---- {} - {} ----]: REMAINING QUANTITY: {}'.format(self.name, currentTime, self.rem_quantity))
+        log_print('[---- {} - {} ----]: % EXECUTED: {} \n'.format(self.name, currentTime,
+                                                                   round((1 - self.rem_quantity / self.quantity) * 100, 2)))
 
     def handleOrderAcceptance(self, currentTime, msg):
         accepted_order = msg.body['order']
         self.accepted_orders.append(accepted_order)
         accepted_qty = sum(accepted_order.quantity for accepted_order in self.accepted_orders)
-        log_print(f'[---- {self.name} - {currentTime} ----]: ACCEPTED QUANTITY : {accepted_qty}')
+        log_print('[---- {} - {} ----]: ACCEPTED QUANTITY : {}'.format(self.name, currentTime, accepted_qty))
 
     def placeOrders(self, currentTime):
         if currentTime == self.execution_time_horizon[-2]:
-            self.placeMarketOrder(symbol=self.symbol, direction=self.direction, quantity=self.rem_quantity)
+            self.placeMarketOrder(symbol=self.symbol, quantity=self.rem_quantity, is_buy_order=self.direction == 'BUY')
         elif currentTime in self.execution_time_horizon[:-2]:
             bid, _, ask, _ = self.getKnownBidAsk(self.symbol)
 
             if currentTime == self.start_time:
                 self.arrival_price = (bid + ask) / 2
-                log_print(f"[---- {self.name}  - {currentTime} ----]: Arrival Mid Price {self.arrival_price}")
+                log_print("[---- {}  - {} ----]: Arrival Mid Price {}".format(self.name, currentTime,
+                                                                               self.arrival_price))
 
             qty = self.schedule[pd.Interval(currentTime, currentTime+datetime.timedelta(minutes=1))]
             price = ask if self.direction == 'BUY' else bid
             self.placeLimitOrder(symbol=self.symbol, quantity=qty,
                                  is_buy_order=self.direction == 'BUY', limit_price=price)
-            log_print(f'[---- {self.name} - {currentTime} ----]: LIMIT ORDER PLACED - {qty} @ {price}')
+            log_print('[---- {} - {} ----]: LIMIT ORDER PLACED - {} @ {}'.format(self.name, currentTime, qty, price))
 
     def cancelOrders(self):
         for _, order in self.orders.items():
