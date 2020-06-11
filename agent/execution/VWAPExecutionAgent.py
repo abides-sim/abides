@@ -33,10 +33,10 @@ class VWAPExecutionAgent(ExecutionAgent):
         bins = pd.interval_range(start=self.start_time, end=self.end_time, freq=self.freq)
         for b in bins:
             schedule[b] = round(volume_profile[b.left] * self.quantity)
-        log_print(f'[---- {self.name}  - Schedule ----]:')
-        log_print(f'[---- {self.name}  - Total Number of Orders ----]: {len(schedule)}')
+        log_print('[---- {} {} - Schedule ----]:'.format(self.name, self.currentTime))
+        log_print('[---- {} {} - Total Number of Orders ----]: {}'.format(self.name, self.currentTime, len(schedule)))
         for t, q in schedule.items():
-            log_print(f"Start: {t.left.time()}, End: {t.right.time()}, Quantity: {q}")
+            log_print("From: {}, To: {}, Quantity: {}".format(t.left.time(), t.right.time(), q))
         return schedule
 
     @staticmethod

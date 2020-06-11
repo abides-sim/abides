@@ -15,7 +15,6 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 warnings.simplefilter(action='ignore', category=UserWarning)
 
-import jsons as js
 import pandas as pd
 pd.set_option('display.max_rows', 500)
 
@@ -62,7 +61,6 @@ class ExchangeAgent(FinancialAgent):
 
     # Store orderbook in wide format? ONLY WORKS with book_freq == 0
     self.wide_book = wide_book
-    self.wide_book_warning()
 
     # The subscription dict is a dictionary with the key = agent ID,
     # value = dict (key = symbol, value = list [levels (no of levels to recieve updates for),
@@ -128,7 +126,7 @@ class ExchangeAgent(FinancialAgent):
     if currentTime > self.mkt_close:
       # Most messages after close will receive a 'MKT_CLOSED' message in response.  A few things
       # might still be processed, like requests for final trade prices or such.
-      if msg.body['msg'] in ['LIMIT_ORDER', 'CANCEL_ORDER', 'MODIFY_ORDER']:
+      if msg.body['msg'] in ['LIMIT_ORDER', 'MARKET_ORDER', 'CANCEL_ORDER', 'MODIFY_ORDER']:
         log_print("{} received {}: {}", self.name, msg.body['msg'], msg.body['order'])
         self.sendMessage(msg.body['sender'], Message({"msg": "MKT_CLOSED"}))
 
@@ -146,8 +144,8 @@ class ExchangeAgent(FinancialAgent):
         return
 
     # Log order messages only if that option is configured.  Log all other messages.
-    if msg.body['msg'] in ['LIMIT_ORDER', 'CANCEL_ORDER']:
-      if self.log_orders: self.logEvent(msg.body['msg'], js.dump(msg.body['order'], strip_privates=True))
+    if msg.body['msg'] in ['LIMIT_ORDER', 'MARKET_ORDER', 'CANCEL_ORDER', 'MODIFY_ORDER']:
+      if self.log_orders: self.logEvent(msg.body['msg'], msg.body['order'].to_dict())
     else:
       self.logEvent(msg.body['msg'], msg.body['sender'])
 
@@ -241,10 +239,19 @@ class ExchangeAgent(FinancialAgent):
       order = msg.body['order']
       log_print("{} received LIMIT_ORDER: {}", self.name, order)
       if order.symbol not in self.order_books:
-        log_print("Order discarded.  Unknown symbol: {}", order.symbol)
+        log_print("Limit Order discarded.  Unknown symbol: {}", order.symbol)
       else:
         # Hand the order to the order book for processing.
         self.order_books[order.symbol].handleLimitOrder(deepcopy(order))
+        self.publishOrderBookData()
+    elif msg.body['msg'] == "MARKET_ORDER":
+      order = msg.body['order']
+      log_print("{} received MARKET_ORDER: {}", self.name, order)
+      if order.symbol not in self.order_books:
+        log_print("Market Order discarded.  Unknown symbol: {}", order.symbol)
+      else:
+        # Hand the market order to the order book for processing.
+        self.order_books[order.symbol].handleMarketOrder(deepcopy(order))
         self.publishOrderBookData()
     elif msg.body['msg'] == "CANCEL_ORDER":
       # Note: this is somewhat open to abuse, as in theory agents could cancel other agents' orders.
@@ -305,7 +312,8 @@ class ExchangeAgent(FinancialAgent):
                                               "symbol": symbol,
                                               "bids": self.order_books[symbol].getInsideBids(levels),
                                               "asks": self.order_books[symbol].getInsideAsks(levels),
-                                              "last_transaction": self.order_books[symbol].last_trade}))
+                                              "last_transaction": self.order_books[symbol].last_trade,
+                                              "exchange_ts": self.currentTime}))
           self.subscription_dict[agent_id][symbol][2] = orderbook_last_update
 
   def logOrderBookSnapshots(self, symbol):
@@ -330,15 +338,12 @@ class ExchangeAgent(FinancialAgent):
     if book.book_log:
 
       print("Logging order book to file...")
-      dfLog = pd.DataFrame(book.book_log)
+      dfLog = book.book_log_to_df()
       dfLog.set_index('QuoteTime', inplace=True)
       dfLog = dfLog[~dfLog.index.duplicated(keep='last')]
       dfLog.sort_index(inplace=True)
 
       if str(self.book_freq).isdigit() and int(self.book_freq) == 0:  # Save all possible information
-        # With all order snapshots saved DataFrame is very sparse
-        dfLog = pd.SparseDataFrame(dfLog)
-
         # Get the full range of quotes at the finest possible resolution.
         quotes = get_quote_range_iterator(dfLog.columns.unique())
 
@@ -361,16 +366,18 @@ class ExchangeAgent(FinancialAgent):
         time_idx = pd.date_range(self.mkt_open, self.mkt_close, freq=self.book_freq, closed='right')
         dfLog = dfLog.reindex(time_idx, method='ffill')
         dfLog.sort_index(inplace=True)
-        dfLog = dfLog.stack()
-        dfLog.sort_index(inplace=True)
 
-        # Get the full range of quotes at the finest possible resolution.
-        quotes = get_quote_range_iterator(dfLog.index.get_level_values(1).unique())
+        if not self.wide_book:
+          dfLog = dfLog.stack()
+          dfLog.sort_index(inplace=True)
 
-        # Restructure the log to have multi-level rows of all possible pairs of time and quote
-        # with volume as the only column.
-        filledIndex = pd.MultiIndex.from_product([time_idx, quotes], names=['time', 'quote'])
-        dfLog = dfLog.reindex(filledIndex)
+          # Get the full range of quotes at the finest possible resolution.
+          quotes = get_quote_range_iterator(dfLog.index.get_level_values(1).unique())
+
+          # Restructure the log to have multi-level rows of all possible pairs of time and quote
+          # with volume as the only column.
+          filledIndex = pd.MultiIndex.from_product([time_idx, quotes], names=['time', 'quote'])
+          dfLog = dfLog.reindex(filledIndex)
 
         filename = f'ORDERBOOK_{symbol}_FREQ_{self.book_freq}'
 
@@ -398,7 +405,7 @@ class ExchangeAgent(FinancialAgent):
       # Messages that require order book modification (not simple queries) incur the additional
       # parallel processing delay as configured.
       super().sendMessage(recipientID, msg, delay = self.pipeline_delay)
-      if self.log_orders: self.logEvent(msg.body['msg'], js.dump(msg.body['order'], strip_privates=True))
+      if self.log_orders: self.logEvent(msg.body['msg'], msg.body['order'].to_dict())
     else:
       # Other message types incur only the currently-configured computation delay for this agent.
       super().sendMessage(recipientID, msg)
@@ -409,9 +416,3 @@ class ExchangeAgent(FinancialAgent):
 
   def getMarketClose(self):
     return self.__mkt_close
-
-  def wide_book_warning(self):
-    """ Prints warning message about wide orderbook format usage. """
-    if self.wide_book and (self.book_freq != 0):
-      log_print(f"WARNING: (wide_book == True) and (book_freq != 0). Orderbook will be logged in column MultiIndex "
-                "format at frequency {self.book_freq}.")

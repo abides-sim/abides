@@ -4,13 +4,16 @@
 import sys
 
 from message.Message import Message
+from util.order.LimitOrder import LimitOrder
 from util.util import log_print, be_silent
 
 from copy import deepcopy
 import pandas as pd
 from pandas.io.json import json_normalize
-from pprint import pprint
 from functools import reduce
+from scipy.sparse import dok_matrix
+from tqdm import tqdm
+
 
 class OrderBook:
 
@@ -33,6 +36,12 @@ class OrderBook:
 
         # Last timestamp the orderbook for that symbol was updated
         self.last_update_ts = None
+
+        # Internal variable used for computing transacted volumes
+        self._transacted_volume = {
+            "unrolled_transactions": None,
+            "self.history_previous_length": 0
+        }
 
     def handleLimitOrder(self, order):
         # Matches a limit order or adds it to the order book.  Handles partial matches piecewise,
@@ -134,14 +143,12 @@ class OrderBook:
             # for later visualization.  (This is slow.)
             if self.owner.book_freq is not None:
                 row = {'QuoteTime': self.owner.currentTime}
-                for quote in self.quotes_seen:
-                    row[quote] = 0
                 for quote, volume in self.getInsideBids():
                     row[quote] = -volume
                     self.quotes_seen.add(quote)
                 for quote, volume in self.getInsideAsks():
                     if quote in row:
-                        if row[quote] != 0:
+                        if row[quote] is not None:
                             print(
                                 "WARNING: THIS IS A REAL PROBLEM: an order book contains bids and asks at the same quote price!")
                     row[quote] = volume
@@ -149,6 +156,36 @@ class OrderBook:
                 self.book_log.append(row)
         self.last_update_ts = self.owner.currentTime
         self.prettyPrint()
+
+    def handleMarketOrder(self, order):
+
+        if order.symbol != self.symbol:
+            log_print("{} order discarded.  Does not match OrderBook symbol: {}", order.symbol, self.symbol)
+            return
+
+        if (order.quantity <= 0) or (int(order.quantity) != order.quantity):
+            log_print("{} order discarded.  Quantity ({}) must be a positive integer.", order.symbol, order.quantity)
+            return
+
+        orderbook_side = self.getInsideAsks() if order.is_buy_order else self.getInsideBids()
+
+        limit_orders = {} # limit orders to be placed (key=price, value=quantity)
+        order_quantity = order.quantity
+        for price_level in orderbook_side:
+            price, size = price_level[0], price_level[1]
+            if order_quantity <= size:
+                limit_orders[price] = order_quantity #i.e. the top of the book has enough volume for the full order
+                break
+            else:
+                limit_orders[price] = size # i.e. not enough liquidity at the top of the book for the full order
+                                           # therefore walk through the book until all the quantities are matched
+                order_quantity -= size
+                continue
+        log_print("{} placing market order as multiple limit orders", order.symbol, order.quantity)
+        for lo in limit_orders.items():
+            p, q = lo[0], lo[1]
+            limit_order = LimitOrder(order.agent_id, order.time_placed, order.symbol, q, order.is_buy_order, p)
+            self.handleLimitOrder(limit_order)
 
     def executeOrder(self, order):
         # Finds a single best match for this order, without regard for quantity.
@@ -361,35 +398,69 @@ class OrderBook:
 
         return book
 
-    def get_transacted_volume(self, lookback_period='10min'):
-        """ Method retrieves the total transacted volume for a symbol over a lookback period finishing at the current
-            simulation time. """
+    def _get_recent_history(self):
+        """ Gets portion of self.history that has arrived since last call of self.get_transacted_volume.
 
+            Also updates self._transacted_volume[self.history_previous_length]
+        :return:
+        """
+        if self._transacted_volume["self.history_previous_length"] == 0:
+            self._transacted_volume["self.history_previous_length"] = len(self.history)
+            return self.history
+        elif self._transacted_volume["self.history_previous_length"] == len(self.history):
+            return {}
+        else:
+            idx = len(self.history) - self._transacted_volume["self.history_previous_length"] - 1
+            recent_history = self.history[0:idx]
+            self._transacted_volume["self.history_previous_length"] = len(self.history)
+            return recent_history
+
+    def _update_unrolled_transactions(self, recent_history):
+        """ Updates self._transacted_volume["unrolled_transactions"] with data from recent_history
+
+        :return:
+        """
+        new_unrolled_txn = self._unrolled_transactions_from_order_history(recent_history)
+        old_unrolled_txn = self._transacted_volume["unrolled_transactions"]
+        total_unrolled_txn = pd.concat([old_unrolled_txn, new_unrolled_txn], ignore_index=True)
+        self._transacted_volume["unrolled_transactions"] = total_unrolled_txn
+
+    def _unrolled_transactions_from_order_history(self, history):
+        """ Returns a DataFrame with columns ['execution_time', 'quantity'] from a dictionary with same format as
+            self.history, describing executed transactions.
+        """
+        # Load history into DataFrame
         unrolled_history = []
-        for elem in self.history:
+        for elem in history:
             for _, val in elem.items():
                 unrolled_history.append(val)
 
-        unrolled_history_df = json_normalize(unrolled_history)
+        unrolled_history_df = pd.DataFrame(unrolled_history, columns=[
+            'entry_time', 'quantity', 'is_buy_order', 'limit_price', 'transactions', 'modifications', 'cancellations'
+        ])
 
         if unrolled_history_df.empty:
-            return 0
+            return pd.DataFrame(columns=['execution_time', 'quantity'])
 
-        executed_transactions = unrolled_history_df[
-            unrolled_history_df['transactions'].map(lambda d: len(d)) > 0]  # remove cells that are an empty list
+        executed_transactions = unrolled_history_df[unrolled_history_df['transactions'].map(lambda d: len(d)) > 0]  # remove cells that are an empty list
 
         #  Reshape into DataFrame with columns ['execution_time', 'quantity']
-        unrolled_transactions = executed_transactions['transactions'].apply(pd.Series)
-        unrolled_transactions = reduce(lambda col1, col2: pd.concat([col1, col2], axis=0),
-                                       [unrolled_transactions[col] for col in unrolled_transactions.columns])
-        unrolled_transactions = unrolled_transactions.dropna()
-        unrolled_transactions = unrolled_transactions.apply(pd.Series)
-        unrolled_transactions = unrolled_transactions.rename(columns={
-            0: 'execution_time',
-            1: 'quantity'
-        })
+        transaction_list = [element for list_ in executed_transactions['transactions'].values for element in list_]
+        unrolled_transactions = pd.DataFrame(transaction_list, columns=['execution_time', 'quantity'])
         unrolled_transactions = unrolled_transactions.sort_values(by=['execution_time'])
         unrolled_transactions = unrolled_transactions.drop_duplicates(keep='last')
+
+        return unrolled_transactions
+
+    def get_transacted_volume(self, lookback_period='10min'):
+        """ Method retrieves the total transacted volume for a symbol over a lookback period finishing at the current
+            simulation time.
+        """
+
+        # Update unrolled transactions DataFrame
+        recent_history = self._get_recent_history()
+        self._update_unrolled_transactions(recent_history)
+        unrolled_transactions = self._transacted_volume["unrolled_transactions"]
 
         #  Get transacted volume in time window
         lookback_pd = pd.to_timedelta(lookback_period)
@@ -422,6 +493,42 @@ class OrderBook:
     def isSameOrder(self, order, new_order):
         return order.order_id == new_order.order_id
 
+    def book_log_to_df(self):
+        """ Returns a pandas DataFrame constructed from the order book log, to be consumed by
+            agent.ExchangeAgent.logOrderbookSnapshots.
+
+            The first column of the DataFrame is `QuoteTime`. The succeeding columns are prices quoted during the
+            simulation (as taken from self.quotes_seen).
+
+            Each row is a snapshot at a specific time instance. If there is volume at a certain price level (negative
+            for bids, positive for asks) this volume is written in the column corresponding to the price level. If there
+            is no volume at a given price level, the corresponding column has a `0`.
+
+            The data is stored in a sparse format, such that a value of `0` takes up no space.
+
+        :return:
+        """
+        quotes = sorted(list(self.quotes_seen))
+        log_len = len(self.book_log)
+        quote_idx_dict = {quote: idx for idx, quote in enumerate(quotes)}
+        quotes_times = []
+
+
+        # Construct sparse matrix, where rows are timesteps, columns are quotes and elements are volume.
+        S = dok_matrix((log_len, len(quotes)), dtype=int)  # Dictionary Of Keys based sparse matrix.
+
+        for i, row in enumerate(tqdm(self.book_log, desc="Processing orderbook log")):
+            quotes_times.append(row['QuoteTime'])
+            for quote, vol in row.items():
+                if quote == "QuoteTime":
+                    continue
+                S[i, quote_idx_dict[quote]] = vol
+
+        S = S.tocsc()  # Convert this matrix to Compressed Sparse Column format for pandas to consume.
+        df = pd.DataFrame.sparse.from_spmatrix(S, columns=quotes)
+        df.insert(0, 'QuoteTime', quotes_times, allow_duplicates=True)
+        return df
+
     # Print a nicely-formatted view of the current order book.
     def prettyPrint(self, silent=False):
         # Start at the highest ask price and move down.  Then switch to the highest bid price and move down.
@@ -449,3 +556,4 @@ class OrderBook:
         if silent: return book
 
         log_print(book)
+
