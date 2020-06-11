@@ -1,6 +1,7 @@
 # A basic Order type used by an Exchange to conduct trades or maintain an order book.
 # This should not be confused with order Messages agents send to request an Order.
 # Specific order types will inherit from this (like LimitOrder).
+
 from copy import deepcopy
 
 
@@ -9,7 +10,7 @@ class Order:
     _order_ids = set()
 
     def __init__(self, agent_id, time_placed, symbol, quantity, is_buy_order, order_id=None, tag=None):
-      
+
         self.agent_id = agent_id
 
         # Time at which the order was created by the agent.
