@@ -2,6 +2,7 @@ from agent.FinancialAgent import FinancialAgent
 from agent.ExchangeAgent import ExchangeAgent
 from message.Message import Message
 from util.order.LimitOrder import LimitOrder
+from util.order.MarketOrder import MarketOrder
 from util.util import log_print
 
 from copy import deepcopy
@@ -51,6 +52,9 @@ class TradingAgent(FinancialAgent):
     # automatically generate such requests, though it has a helper function
     # that can be used to make it happen.
     self.last_trade = {}
+
+    # used in subscription mode to record the timestamp for which the data was current in the ExchangeAgent
+    self.exchange_ts = {}
 
     # When a last trade price comes in after market close, the trading agent
     # automatically records it as the daily close price for a symbol.
@@ -240,7 +244,6 @@ class TradingAgent(FinancialAgent):
       self.query_transacted_volume(msg.body['symbol'], msg.body['transacted_volume'])
 
     elif msg.body['msg'] == 'MARKET_DATA':
-      # Call the queryMarketData method, which subclasses may extend.
       self.handleMarketData(msg)
 
     # Now do we know the market hours?
@@ -321,51 +324,39 @@ class TradingAgent(FinancialAgent):
     else:
       log_print ("TradingAgent ignored limit order of quantity zero: {}", order)
 
-  def placeMarketOrder(self, symbol, direction, quantity, ignore_risk=True, tag = None):
+  def placeMarketOrder(self, symbol, quantity, is_buy_order, order_id=None, ignore_risk = True, tag=None):
     """
-    Used by any Trading Agent subclass to place a market order. The market order is created as multiple limit orders
-    crossing the spread walking the book until all the quantities are matched.
-    :param    symbol (str):       name of the stock traded
-    :param    direction (str):    order direction ('BUY' or 'SELL')
-    :param    quantity (int):     order quantity
-    :param    log_orders (bool):  determines whether cash or risk limits should be enforced or ignored for the order
-    :return:
+      Used by any Trading Agent subclass to place a market order. The market order is created as multiple limit orders
+      crossing the spread walking the book until all the quantities are matched.
+      :param symbol (str):        name of the stock traded
+      :param quantity (int):      order quantity
+      :param is_buy_order (bool): True if Buy else False
+      :param order_id:            Order ID for market replay
+      :param ignore_risk (bool):  Determines whether cash or risk limits should be enforced or ignored for the order
+      :return:
     """
+    order = MarketOrder(self.id, self.currentTime, symbol, quantity, is_buy_order, order_id)
     if quantity > 0:
+      # compute new holdings
       new_holdings = self.holdings.copy()
-      q = quantity if direction == 'BUY' else -quantity
-      if symbol in new_holdings:
-        new_holdings[symbol] += q
-      else:
-        new_holdings[symbol] = q
+      q = order.quantity if order.is_buy_order else -order.quantity
+      if order.symbol in new_holdings: new_holdings[order.symbol] += q
+      else: new_holdings[order.symbol] = q
+
       if not ignore_risk:
+        # Compute before and after at-risk capital.
         at_risk = self.markToMarket(self.holdings) - self.holdings['CASH']
         new_at_risk = self.markToMarket(new_holdings) - new_holdings['CASH']
-        if (new_at_risk > at_risk) and (new_at_risk > self.starting_cash):
-          log_print(f"TradingAgent ignored market order due to at-risk constraints: {symbol} {direction} {quantity}\n"
-                f"{self.fmtHoldings(self.holdings)}")
-          return
 
-      bids, asks = self.getKnownBidAsk(symbol, best=False)
-      ob_side = asks if direction == 'BUY' else bids
-      quotes = {}
-      if quantity > 0:
-          for price_level in ob_side:
-              level_price, level_size = price_level[0], price_level[1]
-              if quantity <= level_size:
-                  quotes[level_price] = quantity
-                  break
-              else:
-                  quotes[level_price] = level_size
-                  quantity -= level_size
-                  continue
-      log_print(f'[---- {self.name} - {self.currentTime} ----]: PLACING 1 MARKET ORDER AS MULTIPLE LIMIT ORDERS')
-      for quote in quotes.items():
-          p, q = quote[0], quote[1]
-          self.placeLimitOrder(symbol, quantity=q, is_buy_order=direction=='BUY', limit_price=p, tag=tag)
-          log_print(f'[---- {self.name} - {self.currentTime} ----]: LIMIT ORDER PLACED - {q} @ {p}')
+        if (new_at_risk > at_risk) and (new_at_risk > self.starting_cash):
+          log_print("TradingAgent ignored market order due to at-risk constraints: {}\n{}",
+                    order, self.fmtHoldings(self.holdings))
+          return
+      self.orders[order.order_id] = deepcopy(order)
+      self.sendMessage(self.exchangeID, Message({"msg" : "MARKET_ORDER", "sender": self.id, "order": order}))
+      if self.log_orders: self.logEvent('ORDER_SUBMITTED', js.dump(order, strip_privates=True))
     else:
-      log_print(f"TradingAgent ignored market order of quantity zero: {symbol} {direction} {quantity}")
+      log_print("TradingAgent ignored market order of quantity zero: {}", order)
 
   def cancelOrder (self, order):
     """Used by any Trading Agent subclass to cancel any order.  The order must currently
@@ -509,6 +500,7 @@ class TradingAgent(FinancialAgent):
     self.known_asks[symbol] = msg.body['asks']
     self.known_bids[symbol] = msg.body['bids']
     self.last_trade[symbol] = msg.body['last_transaction']
+    self.exchange_ts[symbol] = msg.body['exchange_ts']
 
 
   # Handles QUERY_ORDER_STREAM messages from an exchange agent.

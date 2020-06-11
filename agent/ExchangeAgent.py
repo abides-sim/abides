@@ -128,7 +128,7 @@ class ExchangeAgent(FinancialAgent):
     if currentTime > self.mkt_close:
       # Most messages after close will receive a 'MKT_CLOSED' message in response.  A few things
       # might still be processed, like requests for final trade prices or such.
-      if msg.body['msg'] in ['LIMIT_ORDER', 'CANCEL_ORDER', 'MODIFY_ORDER']:
+      if msg.body['msg'] in ['LIMIT_ORDER', 'MARKET_ORDER', 'CANCEL_ORDER', 'MODIFY_ORDER']:
         log_print("{} received {}: {}", self.name, msg.body['msg'], msg.body['order'])
         self.sendMessage(msg.body['sender'], Message({"msg": "MKT_CLOSED"}))
 
@@ -146,7 +146,7 @@ class ExchangeAgent(FinancialAgent):
         return
 
     # Log order messages only if that option is configured.  Log all other messages.
-    if msg.body['msg'] in ['LIMIT_ORDER', 'CANCEL_ORDER']:
+    if msg.body['msg'] in ['LIMIT_ORDER', 'MARKET_ORDER', 'CANCEL_ORDER', 'MODIFY_ORDER']:
       if self.log_orders: self.logEvent(msg.body['msg'], js.dump(msg.body['order'], strip_privates=True))
     else:
       self.logEvent(msg.body['msg'], msg.body['sender'])
@@ -241,10 +241,19 @@ class ExchangeAgent(FinancialAgent):
       order = msg.body['order']
       log_print("{} received LIMIT_ORDER: {}", self.name, order)
       if order.symbol not in self.order_books:
-        log_print("Order discarded.  Unknown symbol: {}", order.symbol)
+        log_print("Limit Order discarded.  Unknown symbol: {}", order.symbol)
       else:
         # Hand the order to the order book for processing.
         self.order_books[order.symbol].handleLimitOrder(deepcopy(order))
+        self.publishOrderBookData()
+    elif msg.body['msg'] == "MARKET_ORDER":
+      order = msg.body['order']
+      log_print("{} received MARKET_ORDER: {}", self.name, order)
+      if order.symbol not in self.order_books:
+        log_print("Market Order discarded.  Unknown symbol: {}", order.symbol)
+      else:
+        # Hand the market order to the order book for processing.
+        self.order_books[order.symbol].handleMarketOrder(deepcopy(order))
         self.publishOrderBookData()
     elif msg.body['msg'] == "CANCEL_ORDER":
       # Note: this is somewhat open to abuse, as in theory agents could cancel other agents' orders.
@@ -305,7 +314,8 @@ class ExchangeAgent(FinancialAgent):
                                               "symbol": symbol,
                                               "bids": self.order_books[symbol].getInsideBids(levels),
                                               "asks": self.order_books[symbol].getInsideAsks(levels),
-                                              "last_transaction": self.order_books[symbol].last_trade}))
+                                              "last_transaction": self.order_books[symbol].last_trade,
+                                              "exchange_ts": self.currentTime}))
           self.subscription_dict[agent_id][symbol][2] = orderbook_last_update
 
   def logOrderBookSnapshots(self, symbol):
