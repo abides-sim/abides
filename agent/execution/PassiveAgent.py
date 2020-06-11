@@ -33,7 +33,8 @@ class PassiveAgent(TradingAgent):
             if self.limit_price:
                 self.placeLimitOrder(symbol=self.symbol, quantity=self.quantity,
                                      is_buy_order=self.direction == 'BUY', limit_price=self.limit_price)
-                print(f'[---- {self.name} - {currentTime} ----]: LIMIT ORDER PLACED - {self.quantity} @ {self.limit_price}')
+                log_print('[---- {} - {} ----]: LIMIT ORDER PLACED - {} @ {}'.format(self.name, currentTime,
+                                                                                     self.quantity, self.limit_price))
             else:
                 self.getCurrentSpread(self.symbol)
                 self.state = 'AWAITING_SPREAD'
@@ -45,7 +46,8 @@ class PassiveAgent(TradingAgent):
             limit_price = bid if self.direction == 'BUY' else ask
             self.placeLimitOrder(symbol=self.symbol, quantity=self.quantity,
                                  is_buy_order=self.direction == 'BUY', limit_price=limit_price)
-            log_print(f'[---- {self.name} - {currentTime} ----]: LIMIT ORDER PLACED - {self.quantity} @ {limit_price}')
+            log_print('[---- {} - {} ----]: LIMIT ORDER PLACED - {} @ {}'.format(self.name, currentTime,
+                                                                                 self.quantity, limit_price))
 
     def getWakeFrequency(self):
         return self.timestamp - self.mkt_open
