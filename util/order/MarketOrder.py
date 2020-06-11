@@ -45,7 +45,6 @@ class MarketOrder(Order):
 
         # Create new order object
         order = MarketOrder(agent_id, time_placed, symbol, quantity, is_buy_order, order_id=order_id, tag=tag)
-        Order._order_ids.pop()  # remove duplicate agent ID
         order.fill_price = fill_price
 
         return order
