@@ -1,9 +1,10 @@
 # A basic Order type used by an Exchange to conduct trades or maintain an order book.
 # This should not be confused with order Messages agents send to request an Order.
 # Specific order types will inherit from this (like LimitOrder).
+from copy import deepcopy
+
 
 class Order:
-
   order_id = 0
   _order_ids = []
 
@@ -38,7 +39,6 @@ class Order:
     #      to help keep track of the intent of particular orders, to simplify their code.
     self.tag = tag
 
-
   def generateOrderId(self):
     # generates a unique order ID if the order ID is not specified
     if not Order.order_id in Order._order_ids:
@@ -48,4 +48,13 @@ class Order:
       oid = self.generateOrderId()
     return oid
 
+  def to_dict(self):
+    as_dict = deepcopy(self).__dict__
+    as_dict['time_placed'] = self.time_placed.isoformat()
+    return as_dict
 
+  def __copy__(self):
+    raise NotImplementedError
+
+  def __deepcopy__(self, memodict={}):
+    raise NotImplementedError

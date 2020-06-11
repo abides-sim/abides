@@ -6,7 +6,6 @@ from util.order.MarketOrder import MarketOrder
 from util.util import log_print
 
 from copy import deepcopy
-import jsons as js
 import sys
 
 # The TradingAgent class (via FinancialAgent, via Agent) is intended as the
@@ -320,7 +319,8 @@ class TradingAgent(FinancialAgent):
                                                   "order" : order })) 
 
       # Log this activity.
-      if self.log_orders: self.logEvent('ORDER_SUBMITTED', js.dump(order, strip_privates=True))
+      if self.log_orders: self.logEvent('ORDER_SUBMITTED', order.to_dict())
+
     else:
       log_print ("TradingAgent ignored limit order of quantity zero: {}", order)
 
@@ -354,7 +354,7 @@ class TradingAgent(FinancialAgent):
           return
       self.orders[order.order_id] = deepcopy(order)
       self.sendMessage(self.exchangeID, Message({"msg" : "MARKET_ORDER", "sender": self.id, "order": order}))
-      if self.log_orders: self.logEvent('ORDER_SUBMITTED', js.dump(order, strip_privates=True))
+      if self.log_orders: self.logEvent('ORDER_SUBMITTED', order.to_dict())
     else:
       log_print("TradingAgent ignored market order of quantity zero: {}", order)
 
@@ -365,7 +365,7 @@ class TradingAgent(FinancialAgent):
                                                 "order" : order })) 
 
     # Log this activity.
-    if self.log_orders: self.logEvent('CANCEL_SUBMITTED', js.dump(order, strip_privates=True))
+    if self.log_orders: self.logEvent('CANCEL_SUBMITTED', order.to_dict())
 
   def modifyOrder (self, order, newOrder):
     """ Used by any Trading Agent subclass to modify any existing limit order.  The order must currently
@@ -375,7 +375,7 @@ class TradingAgent(FinancialAgent):
                                                 "order" : order, "new_order" : newOrder}))
 
     # Log this activity.
-    if self.log_orders: self.logEvent('MODIFY_ORDER', js.dump(order, strip_privates=True))
+    if self.log_orders: self.logEvent('MODIFY_ORDER', order.to_dict())
 
 
   # Handles ORDER_EXECUTED messages from an exchange agent.  Subclasses may wish to extend,
@@ -384,7 +384,7 @@ class TradingAgent(FinancialAgent):
     log_print ("Received notification of execution for: {}", order)
 
     # Log this activity.
-    if self.log_orders: self.logEvent('ORDER_EXECUTED', js.dump(order, strip_privates=True))
+    if self.log_orders: self.logEvent('ORDER_EXECUTED', order.to_dict())
 
     # At the very least, we must update CASH and holdings at execution time.
     qty = order.quantity if order.is_buy_order else -1 * order.quantity
@@ -424,7 +424,8 @@ class TradingAgent(FinancialAgent):
     log_print ("Received notification of acceptance for: {}", order)
 
     # Log this activity.
-    if self.log_orders: self.logEvent('ORDER_ACCEPTED', js.dump(order, strip_privates=True))
+    if self.log_orders: self.logEvent('ORDER_ACCEPTED', order.to_dict())
+
 
     # We may later wish to add a status to the open orders so an agent can tell whether
     # a given order has been accepted or not (instead of needing to override this method).
@@ -435,7 +436,7 @@ class TradingAgent(FinancialAgent):
     log_print ("Received notification of cancellation for: {}", order)
 
     # Log this activity.
-    if self.log_orders: self.logEvent('ORDER_CANCELLED', js.dump(order, strip_privates=True))
+    if self.log_orders: self.logEvent('ORDER_CANCELLED', order.to_dict())
 
     # Remove the cancelled order from the open orders list.  We may of course wish to have
     # additional logic here later, so agents can easily "look for" cancelled orders.  Of
