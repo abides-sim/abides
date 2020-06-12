@@ -99,6 +99,10 @@ class LatencyModel:
       kwargs.setdefault('jitter', 0.5)
       kwargs.setdefault('jitter_clip', 0.1)
       kwargs.setdefault('jitter_unit', 10.0)
+    elif (latency_model.lower() == 'deterministic'):
+      if 'min_latency' not in kwargs:
+        print("Config error: deterministic latency model requires parameter 'min_latency' as 2-D ndarray.")
+        sys.exit()
     else:
       print (f"Config error: unknown latency model requested ({latency_model.lower()})")
       sys.exit()
