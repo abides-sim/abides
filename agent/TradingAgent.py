@@ -358,14 +358,16 @@ class TradingAgent(FinancialAgent):
     else:
       log_print("TradingAgent ignored market order of quantity zero: {}", order)
 
-  def cancelOrder (self, order):
+  def cancelOrder(self, order):
     """Used by any Trading Agent subclass to cancel any order.  The order must currently
     appear in the agent's open orders list."""
-    self.sendMessage(self.exchangeID, Message({ "msg" : "CANCEL_ORDER", "sender": self.id,
-                                                "order" : order })) 
-
-    # Log this activity.
-    if self.log_orders: self.logEvent('CANCEL_SUBMITTED', order.to_dict())
+    if isinstance(order, LimitOrder):
+      self.sendMessage(self.exchangeID, Message({"msg": "CANCEL_ORDER", "sender": self.id,
+                                                 "order": order}))
+      # Log this activity.
+      if self.log_orders: self.logEvent('CANCEL_SUBMITTED', order.to_dict())
+    else:
+      log_print("order {} of type, {} cannot be cancelled", order, type(order))
 
   def modifyOrder (self, order, newOrder):
     """ Used by any Trading Agent subclass to modify any existing limit order.  The order must currently
