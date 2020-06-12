@@ -121,7 +121,7 @@ def get_start_end_time(df, fmt):
         raise ValueError('Format needs to be "plot-scripts" or "LOBSTER" or "orderbook_skinny" or "orderbook_wide"')
 
 
-def save_formatted_order_stream(stream_bz2, ticker, level, fmt, out_dir='.'):
+def save_formatted_order_stream(stream_bz2, ticker, level, fmt, suffix, out_dir='.'):
     """ Saves ABIDES logged order stream into csv in requested format.
 
         :param stream_bz2: file path of Exchange Agent bz2 output file.
@@ -132,6 +132,8 @@ def save_formatted_order_stream(stream_bz2, ticker, level, fmt, out_dir='.'):
         :type level: int
         :param fmt: Specifies the output format, current options are "plot-scripts" and "LOBSTER".
         :type fmt: str
+        :param suffix: suffix to add to file name before extension
+        :type suffix: str
         :param out_dir: path to output directory
         :type out_dir: str
 
@@ -213,12 +215,12 @@ def save_formatted_order_stream(stream_bz2, ticker, level, fmt, out_dir='.'):
 
 
     if fmt == "plot-scripts":
-        filename = f'orders_{ticker}_{trading_day.replace("-", "")}.pkl'
+        filename = f'orders_{ticker}_{trading_day.replace("-", "")}{suffix}.pkl'
         filename = os.path.join(out_dir, filename)
         write_df = write_df.set_index('TIMESTAMP')
         write_df.to_pickle(filename)
     elif fmt == "LOBSTER":
-        filename = f'{ticker}_{trading_day}_{start_time}_{end_time}_message_{str(level)}.csv'
+        filename = f'{ticker}_{trading_day}_{start_time}_{end_time}_message_{str(level)}{suffix}.csv'
         filename = os.path.join(out_dir, filename)
         write_df.to_csv(filename, index=False, header=False)
     else:
@@ -253,7 +255,9 @@ if __name__ == "__main__":
     parser.add_argument('level', type=check_positive, help="Maximum orderbook level.")
     parser.add_argument('format', choices=['plot-scripts', 'LOBSTER'], type=str,
                         help="Output format of stream")
+    parser.add_argument('--suffix', type=str, help="optional suffix to add to filename.", default="")
+
 
     args, remaining_args = parser.parse_known_args()
 
-    save_formatted_order_stream(args.stream, args.ticker, args.level, args.format, out_dir=args.output_dir)
+    save_formatted_order_stream(args.stream, args.ticker, args.level, args.format, args.suffix, out_dir=args.output_dir)
