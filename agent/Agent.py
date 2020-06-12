@@ -5,7 +5,7 @@ from util.util import log_print
 
 class Agent:
 
-  def __init__ (self, id, name, type, random_state):
+  def __init__ (self, id, name, type, random_state, log_events=True):
 
     # ID must be a unique number (usually autoincremented).
     # Name is for human consumption, should be unique (often type + number).
@@ -17,6 +17,7 @@ class Agent:
     self.name = name
     self.type = type
     self.random_state = random_state
+    self.log_events = log_events
 
     if not random_state:
       raise ValueError("A valid, seeded np.random.RandomState object is required " +
@@ -89,7 +90,7 @@ class Agent:
 
     # If this agent has been maintaining a log, convert it to a Dataframe
     # and request that the Kernel write it to disk before terminating.
-    if self.log:
+    if self.log and self.log_events:
       dfLog = pd.DataFrame(self.log)
       dfLog.set_index('EventTime', inplace=True)
       self.writeLog(dfLog)

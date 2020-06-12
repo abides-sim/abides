@@ -17,7 +17,7 @@ class TradingAgent(FinancialAgent):
 
   def __init__(self, id, name, type, random_state=None, starting_cash=100000, log_orders=False):
     # Base class init.
-    super().__init__(id, name, type, random_state)
+    super().__init__(id, name, type, random_state, log_events=log_orders)
 
     # We don't yet know when the exchange opens or closes.
     self.mkt_open = None
