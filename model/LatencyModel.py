@@ -123,7 +123,11 @@ class LatencyModel:
 
     kw = self.kwargs
 
-    if self.latency_model == 'cubic':
+    if self.latency_model == 'deterministic':
+      min_latency = self._extract(kw['min_latency'], sender_id, recipient_id)
+      return min_latency
+    
+    elif self.latency_model == 'cubic':
       # Generate latency for a single message using the cubic model.
 
       # If agents cannot communicate in this direction, return special latency -1.
