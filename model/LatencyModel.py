@@ -99,13 +99,16 @@ class LatencyModel:
       kwargs.setdefault('jitter', 0.5)
       kwargs.setdefault('jitter_clip', 0.1)
       kwargs.setdefault('jitter_unit', 10.0)
+    elif (latency_model.lower() == 'deterministic'):
+      if 'min_latency' not in kwargs:
+        print("Config error: deterministic latency model requires parameter 'min_latency' as 2-D ndarray.")
+        sys.exit()
     else:
       print (f"Config error: unknown latency model requested ({latency_model.lower()})")
       sys.exit()
 
     # Remember the kwargs for use generating jitter (latency noise).
     self.kwargs = kwargs
-
 
   def get_latency(self, sender_id = None, recipient_id = None):
     """
@@ -118,6 +121,7 @@ class LatencyModel:
     """
 
     kw = self.kwargs
+    min_latency = self._extract(kw['min_latency'], sender_id, recipient_id)
 
     if self.latency_model == 'cubic':
       # Generate latency for a single message using the cubic model.
@@ -129,13 +133,14 @@ class LatencyModel:
       a = self._extract( kw['jitter'], sender_id, recipient_id )
       clip = self._extract( kw['jitter_clip'], sender_id, recipient_id )
       unit = self._extract( kw['jitter_unit'], sender_id, recipient_id )
-      min_latency = self._extract( kw['min_latency'], sender_id, recipient_id )
-
       # Jitter requires a uniform random draw.
       x = self.random_state.uniform( low = clip, high = 1.0 )
 
       # Now apply the cubic model to compute jitter and the final message latency.
       latency = min_latency + ((a / x**3) * (min_latency / unit))
+
+    elif self.latency_model == 'deterministic':
+      return min_latency
 
     return latency
 

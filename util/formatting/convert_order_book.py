@@ -2,7 +2,13 @@ import argparse
 import os
 import pandas as pd
 import numpy as np
-from convert_order_stream import get_year_month_day, get_start_end_time, dir_path, check_positive
+
+import sys
+from pathlib import Path
+p = str(Path(__file__).resolve().parents[2])  # directory two levels up from this file
+sys.path.append(p)
+
+from util.formatting.convert_order_stream import get_year_month_day, get_start_end_time, dir_path, check_positive
 from tqdm import tqdm
 
 

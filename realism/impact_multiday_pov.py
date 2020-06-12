@@ -15,6 +15,9 @@ from functools import reduce
 
 import json
 import argparse
+from pandas.plotting import register_matplotlib_converters
+
+RESAMPLE_RATE = '0.5S'  # times at which to sample mid price series
 
 
 def normalise_time(ts, base_date='2016-01-30'):
@@ -165,7 +168,8 @@ def process_tuple(tup):
         'log_dir': LOG_DIR,
         'execution_agent_name': EXECUTION_AGENT_NAME
     }
-    prep_data(PLOT_DATA, CACHE_DIR, ONLY_EXECUTED, CLIPPED_START_TIME, CLIPPED_FINISH_TIME, PLOT_PARAMS_DICT)
+    prep_data(PLOT_DATA, CACHE_DIR, ONLY_EXECUTED, CLIPPED_START_TIME, CLIPPED_FINISH_TIME, PLOT_PARAMS_DICT,
+              compute_impact_stats=COMPUTE_IMPACT_STATS)
 
 
 def get_differences(tup):
@@ -179,7 +183,9 @@ def get_differences(tup):
     dict_in, count = tup
     orderbook_df = dict_in['no_execution_df']
     orderbook_with_execution_df = dict_in['yes_execution_df']
-    impact_statistics = dict_in['impact_statistics']
+
+    impact_statistics = dict_in['impact_statistics'] if COMPUTE_IMPACT_STATS else None
+
     pov = dict_in['pov']
 
     print(f"Processing df pair {count+1}")
@@ -207,11 +213,10 @@ def get_differences(tup):
     return out_dict
 
 
-def concat_horizontal(df, s):
+def concat_horizontal(df, s, resample_rate=RESAMPLE_RATE):
     """ Concats a pd.Series object to a pd.DataFrame horizontally. They need to each have a DatetimeIndex"""
 
-    df_out = pd.merge(df, s, how='outer', left_index=True, right_index=True)
-
+    df_out = pd.merge(df.resample(resample_rate).last(), s.resample(resample_rate).last(), how='outer', left_index=True, right_index=True)
     return df_out
 
 
@@ -302,15 +307,17 @@ def plot_aggregated(aggregated, plot_params_dict):
     shade_end = midnight + pd.to_timedelta(plot_params_dict['shade_end_time'])
     axes.axvspan(shade_start, shade_end, alpha=0.2, color='grey')
 
-    axes.set_xlabel('Time', size=15)
+    axes.set_xlabel('Time', size=18)
 
-    axes.set_ylabel('Mid-price normalized\n difference (bps)', size=15)
+    axes.set_ylabel('Mid-price normalized\n difference (bps)', size=18)
 
-    axes.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
-    axes.xaxis.set_minor_formatter(mdates.DateFormatter("%H:%M"))
-    axes.legend(loc='upper left')
+    # axes.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
+    # axes.xaxis.set_minor_formatter(mdates.DateFormatter("%H:%M"))
+    axes.legend(loc='upper right', fontsize=18)
+    axes.tick_params(axis='both', which='major', labelsize=16)
+    axes.tick_params(axis='both', which='minor', labelsize=16)
 
-    fig.suptitle(plot_params_dict['execution_label'], fontsize=16, fontweight='bold')
+    fig.suptitle(plot_params_dict['execution_label'], fontsize=20, fontweight='bold')
     fig.tight_layout()
     fig.subplots_adjust(top=0.94)
 
@@ -338,8 +345,11 @@ def load_cached():
 
     for path in glob.glob(f'cache/{CACHE_PREFIX}_*_[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'):
         with open(path, 'rb') as f:
-            data = pickle.load(f)
-            data_to_process.append(data)
+            try:
+                data = pickle.load(f)
+                data_to_process.append(data)
+            except pickle.UnpicklingError:
+                continue
 
     return data_to_process
 
@@ -418,7 +428,7 @@ def main(config_path, num_workers, recompute):
         NO_EXECUTION_ORDERBOOK_NAME, YES_EXECUTION_EXCHANGE_NAME, YES_EXECUTION_ORDERBOOK_NAME, \
         CACHE_PREFIX, POVs, FREQUENCY, DIRECTION, BASELINE_LABEL, SHADE_START_TIME, SHADE_END_TIME, \
         YMAX, YMIN, XMIN, XMAX, ALPHA_90, ALPHA_50, yes_base, no_base, log_dirs_no_glob, log_dirs_yes_glob, \
-        SPREAD_LOOKBACK, EXPERIMENT_NAME, LOG_DIR, EXECUTION_AGENT_NAME
+        SPREAD_LOOKBACK, EXPERIMENT_NAME, LOG_DIR, EXECUTION_AGENT_NAME, COMPUTE_IMPACT_STATS
 
     CLIPPED_START_TIME = config_dict["CLIPPED_START_TIME"]
     CLIPPED_FINISH_TIME = config_dict["CLIPPED_FINISH_TIME"]
@@ -448,6 +458,7 @@ def main(config_path, num_workers, recompute):
     EXPERIMENT_NAME = config_dict["EXPERIMENT_NAME"]
     LOG_DIR = config_dict["LOG_DIR"]
     EXECUTION_AGENT_NAME = config_dict["EXECUTION_AGENT_NAME"]
+    COMPUTE_IMPACT_STATS = config_dict["COMPUTE_IMPACT_STATS"]
 
     params = generate_plot_data_cache_dicts(log_dirs_no_glob, log_dirs_yes_glob, yes_base, no_base)
     if not params:
@@ -481,6 +492,7 @@ def main(config_path, num_workers, recompute):
                 aggregated_data = aggregate_data(data_to_process, num_workers)
 
     print("Plotting aggregated data...")
+    register_matplotlib_converters()
     plot_all_aggregated(aggregated_data, params)
     print("Done!")
 
@@ -514,3 +526,4 @@ if __name__ == '__main__':
     recompute = args.recompute
 
     main(config_path, num_workers, recompute)
+

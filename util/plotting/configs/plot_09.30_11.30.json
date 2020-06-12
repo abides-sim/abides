@@ -1,0 +1,10 @@
+{
+  "xmin": "09:32:00",
+  "xmax": "11:30:00",
+  "linewidth": 0.7,
+  "no_bids_color": "blue",
+  "no_asks_color": "red",
+  "transacted_volume_binwidth": 30,
+  "shade_start_time": "01:00:00",
+  "shade_end_time": "01:30:00"
+}
