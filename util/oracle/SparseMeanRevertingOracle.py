@@ -103,7 +103,7 @@ class SparseMeanRevertingOracle(MeanRevertingOracle):
     # The OU process is able to skip any amount of time and sample the next desired value
     # from the appropriate distribution of possible values.
     v = s['random_state'].normal(loc = mu + (pv - mu) * (exp(-gamma * d)),
-                                 scale = ((theta**2) / (2*gamma)) * (1 - exp(-2 * gamma * d)))
+                                 scale = ((theta) / (2*gamma)) * (1 - exp(-2 * gamma * d)))
 
     # Apply the value adjustment that was passed in.
     v += v_adj
