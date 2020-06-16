@@ -19,6 +19,8 @@ class SubscriptionAgent(TradingAgent):
         self.last_update_ts = None  # timestamp of the last agent update.
                                     # This is NOT required but only used to demonstrate how subscription works
         self.state = 'AWAITING_MARKET_DATA'
+        self.current_bids = None
+        self.current_asks = None
 
     def kernelStarting(self, startTime):
         super().kernelStarting(startTime)
@@ -34,15 +36,17 @@ class SubscriptionAgent(TradingAgent):
         super().receiveMessage(currentTime, msg)
         if self.subscribe and self.state == 'AWAITING_MARKET_DATA' and msg.body['msg'] == 'MARKET_DATA':
             bids, asks = msg.body['bids'], msg.body['asks']
-            print("--------------------")
-            print("seconds elapsed since last update: {}".format((currentTime - self.last_update_ts).delta / 1e9))
-            print("number of bid levels: {}".format(len(bids)))
-            print("number of ask levels: {}".format(len(asks)))
-            print("bids: {}, asks: {}".format(bids, asks))
-            print("Current Agent Timestamp: {}".format(currentTime))
-            print("Exchange Timestamp: {}".format(self.exchange_ts[self.symbol]))
-            print("--------------------")
+            log_print("--------------------")
+            log_print("seconds elapsed since last update: {}", (currentTime - self.last_update_ts).delta / 1e9)
+            log_print("number of bid levels: {}", len(bids))
+            log_print("number of ask levels: {}", len(asks))
+            log_print("bids: {}, asks: {}", bids, asks)
+            log_print("Current Agent Timestamp: {}", currentTime)
+            log_print("Exchange Timestamp: {}", self.exchange_ts[self.symbol])
+            log_print("--------------------")
             self.last_update_ts = currentTime
+            self.current_bids = bids
+            self.current_asks = asks
 
     def getWakeFrequency(self):
         return pd.Timedelta('1s')
