@@ -110,7 +110,6 @@ class LatencyModel:
     # Remember the kwargs for use generating jitter (latency noise).
     self.kwargs = kwargs
 
-
   def get_latency(self, sender_id = None, recipient_id = None):
     """
     LatencyModel.get_latency() samples and returns the final latency for a single Message according to the
@@ -122,12 +121,9 @@ class LatencyModel:
     """
 
     kw = self.kwargs
+    min_latency = self._extract(kw['min_latency'], sender_id, recipient_id)
 
-    if self.latency_model == 'deterministic':
-      min_latency = self._extract(kw['min_latency'], sender_id, recipient_id)
-      return min_latency
-    
-    elif self.latency_model == 'cubic':
+    if self.latency_model == 'cubic':
       # Generate latency for a single message using the cubic model.
 
       # If agents cannot communicate in this direction, return special latency -1.
@@ -137,13 +133,14 @@ class LatencyModel:
       a = self._extract( kw['jitter'], sender_id, recipient_id )
       clip = self._extract( kw['jitter_clip'], sender_id, recipient_id )
       unit = self._extract( kw['jitter_unit'], sender_id, recipient_id )
-      min_latency = self._extract( kw['min_latency'], sender_id, recipient_id )
-
       # Jitter requires a uniform random draw.
       x = self.random_state.uniform( low = clip, high = 1.0 )
 
       # Now apply the cubic model to compute jitter and the final message latency.
       latency = min_latency + ((a / x**3) * (min_latency / unit))
+
+    elif self.latency_model == 'deterministic':
+      return min_latency
 
     return latency
 
