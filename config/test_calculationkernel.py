@@ -1,4 +1,4 @@
-from Kernel import Kernel
+from CalculationKernel import CalculationKernel, HiddenPrints
 from agent.ExchangeAgent import ExchangeAgent
 from agent.NoiseAgent import NoiseAgent
 from agent.ValueAgent import ValueAgent
@@ -8,7 +8,10 @@ from util import util
 
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 import sys
+import time
 
 # Some config files require additional command line parameters to easily
 # control agent or simulation hyperparameters during coarse parallelization.
@@ -127,13 +130,14 @@ defaultComputationDelay = 1000000000  # one second
 
 # Note: sigma_s is no longer used by the agents or the fundamental (for sparse discrete simulation).
 
-symbols = {'JPM': {'r_bar': 19789, 'kappa': 2.74e-13, 'agent_kappa': 1e-15, 'sigma_s': 0., 'fund_vol': 1e-9,
+symbols = {'JPM': {'r_bar': 19789, 'kappa': 2.74e-13, 'agent_kappa': 1e-15, 'sigma_s': 1e-9, 'fund_vol': 1e-9,
                    'megashock_lambda_a': 1e-15, 'megashock_mean': 0., 'megashock_var': 1e-15,
                    'random_state': np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32, dtype='uint64'))}}
 
 ### Configure the Kernel.
-kernel = Kernel("Base Kernel",
-                random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32, dtype='uint64')))
+kernel = CalculationKernel("Calculation Kernel",
+                           random_state=np.random.RandomState(
+                               seed=np.random.randint(low=0, high=2 ** 32, dtype='uint64')))
 
 ### Configure the agents.  When conducting "agent of change" experiments, the
 ### new agents should be added at the END only.
@@ -245,8 +249,23 @@ for i, t1 in zip(range(latency.shape[0]), agent_types):
 noise = [0.25, 0.25, 0.20, 0.15, 0.10, 0.05]
 
 # Start the kernel running.
-kernel.runner(agents=agents, startTime=kernelStartTime,
-              stopTime=kernelStopTime, agentLatency=latency,
-              latencyNoise=noise,
-              defaultComputationDelay=defaultComputationDelay,
-              oracle=oracle, log_dir=log_dir)
+time_start = time.time()
+with HiddenPrints():
+    midprices = kernel.runner(agents=agents, startTime=kernelStartTime,
+                              stopTime=kernelStopTime, agentLatency=latency,
+                              latencyNoise=noise,
+                              defaultComputationDelay=defaultComputationDelay,
+                              oracle=oracle, log_dir=log_dir, return_value={"JPM": "midprices"})
+time_end = time.time()
+print('totally time', time_end - time_start)
+
+midprices_JPM = midprices["JPM"]
+print(midprices_JPM.head())
+midprices_JPM.plot()
+plt.show()
+
+midprices_JPM["return"]=np.log(1+midprices_JPM["price"].pct_change())
+print(sum(midprices_JPM["return"].values==0.)/len(midprices_JPM["return"]))
+
+sns.distplot(midprices_JPM["return"].values)
+plt.show()

@@ -1,8 +1,11 @@
 import ast
 import matplotlib
+
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
+import seaborn as sns
 import pandas as pd
+import numpy as np
 import os
 import re
 import sys
@@ -23,8 +26,8 @@ LW = 2
 # Main program starts here.
 
 if len(sys.argv) < 2:
-  print ("Usage: python sparse_fundamental.py <Simulator Fundamental file>")
-  sys.exit()
+    print("Usage: python sparse_fundamental.py <Simulator Fundamental file>")
+    sys.exit()
 
 # TODO: only really works for one symbol right now.
 sim_file = sys.argv[1]
@@ -32,45 +35,55 @@ sim_file = sys.argv[1]
 m = re.search(r'fundamental_(.+?)\.', sim_file)
 
 if not m:
-  print ("Usage: python sparse_fundamental.py <Simulator Fundamental file>")
-  print ("{} does not appear to be a fundamental value log.".format(sim_file))
-  print ()
-  sys.exit()
+    print("Usage: python sparse_fundamental.py <Simulator Fundamental file>")
+    print("{} does not appear to be a fundamental value log.".format(sim_file))
+    print()
+    sys.exit()
 
 symbol = m.group(1)
 
-print ("Visualizing simulated fundamental from {}".format(sim_file))
+print("Visualizing simulated fundamental from {}".format(sim_file))
 df_sim = pd.read_pickle(sim_file, compression='bz2')
 
 plt.rcParams.update({'font.size': 12})
+df_sim = df_sim.resample("min").ffill()
+df_sim["FundamentalValue"] = df_sim["FundamentalValue"].astype(int)
+df_sim.fillna(method="ffill",inplace=True)
+df_sim["return"] = np.log(1 + df_sim["FundamentalValue"].pct_change())
+df_sim.dropna(inplace=True)
 
-print (df_sim.head())
+print(df_sim)
 
 # Use to restrict time to plot.
-#df_sim = df_sim.between_time(BETWEEN_START, BETWEEN_END)
+# df_sim = df_sim.between_time(BETWEEN_START, BETWEEN_END)
 
-fig,ax = plt.subplots(figsize=(12,9), nrows=1, ncols=1)
+fig, ax = plt.subplots(figsize=(12, 9), nrows=1, ncols=1)
 axes = [ax]
 
 # For smoothing...
-#hist_window = 100
-#sim_window = 100
+# hist_window = 100
+# sim_window = 100
 
 hist_window = 1
 sim_window = 1
 
-#df_sim['PRICE'] = df_sim['PRICE'].rolling(window=sim_window).mean()
+# df_sim['PRICE'] = df_sim['PRICE'].rolling(window=sim_window).mean()
 
 df_sim['FundamentalValue'].plot(color='C1', grid=True, linewidth=LW, alpha=0.9, ax=axes[0])
 axes[0].legend(['Simulated'])
-
 
 plt.suptitle('Fundamental Value: {}'.format(symbol))
 
 axes[0].set_ylabel('Fundamental Value')
 axes[0].set_xlabel('Fundamental Time')
 
-#plt.savefig('background_{}.png'.format(b))
+# plt.savefig('background_{}.png'.format(b))
 
 plt.show()
 
+ax0 = sns.distplot(df_sim["return"])
+ax0.set_xlim(-0.01, +0.01)
+ax0.set_ylim(0., +1000)
+plt.show()
+
+print(sum(df_sim["return"].values!=0.)/len(df_sim["return"]))

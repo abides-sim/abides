@@ -50,6 +50,9 @@ class ExchangeAgent(FinancialAgent):
     # Log all order activity?
     self.log_orders = log_orders
 
+    # order book log
+    self.order_books_log = dict()
+
     # Create an order book for each symbol.
     self.order_books = {}
 
@@ -316,22 +319,25 @@ class ExchangeAgent(FinancialAgent):
                                               "exchange_ts": self.currentTime}))
           self.subscription_dict[agent_id][symbol][2] = orderbook_last_update
 
+  def _get_quote_range_iterator(self,s):
+    """ Helper method for order book logging. Takes pandas Series and returns python range() from first to last
+              element.
+          """
+    forbidden_values = [0, 19999900]  # TODO: Put constant value in more sensible place!
+    quotes = sorted(s)
+    for val in forbidden_values:
+      try:
+        quotes.remove(val)
+      except ValueError:
+        pass
+    return quotes
+
+
   def logOrderBookSnapshots(self, symbol):
     """
     Log full depth quotes (price, volume) from this order book at some pre-determined frequency. Here we are looking at
     the actual log for this order book (i.e. are there snapshots to export, independent of the requested frequency).
     """
-    def get_quote_range_iterator(s):
-      """ Helper method for order book logging. Takes pandas Series and returns python range() from first to last
-          element.
-      """
-      forbidden_values = [0, 19999900] # TODO: Put constant value in more sensible place!
-      quotes = sorted(s)
-      for val in forbidden_values:
-        try: quotes.remove(val)
-        except ValueError:
-          pass
-      return quotes
 
     book = self.order_books[symbol]
 
@@ -345,7 +351,7 @@ class ExchangeAgent(FinancialAgent):
 
       if str(self.book_freq).isdigit() and int(self.book_freq) == 0:  # Save all possible information
         # Get the full range of quotes at the finest possible resolution.
-        quotes = get_quote_range_iterator(dfLog.columns.unique())
+        quotes = self._get_quote_range_iterator(dfLog.columns.unique())
 
         # Restructure the log to have multi-level rows of all possible pairs of time and quote
         # with volume as the only column.
@@ -372,7 +378,7 @@ class ExchangeAgent(FinancialAgent):
           dfLog.sort_index(inplace=True)
 
           # Get the full range of quotes at the finest possible resolution.
-          quotes = get_quote_range_iterator(dfLog.index.get_level_values(1).unique())
+          quotes = self._get_quote_range_iterator(dfLog.index.get_level_values(1).unique())
 
           # Restructure the log to have multi-level rows of all possible pairs of time and quote
           # with volume as the only column.
@@ -384,7 +390,7 @@ class ExchangeAgent(FinancialAgent):
       # Final cleanup
       if not self.wide_book:
         dfLog.rename('Volume')
-        df = pd.SparseDataFrame(index=dfLog.index)
+        df = pd.DataFrame([],index=dfLog.index)
         df['Volume'] = dfLog
       else:
         df = dfLog
@@ -392,8 +398,11 @@ class ExchangeAgent(FinancialAgent):
 
       # Archive the order book snapshots directly to a file named with the symbol, rather than
       # to the exchange agent log.
+      self.order_books_log[symbol]=df
       self.writeLog(df, filename=filename)
       print("Order book logging complete!")
+
+
 
   def sendMessage (self, recipientID, msg):
     # The ExchangeAgent automatically applies appropriate parallel processing pipeline delay
