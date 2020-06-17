@@ -17,25 +17,28 @@ import multiprocessing as mp
 
 
 class CalibrateValueAgent:
-    def __init__(self, symbol="JPM", fund_path=None, freq="min", num_agents=100, lambda_a=1e-12,
-                 starting_cash=1e7, initial_sigma_n=1, historical_date="2019-06-28", seed=None):
-        self.symbol = symbol
+    def __init__(self, symbol="AAPL", fund_path=None, freq="min", num_agents=100, lambda_a=1e-12,
+                 starting_cash=1e7, historical_date="20190628", seed=None):
+        if fund_path == None:
+            fund_path = "../data/mid_prices/fundamental_{}_{}.bz2".format(symbol, historical_date)
         try:
-            self.fundamental_series = pd.read_pickle(fund_path, compression="bz2")
+            self.fundamental_series = pd.read_pickle(fund_path, compression="bz2")  # read historical data
             self.fundamental_series.fillna(method="ffill", inplace=True)
-            self.fundamental_returns = np.log(1 + self.fundamental_series.pct_change()).dropna().values
+            self.fundamental_returns = np.log(1 + self.fundamental_series.pct_change()).dropna().values[:, 0]
         except FileNotFoundError:
             raise FileNotFoundError("Path of fundamental prices does not exist.")
 
-        self.freq = freq
-        self.num_agents = num_agents
-        self.lambda_a = lambda_a
-        self.starting_cash = starting_cash
-        self.midnight = pd.to_datetime(historical_date)
-        self.initial_sigma_n = initial_sigma_n
+        self.symbol = symbol  # only support one symbol
+        self.freq = freq  # calibration freq
+        self.num_agents = num_agents  # number of value agents
+        self.lambda_a = lambda_a  # arrival rate of agents
+        self.starting_cash = starting_cash  # starting cash of agents
+        self.midnight = pd.to_datetime(historical_date)  # historical date
 
+        # Calibrate OU process
         self.r_bar, self.kappa, self.sigma_s = CalibrateValueAgent.calibrateOU(self.fundamental_series, freq)
 
+        # Set random seed
         if not seed:
             seed = int(pd.Timestamp.now().timestamp() * 1000000) % (2 ** 32 - 1)
         np.random.seed(seed)
@@ -55,11 +58,35 @@ class CalibrateValueAgent:
 
         print("Calibrate freq: {}".format(self.freq))
         print("Configuration seed: {}\n".format(seed))
+        print("Calibrated OU parameters: r_bar = {}, kappa = {}, sigma_s = {}".format(self.r_bar, self.kappa,
+                                                                                      self.sigma_s))
 
-    def calibrateModel(self, batch_size=10):
-        pass
+    # def calibrateModelGD(self, initial_sigma_n=1, batch_size=16, diff_step=100, learning_rate=1e5, maxiter=10, tol=10,
+    #                      parallel=True):
+    #     sigma_n = initial_sigma_n
+    #     for i in range(maxiter):
+    #         loss_now = self.evaluateLoss(sigma_n, batch_size, parallel)
+    #         loss_forward = self.evaluateLoss(sigma_n + diff_step, batch_size, parallel)
+    #         sigma_n_prev = sigma_n
+    #         sigma_n -= (loss_forward - loss_now) / diff_step * learning_rate
+    #         if abs(sigma_n - sigma_n_prev) < tol:
+    #             break
+    #     return {self.symbol: {'r_bar': self.r_bar, 'kappa': self.kappa, 'fund_var_sigma_s': self.sigma_s,
+    #                           'noise_var_sigma_n': sigma_n}}
 
-    def evaluateLoss(self, sigma_n, batch_size=10, parallel=False):
+    def calibrateModelGS(self, sigma_n_grid, batch_size=16, parallel=True):
+        loss_dict = dict()
+        for sigma_n in sigma_n_grid:
+            time_start = time.time()
+            loss_dict[sigma_n] = model.evaluateLoss(sigma_n, batch_size, parallel)
+            time_end = time.time()
+            print("sigma_n {} finished with total time {}, loss {}.".format(sigma_n, time_end - time_start,
+                                                                            loss_dict[sigma_n]))
+        sigma_n, _ = self.plot_score_curve(loss_dict)
+        return {self.symbol: {'r_bar': self.r_bar, 'kappa': self.kappa, 'fund_var_sigma_s': self.sigma_s,
+                              'noise_var_sigma_n': sigma_n}}
+
+    def evaluateLoss(self, sigma_n, batch_size=16, parallel=True):
         if not parallel:
             dist_sim = np.array([])
             for i in range(batch_size):
@@ -69,31 +96,32 @@ class CalibrateValueAgent:
                 dist_sim = np.hstack([mid_prices["return"].values, dist_sim])
         else:
             dist_sim = np.array([])
-            # num_cores = int(mp.cpu_count())
-            # print("Cores on the computer is", num_cores)
-            pool = mp.Pool(batch_size)
-            results = [pool.apply_async(self.generateMidPrices, args=(sigma_n,)) for i in range(batch_size)]
-            for p in results:
-                mid_prices = p.get()
-                mid_prices["return"] = np.log(1 + mid_prices["price"].pct_change())
-                mid_prices.dropna(inplace=True)
-                dist_sim = np.hstack([mid_prices["return"].values, dist_sim])
-            pool.close()
-            pool.join()
-        print(len(self.fundamental_returns),len(dist_sim))
+            num_cores = int(mp.cpu_count())
+            iter = batch_size // num_cores
+            for i in range(iter):
+                pool = mp.Pool(num_cores)
+                results = [pool.apply_async(self.generateMidPrices, args=(sigma_n,)) for j in range(num_cores)]
+                for p in results:
+                    mid_prices = p.get()
+                    mid_prices["return"] = np.log(1 + mid_prices["price"].pct_change())
+                    mid_prices.dropna(inplace=True)
+                    dist_sim = np.hstack([mid_prices["return"].values, dist_sim])
+                pool.close()
+                pool.join()
+        print(self.fundamental_returns.shape, dist_sim.shape)
         return CalibrateValueAgent.KSDistance(self.fundamental_returns, dist_sim)
 
     def generateMidPrices(self, sigma_n):
         # Note: sigma_s is no longer used by the agents or the fundamental (for sparse discrete simulation).
         symbols = {
-            self.symbol: {'r_bar': self.r_bar, 'kappa': self.kappa, 'agent_kappa': 1e-15, 'sigma_s': self.sigma_s,
+            self.symbol: {'r_bar': self.r_bar, 'kappa': self.kappa, 'agent_kappa': 1e-15, 'sigma_s': 0.,
                           'fund_vol': self.sigma_s, 'megashock_lambda_a': 1e-15, 'megashock_mean': 0.,
                           'megashock_var': 1e-15, "random_state": np.random.RandomState(
                     seed=np.random.randint(low=0, high=2 ** 32, dtype='uint64'))}}
 
         util.silent_mode = True
         LimitOrder.silent_mode = True
-        OrderBook.tqdm = False
+        OrderBook.tqdm_used  = False
 
         kernel = CalculationKernel("Calculation Kernel", random_state=np.random.RandomState(
             seed=np.random.randint(low=0, high=2 ** 32, dtype='uint64')))
@@ -145,7 +173,7 @@ class CalibrateValueAgent:
         noise = None
         latency_model = None
 
-        USE_NEW_MODEL = False
+        USE_NEW_MODEL = True
 
         ### BEGIN OLD LATENCY ATTRIBUTE CONFIGURATION ###
 
@@ -214,6 +242,43 @@ class CalibrateValueAgent:
 
         return midprices[self.symbol]
 
+    def plot_distribution(self, sigma_n, batch_size=16, parallel=True, rule_out_zero=False):
+        fundamental_returns = self.fundamental_returns
+        if not parallel:
+            dist_sim = np.array([])
+            for i in range(batch_size):
+                mid_prices = self.generateMidPrices(sigma_n)
+                mid_prices["return"] = np.log(1 + mid_prices["price"].pct_change())
+                mid_prices.dropna(inplace=True)
+                dist_sim = np.hstack([mid_prices["return"].values, dist_sim])
+        else:
+            dist_sim = np.array([])
+            num_cores = int(mp.cpu_count())
+            iter = batch_size // num_cores
+            for i in range(iter):
+                pool = mp.Pool(num_cores)
+                results = [pool.apply_async(self.generateMidPrices, args=(sigma_n,)) for j in range(num_cores)]
+                for p in results:
+                    mid_prices = p.get()
+                    mid_prices["return"] = np.log(1 + mid_prices["price"].pct_change())
+                    mid_prices.dropna(inplace=True)
+                    dist_sim = np.hstack([mid_prices["return"].values, dist_sim])
+                pool.close()
+                pool.join()
+
+        if rule_out_zero:
+            fundamental_returns = fundamental_returns[fundamental_returns != 0.]
+            dist_sim = dist_sim[dist_sim != 0.]
+
+        fig, ax = plt.subplots(1, 2, figsize=(12, 9))
+        sns.distplot(fundamental_returns, ax=ax[0], kde=False, bins=np.arange(-0.01, 0.01, 0.0005))
+        ax[0].set_title("Fundamental price return")
+        ax[0].set_xlim([-0.01, +0.01])
+        sns.distplot(dist_sim, ax=ax[1], kde=False, bins=np.arange(-0.01, 0.01, 0.0005))
+        ax[1].set_title("Simulated return with $\sigma_n^2$ = {}".format(sigma_n))
+        ax[1].set_xlim([-0.01, +0.01])
+        plt.show()
+
     @staticmethod
     def calibrateOU(fundamental_series, freq="s"):
         # The most reasonable and accurate calibration requires freq="ns", since our
@@ -240,7 +305,7 @@ class CalibrateValueAgent:
         return r_bar, kappa, sigma_s
 
     @staticmethod
-    def KSDistance(data1, data2, rule_out_zero=True):
+    def KSDistance(data1, data2, rule_out_zero=False):
         if rule_out_zero:
             data1 = data1[data1 != 0.]
             data2 = data2[data2 != 0.]
@@ -254,23 +319,7 @@ class CalibrateValueAgent:
         d = np.max(np.absolute(cdf1 - cdf2))
         return d
 
-
-if __name__ == "__main__":
-    fund_path = "C:/Users/BJC/abides_fork/data/mid_prices/fundamental_AAPL.bz2"
-    model = CalibrateValueAgent(fund_path=fund_path, symbol="JPM", lambda_a=1e-12, num_agents=100)
-
-    sigma_n_grid=np.array([1,5,10,15,20,25,30,35,40],dtype=float)
-    sigma_n_grid=sigma_n_grid**2
-
-    time_start = time.time()
-    loss_dict=dict()
-    for sigma_n in sigma_n_grid:
-        loss_dict[sigma_n]=model.evaluateLoss(sigma_n, batch_size=10,parallel=True)
-        print("{} finished.".format(sigma_n))
-    time_end = time.time()
-    print('totally time', time_end - time_start)
-
-
+    @staticmethod
     def plot_score_curve(score_dict, title=""):
         param_list = []
         score_list = []
@@ -282,7 +331,6 @@ if __name__ == "__main__":
 
         plt.plot(param_list, score_list)
         plt.plot([param_list[best_idx]], [score_list[best_idx]], marker='.', markersize=5, color="red")
-        print((param_list[best_idx], score_list[best_idx]))
 
         plt.annotate('Best $d_{KS}$', xy=(param_list[best_idx], score_list[best_idx]), xycoords='data',
                      xytext=(0.8, 0.25), textcoords='axes fraction',
@@ -291,24 +339,25 @@ if __name__ == "__main__":
                      )
 
         plt.title(title)
+        plt.xlabel("$\sigma_n^2$")
+        plt.ylabel("Loss $d_{KS}$")
         plt.show()
 
-        return
-
-    plot_score_curve(loss_dict)
+        return param_list[best_idx], score_list[best_idx]
 
 
-    # time_start = time.time()
-    # midprices_JPM = model.generateMidPrices(sigma_n=1)
-    # time_end = time.time()
-    # print('totally time', time_end - time_start)
+if __name__ == "__main__":
+    model = CalibrateValueAgent(symbol="AAPL", historical_date="20190603", lambda_a=1e-12, num_agents=100)
 
-    # midprices_JPM.plot()
-    # plt.show()
-    #
-    # midprices_JPM["return"] = np.log(1 + midprices_JPM["price"].pct_change())
-    # midprices_JPM.dropna(inplace=True)
-    # print(sum(midprices_JPM["return"].values == 0.) / len(midprices_JPM["return"]))
-    #
-    # sns.distplot(midprices_JPM["return"].values)
-    # plt.show()
+    model.plot_distribution(sigma_n=4225, batch_size=32)
+    model.plot_distribution(sigma_n=6000, batch_size=32)
+
+    sigma_n_grid = np.arange(5, 100, 5)
+    sigma_n_grid = sigma_n_grid ** 2
+
+    time_start = time.time()
+    param_dict = model.calibrateModelGS(sigma_n_grid, batch_size=128)
+    time_end = time.time()
+    print('totally time', time_end - time_start)
+    print(param_dict)
+    # {'AAPL': {'r_bar': 17422.92347392952, 'kappa': 1.6968932483558243e-13, 'fund_var_sigma_s': 1.329102726489007e-08, 'noise_var_sigma_n': 4225}}

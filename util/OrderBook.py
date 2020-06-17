@@ -14,7 +14,7 @@ from functools import reduce
 from scipy.sparse import dok_matrix
 from tqdm import tqdm
 
-tqdm = True
+tqdm_used = True
 
 
 class OrderBook:
