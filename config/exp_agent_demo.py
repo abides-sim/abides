@@ -71,7 +71,7 @@ parser.add_argument('--config_help',
                     help='Print argument options for this config file')
 parser.add_argument('--fund-vol',
                     type=float,
-                    default=1e-4,
+                    default=1e-8,
                     help='Volatility of fundamental time series.'
                     )
 parser.add_argument('-e',

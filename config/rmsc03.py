@@ -118,7 +118,7 @@ parser.add_argument('--mm-backstop-quantity',
 
 parser.add_argument('--fund-vol',
                     type=float,
-                    default=1e-4,
+                    default=1e-8,
                     help='Volatility of fundamental time series.'
                     )
 
