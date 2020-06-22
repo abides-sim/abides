@@ -2,7 +2,8 @@ import argparse
 import pandas as pd
 import numpy as np
 import sys
-sys.path.append('/efs/_abides/dev/mm/abides-icaif/abides')
+p = str(Path(__file__).resolve().parents[2])  # directory two levels up from this file
+sys.path.append(p)
 
 from realism.realism_utils import make_orderbook_for_analysis
 
