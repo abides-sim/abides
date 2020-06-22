@@ -24,7 +24,7 @@ def get_trades(sim_file):
   # Code taken from `read_simulated_trades`
   try:
     df = pd.read_pickle(sim_file, compression='bz2')
-  except OSError:
+  except (OSError, EOFError):
       return None
   
   df = df[df['EventType'] == 'LAST_TRADE']
