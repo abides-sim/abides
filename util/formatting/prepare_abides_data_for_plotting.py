@@ -1,8 +1,8 @@
-from convert_order_stream import convert_stream_to_format
+from util.formatting.convert_order_stream import convert_stream_to_format
 import os
 import argparse
 from dateutil.parser import parse
-from convert_order_stream import dir_path
+from util.formatting.convert_order_stream import dir_path
 import pandas as pd
 
 
