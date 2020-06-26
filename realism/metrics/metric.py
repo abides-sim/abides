@@ -15,10 +15,9 @@ class Metric:
     # Create an overlapping histogram of the provided data.
     def hist(self, simulated, title="Simulation data histogram", xlabel="Values", log=False, bins=75, clip=None):
         for k, v in simulated.items():
-            simulated[k] = np.array(v)
-
+            simulated[k] = np.array(v).reshape((len(v), 1))
         first_sim = simulated[list(simulated.keys())[0]]
-        as_numpy = np.stack(list(simulated.values()))
+        as_numpy = np.vstack(list(simulated.values()))
         left = min(as_numpy.min(), min(first_sim))
         right = max(as_numpy.max(), max(first_sim))
         bins = np.linspace(left, right, bins)
