@@ -42,7 +42,7 @@ midnight = pd.to_datetime('2014-01-28')
 
 ### STOCK SYMBOL CONFIGURATION.
 symbols = { 'IBM' : { 'r_bar' : 1e5, 'kappa' : 1.67e-12, 'agent_kappa' : 1.67e-15,
-                      'sigma_s' : 0, 'fund_vol' : 1e-4, 'megashock_lambda_a' : 2.77778e-13,
+                      'sigma_s' : 0, 'fund_vol' : 1e-8, 'megashock_lambda_a' : 2.77778e-13,
                       'megashock_mean' : 1e3, 'megashock_var' : 5e4 }
           }
 
