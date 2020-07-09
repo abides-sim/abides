@@ -104,7 +104,7 @@ util.silent_mode = not args.verbose
 LimitOrder.silent_mode = not args.verbose
 
 exchange_log_orders = True
-log_orders = False
+log_orders = None
 book_freq = 0
 
 simulation_start_time = dt.datetime.now()
