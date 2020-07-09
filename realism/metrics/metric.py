@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 class Metric:
 
     # Returns a list of computed metrics
@@ -8,28 +9,18 @@ class Metric:
         raise NotImplementedError
 
     # Visualizes metric form list of simulated metric values and list of real metric values.
-    def visualize(self, simulated, real, plot_real=True):
+    def visualize(self, simulated):
         raise NotImplementedError
 
     # Create an overlapping histogram of the provided data.
-    def hist(self, simulated, real, title="Simulated vs. Historical Histogram", xlabel="Values", log=False, bins=75, clip=None, plot_real=True):
-
-        real = np.array(real)
+    def hist(self, simulated, title="Simulation data histogram", xlabel="Values", log=False, bins=75, clip=None):
         for k, v in simulated.items():
-            simulated[k] = np.array(v)
-
-        if clip is not None:
-            for k, v in simulated.items():
-                simulated[k] = v[(v <= clip) & (v >= -1*clip)]
-            real = real[(real <= clip) & (real >= -1*clip)]
-
-        as_numpy = np.stack(list(simulated.values()))
-        left = min(as_numpy.min(), min(real))
-        right = max(as_numpy.max(), max(real))
+            simulated[k] = np.array(v).reshape((len(v), 1))
+        first_sim = simulated[list(simulated.keys())[0]]
+        as_numpy = np.vstack(list(simulated.values()))
+        left = min(as_numpy.min(), min(first_sim))
+        right = max(as_numpy.max(), max(first_sim))
         bins = np.linspace(left, right, bins)
-        
-        if plot_real:
-            plt.hist(real, bins=bins, color="red", log=log, alpha=1, label="Historical", histtype="step", linewidth=3)
 
         # Show histograms
         for k, v in simulated.items():
@@ -41,19 +32,11 @@ class Metric:
         plt.legend()
 
     # Create a line plot of the simulated and real metrics. Also calculates error bars.
-    def line(self, simulated, real, title="Simulated vs. Historical", xlabel="X", ylabel="Y", logy=False, plot_real=True):
-        real = np.array(real)
+    def line(self, simulated, title="Simulation data", xlabel="X", ylabel="Y", logy=False):
         for k, v in simulated.items():
             simulated[k] = np.array(v)
-
-        x = np.arange(real.shape[1])+1
-
-        err_real = np.nanstd(real, axis=0)
-        real = np.nanmean(real, axis=0)
-
-        if plot_real:
-            plt.plot(x, real, color="red", linewidth=4, label="Historical")
-            #plt.fill_between(x, real-err_real, real+err_real, alpha=.1, color="red").set_linestyle('dashed')
+        first_sim = simulated[list(simulated.keys())[0]]
+        x = np.arange(first_sim.shape[1])+1
 
         for k, v in simulated.items():
             err_simulated = np.nanstd(v, axis=0)

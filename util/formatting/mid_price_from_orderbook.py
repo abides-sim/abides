@@ -1,5 +1,11 @@
-from convert_order_book import process_orderbook, is_wide_book
-from convert_order_stream import dir_path
+import sys
+from pathlib import Path
+
+p = str(Path(__file__).resolve().parents[2])  # directory two levels up from this file
+sys.path.append(p)
+
+from util.formatting.convert_order_book import process_orderbook, is_wide_book
+from util.formatting.convert_order_stream import dir_path
 import pandas as pd
 import os
 import argparse
