@@ -5,6 +5,8 @@ cache/
 local/
 log/
 .idea/
+results/
+util/crypto/datasets
 venv/
 .idea/
 .ipynb/

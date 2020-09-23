@@ -51,7 +51,7 @@ class Kernel:
   def runner(self, agents = [], startTime = None, stopTime = None,
              num_simulations = 1, defaultComputationDelay = 1,
              defaultLatency = 1, agentLatency = None, latencyNoise = [ 1.0 ],
-             agentLatencyModel = None,
+             agentLatencyModel = None, skip_log = False,
              seed = None, oracle = None, log_dir = None):
 
     # agents must be a list of agents for the simulation,
@@ -72,6 +72,9 @@ class Kernel:
 
     # The global seed, NOT used for anything agent-related.
     self.seed = seed
+
+    # Should the Kernel skip writing agent logs?
+    self.skip_log = skip_log
 
     # The data oracle for this simulation, if needed.
     self.oracle = oracle
@@ -299,6 +302,12 @@ class Kernel:
              ttl_messages / (eventQueueWallClockElapsed / (np.timedelta64(1, 's')))))
       log_print ("Ending sim {}", sim)
 
+
+    # The Kernel adds a handful of custom state results for all simulations,
+    # which configurations may use, print, log, or discard.
+    self.custom_state['kernel_event_queue_elapsed_wallclock'] = eventQueueWallClockElapsed
+    self.custom_state['kernel_slowest_agent_finish_time'] = max(self.agentCurrentTimes)
+
     # Agents will request the Kernel to serialize their agent logs, usually
     # during kernelTerminating, but the Kernel must write out the summary
     # log itself.
@@ -487,6 +496,8 @@ class Kernel:
     # If filename is not None, it will be used as the filename.  Otherwise,
     # the Kernel will construct a filename based on the name of the Agent
     # requesting log archival.
+
+    if self.skip_log: return
 
     path = os.path.join(".", "log", self.log_dir)
 
