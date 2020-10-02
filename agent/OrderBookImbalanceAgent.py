@@ -110,13 +110,13 @@ class OrderBookImbalanceAgent(TradingAgent):
                         target = 100
                 # If we are flat, we need to decide if we should enter (long or short).
                 else:
-                  if bid_pct < (0.5 - self.entry_threshold):
+                  if bid_pct > (0.5 + self.entry_threshold):
                       log_print("OBI agent entering long position: bid_pct < entry_threshold ({:2f} < {:2f})", bid_pct, 0.5 - self.entry_threshold)
                       target = 100
                       self.is_long = True
                       self.trailing_stop = bid_pct + self.trail_dist
                       log_print("Initial trailing stop: {:2f}", self.trailing_stop)
-                  elif bid_pct > (0.5 + self.entry_threshold):
+                  elif bid_pct < (0.5 - self.entry_threshold):
                       log_print("OBI agent entering short position: bid_pct > entry_threshold ({:2f} > {:2f})", bid_pct, 0.5 + self.entry_threshold)
                       target = -100
                       self.is_short = True
