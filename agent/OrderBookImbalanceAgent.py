@@ -158,11 +158,12 @@ class OrderBookImbalanceAgent(TradingAgent):
         t = 0
 
         for i in range(len(book)):
-            p,v = book[i]
+            p, v = book[i]
             t += v
 
-        # If we have accumulated enough shares, return this price.
-        if t >= shares: return p
+            # If we have accumulated enough shares, return this price.
+            if t >= shares:
+                return p
 
         # Not enough shares.  Just return worst price (highest ask, lowest bid).
         return book[-1][0]
