@@ -584,7 +584,7 @@ class TradingAgent(FinancialAgent):
         if bid is None or ask is None or midpoint is None:
           value = self.last_trade[symbol] * shares
         else:
-          value = midpoint
+          value = midpoint * shares
       else:
         value = self.last_trade[symbol] * shares
 
