@@ -47,8 +47,8 @@ for log_dir in log_dirs:
       fcp = df.loc[df['EventType'] == 'FINAL_CASH_POSITION', 'Event'][0]
       fv = df.loc[df['EventType'] == 'MARKED_TO_MARKET', 'Event'][0]
 
-      ret = ec - sc
-      surp = fcp - sc + fv
+      ret = fcp - sc
+      surp = fv - sc
       stats.append({ 'AgentType' : at, 'Return' : ret, 'Surplus' : surp })
     except (IndexError, KeyError):
       continue
