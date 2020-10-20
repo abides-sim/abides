@@ -118,7 +118,7 @@ parser.add_argument('--mm-backstop-quantity',
 
 parser.add_argument('--fund-vol',
                     type=float,
-                    default=1e-4,
+                    default=1e-8,
                     help='Volatility of fundamental time series.'
                     )
 
@@ -137,7 +137,7 @@ util.silent_mode = not args.verbose
 LimitOrder.silent_mode = not args.verbose
 
 exchange_log_orders = True
-log_orders = False
+log_orders = None
 book_freq = 0
 
 simulation_start_time = dt.datetime.now()

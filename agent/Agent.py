@@ -5,7 +5,7 @@ from util.util import log_print
 
 class Agent:
 
-  def __init__ (self, id, name, type, random_state):
+  def __init__ (self, id, name, type, random_state, log_to_file=True):
 
     # ID must be a unique number (usually autoincremented).
     # Name is for human consumption, should be unique (often type + number).
@@ -16,6 +16,7 @@ class Agent:
     self.id = id
     self.name = name
     self.type = type
+    self.log_to_file = log_to_file
     self.random_state = random_state
 
     if not random_state:
@@ -89,7 +90,7 @@ class Agent:
 
     # If this agent has been maintaining a log, convert it to a Dataframe
     # and request that the Kernel write it to disk before terminating.
-    if self.log:
+    if self.log and self.log_to_file:
       dfLog = pd.DataFrame(self.log)
       dfLog.set_index('EventTime', inplace=True)
       self.writeLog(dfLog)

@@ -4,6 +4,7 @@ from metrics.minutely_returns import MinutelyReturns
 import pandas as pd
 import numpy as np
 
+
 class VolatilityClustering(Metric):
 
     def __init__(self, lags=10, mode="abs"):
@@ -21,8 +22,7 @@ class VolatilityClustering(Metric):
             df = abs(df)
         elif self.mode == "square":
             df = df ** 2
-        return [[df.autocorr(lag) for lag in range(1,self.lags+1)]]
+        return [[df.autocorr(lag) for lag in range(1, self.lags+1)]]
 
-    def visualize(self, simulated, real, plot_real=True):
-        self.line(simulated, real, "Volatility Clustering/Long Range Dependence", "Lag", "Correlation coefficient", plot_real=plot_real)
-
+    def visualize(self, simulated):
+        self.line(simulated, "Volatility Clustering/Long Range Dependence", "Lag", "Correlation coefficient")

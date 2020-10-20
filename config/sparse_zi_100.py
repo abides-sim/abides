@@ -127,7 +127,7 @@ defaultComputationDelay = 1000000000        # one second
 
 # Note: sigma_s is no longer used by the agents or the fundamental (for sparse discrete simulation).
 
-symbols = { 'JPM' : { 'r_bar' : 1e5, 'kappa' : 1.67e-12, 'agent_kappa' : 1.67e-15, 'sigma_s' : 0, 'fund_vol' : 1e-4, 'megashock_lambda_a' : 2.77778e-13, 'megashock_mean' : 1e3, 'megashock_var' : 5e4, 'random_state' : np.random.RandomState(seed=np.random.randint(low=0,high=2**32, dtype='uint64')) } }
+symbols = { 'JPM' : { 'r_bar' : 1e5, 'kappa' : 1.67e-12, 'agent_kappa' : 1.67e-15, 'sigma_s' : 0, 'fund_vol' : 1e-8, 'megashock_lambda_a' : 2.77778e-13, 'megashock_mean' : 1e3, 'megashock_var' : 5e4, 'random_state' : np.random.RandomState(seed=np.random.randint(low=0,high=2**32, dtype='uint64')) } }
  
 
 ### Configure the Kernel.

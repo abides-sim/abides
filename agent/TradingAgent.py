@@ -23,8 +23,13 @@ class TradingAgent(FinancialAgent):
     self.mkt_open = None
     self.mkt_close = None
 
-    # Log all order activity?
+    # Log order activity?
     self.log_orders = log_orders
+
+    # Log all activity to file?
+    if log_orders is None:
+      self.log_orders = False
+      self.log_to_file = False
 
     # Store starting_cash in case we want to refer to it for performance stats.
     # It should NOT be modified.  Use the 'CASH' key in self.holdings.
