@@ -230,7 +230,7 @@ defaultComputationDelay = 50  # 50 nanoseconds
 
 # LATENCY
 
-latency_rstate = np.random.RandomState(seed=np.random.randint(low=0, high=2**32))
+latency_rstate = np.random.RandomState(seed=np.random.randint(low=0, high=2**32, dtype='uint64'))
 pairwise = (agent_count, agent_count)
 
 # All agents sit on line from Seattle to NYC
