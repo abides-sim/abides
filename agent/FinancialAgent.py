@@ -10,9 +10,9 @@ import traceback
 # exchanges to make this more useful later on.
 class FinancialAgent(Agent):
 
-  def __init__(self, id, name, type, random_state):
+  def __init__(self, id, name, type, random_state, log_to_file=True):
     # Base class init.
-    super().__init__(id, name, type, random_state)
+    super().__init__(id, name, type, random_state, log_to_file)
 
   # Used by any subclass to dollarize an int-cents price for printing.
   def dollarize (self, cents):

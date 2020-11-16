@@ -15,9 +15,9 @@ import sys
 # implementing a strategy without too much bookkeeping.
 class TradingAgent(FinancialAgent):
 
-  def __init__(self, id, name, type, random_state=None, starting_cash=100000, log_orders=False):
+  def __init__(self, id, name, type, random_state=None, starting_cash=100000, log_orders=False, log_to_file=True):
     # Base class init.
-    super().__init__(id, name, type, random_state)
+    super().__init__(id, name, type, random_state, log_to_file)
 
     # We don't yet know when the exchange opens or closes.
     self.mkt_open = None

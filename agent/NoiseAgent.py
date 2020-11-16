@@ -8,10 +8,12 @@ import pandas as pd
 
 class NoiseAgent(TradingAgent):
 
-    def __init__(self, id, name, type, symbol='IBM', starting_cash=100000, log_orders=False, random_state=None, wakeup_time = None ):
+    def __init__(self, id, name, type, symbol='IBM', starting_cash=100000,
+                 log_orders=False, log_to_file=True, random_state=None, wakeup_time = None ):
 
         # Base class init.
-        super().__init__(id, name, type, starting_cash=starting_cash, log_orders=log_orders, random_state=random_state)
+        super().__init__(id, name, type, starting_cash=starting_cash, log_orders=log_orders,
+                         log_to_file=log_to_file, random_state=random_state)
 
         self.wakeup_time = wakeup_time,
 
