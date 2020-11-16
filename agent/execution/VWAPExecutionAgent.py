@@ -43,7 +43,7 @@ class VWAPExecutionAgent(ExecutionAgent):
     def synthetic_volume_profile(date, freq):
         mkt_open = pd.to_datetime(date.date()) + pd.to_timedelta('09:30:00')
         mkt_close = pd.to_datetime(date.date()) + pd.to_timedelta('16:00:00')
-        day_range = pd.date_range(mkt_open, mkt_close, freq=f'{freq}s')
+        day_range = pd.date_range(mkt_open, mkt_close, freq=freq)
 
         vol_profile = {}
         for t, x in zip(day_range, range(int(-len(day_range) / 2), int(len(day_range) / 2), 1)):
