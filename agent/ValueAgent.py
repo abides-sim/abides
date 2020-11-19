@@ -10,10 +10,11 @@ class ValueAgent(TradingAgent):
 
     def __init__(self, id, name, type, symbol='IBM', starting_cash=100000, sigma_n=10000,
                  r_bar=100000, kappa=0.05, sigma_s=100000,
-                 lambda_a=0.005, log_orders=False, random_state=None):
+                 lambda_a=0.005, log_orders=False, log_to_file=True, random_state=None):
 
         # Base class init.
-        super().__init__(id, name, type, starting_cash=starting_cash, log_orders=log_orders, random_state=random_state)
+        super().__init__(id, name, type, starting_cash=starting_cash,
+                         log_orders=log_orders, log_to_file=log_to_file, random_state=random_state)
 
         # Store important parameters particular to the ZI agent.
         self.symbol = symbol  # symbol to trade

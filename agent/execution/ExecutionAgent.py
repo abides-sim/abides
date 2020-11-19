@@ -27,6 +27,8 @@ class ExecutionAgent(TradingAgent):
         self.trade = trade
         self.log_orders = log_orders
 
+        self.state = 'AWAITING_WAKEUP'
+
     def kernelStopping(self):
         super().kernelStopping()
         if self.trade:
@@ -79,17 +81,18 @@ class ExecutionAgent(TradingAgent):
         log_print('[---- {} - {} ----]: ACCEPTED QUANTITY : {}'.format(self.name, currentTime, accepted_qty))
 
     def placeOrders(self, currentTime):
-        if currentTime == self.execution_time_horizon[-2]:
+        if currentTime.floor('1s') == self.execution_time_horizon[-2]:
             self.placeMarketOrder(symbol=self.symbol, quantity=self.rem_quantity, is_buy_order=self.direction == 'BUY')
-        elif currentTime in self.execution_time_horizon[:-2]:
+        elif currentTime.floor('1s') in self.execution_time_horizon[:-2]:
             bid, _, ask, _ = self.getKnownBidAsk(self.symbol)
 
-            if currentTime == self.start_time:
+            if currentTime.floor('1s') == self.start_time:
                 self.arrival_price = (bid + ask) / 2
                 log_print("[---- {}  - {} ----]: Arrival Mid Price {}".format(self.name, currentTime,
                                                                                self.arrival_price))
 
-            qty = self.schedule[pd.Interval(currentTime, currentTime+datetime.timedelta(minutes=1))]
+            qty = self.schedule[pd.Interval(currentTime.floor('1s'),
+                                            currentTime.floor('1s')+datetime.timedelta(minutes=1))]
             price = ask if self.direction == 'BUY' else bid
             self.placeLimitOrder(symbol=self.symbol, quantity=qty,
                                  is_buy_order=self.direction == 'BUY', limit_price=price)
