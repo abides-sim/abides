@@ -61,6 +61,9 @@ class Agent:
 
     log_print ("{} exists!", self.name)
 
+  def selim(self, x, y):
+    
+      return x+y
 
   def kernelStarting (self, startTime):
     # Called by kernel one time _after_ simulationInitializing.
