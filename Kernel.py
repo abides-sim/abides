@@ -377,7 +377,7 @@ class Kernel:
                  self.fmtTime(deliverAt))
     else:
       latency = self.agentLatency[sender][recipient]
-      noise = self.random_state.choice(len(self.latencyNoise), 1, self.latencyNoise)[0]
+      noise = self.random_state.choice(len(self.latencyNoise), p=self.latencyNoise)
       deliverAt = sentTime + pd.Timedelta(latency + noise)
       log_print ("Kernel applied latency {}, noise {}, accumulated delay {}, one-time delay {} on sendMessage from: {} to {}, scheduled for {}",
                  latency, noise, self.currentAgentAdditionalDelay, delay, self.agents[sender].name, self.agents[recipient].name,
