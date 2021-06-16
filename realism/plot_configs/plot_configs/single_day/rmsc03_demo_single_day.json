@@ -1,0 +1,55 @@
+{
+  "ONLY_EXECUTED": false,
+  "CLIPPED_START_TIME": "09:30:00",
+  "CLIPPED_FINISH_TIME": "11:30:00",
+  "PLOT_DATA": [
+    {
+      "participation_of_volume": 0.01,
+      "no_execution_exchange_path": "../log/rmsc03_two_hour/EXCHANGE_AGENT.bz2",
+      "no_execution_orderbook_path": "../log/rmsc03_two_hour/ORDERBOOK_ABM_FULL.bz2",
+      "yes_execution_exchange_path": "../log/rmsc03_two_hour_pov_0.01/EXCHANGE_AGENT.bz2",
+      "yes_execution_orderbook_path": "../log/rmsc03_two_hour_pov_0.01/ORDERBOOK_ABM_FULL.bz2",
+      "seed": 1234
+    },
+    {
+      "participation_of_volume": 0.05,
+      "no_execution_exchange_path": "../log/rmsc03_two_hour/EXCHANGE_AGENT.bz2",
+      "no_execution_orderbook_path": "../log/rmsc03_two_hour/ORDERBOOK_ABM_FULL.bz2",
+      "yes_execution_exchange_path": "../log/rmsc03_two_hour_pov_0.05/EXCHANGE_AGENT.bz2",
+      "yes_execution_orderbook_path": "../log/rmsc03_two_hour_pov_0.05/ORDERBOOK_ABM_FULL.bz2",
+      "seed": 1234
+    },
+    {
+      "participation_of_volume": 0.1,
+      "no_execution_exchange_path": "../log/rmsc03_two_hour/EXCHANGE_AGENT.bz2",
+      "no_execution_orderbook_path": "../log/rmsc03_two_hour/ORDERBOOK_ABM_FULL.bz2",
+      "yes_execution_exchange_path": "../log/rmsc03_two_hour_pov_0.1/EXCHANGE_AGENT.bz2",
+      "yes_execution_orderbook_path": "../log/rmsc03_two_hour_pov_0.1/ORDERBOOK_ABM_FULL.bz2",
+      "seed": 1234
+    },
+    {
+      "participation_of_volume": 0.5,
+      "no_execution_exchange_path": "../log/rmsc03_two_hour/EXCHANGE_AGENT.bz2",
+      "no_execution_orderbook_path": "../log/rmsc03_two_hour/ORDERBOOK_ABM_FULL.bz2",
+      "yes_execution_exchange_path": "../log/rmsc03_two_hour_pov_0.5/EXCHANGE_AGENT.bz2",
+      "yes_execution_orderbook_path": "../log/rmsc03_two_hour_pov_0.5/ORDERBOOK_ABM_FULL.bz2",
+      "seed": 1234
+    }
+  ],
+  "CACHE_FILE": "cache/rmsc03_two_hour_20200603.pkl",
+  "USE_CACHE": false,
+  "PLOT_PARAMS_DICT": {
+    "baseline_label": "Baseline",
+    "execution_label": "POV ",
+    "shade_start_datetime": "2020-06-03 10:00:00",
+    "shade_end_datetime": "2020-06-03 11:00:00",
+    "spread_lookback": "1min",
+    "output_file_path": "visualizations/rmsc03_two_hour_20200603.png",
+    "execution_agent_name": "POV_EXECUTION_AGENT",
+    "experiment_name": "rmsc03_two_hour",
+    "log_dir": "../log"
+  },
+  "SPREAD_PLOT_LOG_SCALE": true,
+  "ORDERBOOK_IMBALANCE_PLOT_LOG_SCALE": true,
+  "COMPUTE_IMPACT_STATS": false
+}

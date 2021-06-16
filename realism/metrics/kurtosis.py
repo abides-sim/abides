@@ -16,5 +16,5 @@ class Kurtosis(Metric):
             ks.append(kurtosis(rets))
         return [ks]
 
-    def visualize(self, simulated, real, plot_real=True):
-        self.line(simulated, real, title="Kurtosis", xlabel="Time scale (min)", ylabel="Average kurtosis", logy=True, plot_real=plot_real)
+    def visualize(self, simulated):
+        self.line(simulated, title="Kurtosis", xlabel="Time scale (min)", ylabel="Average kurtosis", logy=True)

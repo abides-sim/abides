@@ -13,7 +13,7 @@ for stock in ${stocks[*]}
           do
             nohup sem  -j${num_parallel_runs} --line-buffer \
               python -u abides.py -c icaif_hist -t ${stock} -d ${date} \
-              -f /efs/data/get_real_data/mid_prices/ORDERBOOK_${stock}_FREQ_ALL_${date}_mid_price.bz2 \
+              -f /home/ec2-user/efs/data/get_real_data/mid_prices/ORDERBOOK_${stock}_FREQ_ALL_${date}_mid_price.bz2 \
               -l icaif_hist_${stock}_${date}_${seed} -s ${seed} > icaif_hist.log &
           done
       done

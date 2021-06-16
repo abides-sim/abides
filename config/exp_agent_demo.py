@@ -1,10 +1,10 @@
-# RMSC-3 (Reference Market Simulation Configuration):
+# RMSC-3 (Reference Market Simulation Configuration with experimental agent):
 # - 1     Exchange Agent
 # - 1     POV Market Maker Agent
 # - 100   Value Agents
 # - 25    Momentum Agents
 # - 5000  Noise Agents
-# - 1     (Optional) POV Execution agent
+# - 1     (Optional) Example Experimental agent
 
 import argparse
 import numpy as np
@@ -23,7 +23,7 @@ from agent.NoiseAgent import NoiseAgent
 from agent.ValueAgent import ValueAgent
 from agent.market_makers.AdaptiveMarketMakerAgent import AdaptiveMarketMakerAgent
 from agent.examples.MomentumAgent import MomentumAgent
-from agent.execution.POVExecutionAgent import POVExecutionAgent
+from agent.examples.ExampleExperimentalAgent import ExampleExperimentalAgentTemplate, ExampleExperimentalAgent
 from model.LatencyModel import LatencyModel
 
 ########################################################################################################################
@@ -49,7 +49,7 @@ parser.add_argument('--start-time',
                     help='Starting time of simulation.'
                     )
 parser.add_argument('--end-time',
-                    default='11:30:00',
+                    default='10:30:00',
                     type=parse,
                     help='Ending time of simulation.'
                     )
@@ -69,57 +69,24 @@ parser.add_argument('-v',
 parser.add_argument('--config_help',
                     action='store_true',
                     help='Print argument options for this config file')
-# Execution agent config
-parser.add_argument('-e',
-                    '--execution-agents',
-                    action='store_true',
-                    help='Flag to allow the execution agent to trade.')
-parser.add_argument('-p',
-                    '--execution-pov',
-                    type=float,
-                    default=0.1,
-                    help='Participation of Volume level for execution agent')
-# market maker config
-parser.add_argument('--mm-pov',
-                    type=float,
-                    default=0.025
-                    )
-parser.add_argument('--mm-window-size',
-                    type=util.validate_window_size,
-                    default='adaptive'
-                    )
-parser.add_argument('--mm-min-order-size',
-                    type=int,
-                    default=1
-                    )
-parser.add_argument('--mm-num-ticks',
-                    type=int,
-                    default=10
-                    )
-parser.add_argument('--mm-wake-up-freq',
-                    type=str,
-                    default='10S'
-                    )
-parser.add_argument('--mm-skew-beta',
-                    type=float,
-                    default=0
-                    )
-parser.add_argument('--mm-level-spacing',
-                    type=float,
-                    default=5
-                    )
-parser.add_argument('--mm-spread-alpha',
-                    type=float,
-                    default=0.75
-                    )
-parser.add_argument('--mm-backstop-quantity',
-                    type=float,
-                    default=50000)
-
 parser.add_argument('--fund-vol',
                     type=float,
                     default=1e-4,
                     help='Volatility of fundamental time series.'
+                    )
+parser.add_argument('-e',
+                    '--experimental-agent',
+                    action='store_true',
+                    help='Switch to allow presence of ExampleExperimentalAgent in market')
+parser.add_argument('--ea-short-window',
+                    type=pd.to_timedelta,
+                    default='1s',
+                    help='Length of short window for use in experimental agent mean-reversion strategy.'
+                    )
+parser.add_argument('--ea-long-window',
+                    type=pd.to_timedelta,
+                    default='30s',
+                    help='Length of long window for use in experimental agent mean-reversion strategy.'
                     )
 
 args, remaining_args = parser.parse_known_args()
@@ -241,8 +208,8 @@ wake_up_freq == How often the market maker wakes up
 """
 
 # each elem of mm_params is tuple (window_size, pov, num_ticks, wake_up_freq, min_order_size)
-mm_params = [(args.mm_window_size, args.mm_pov, args.mm_num_ticks, args.mm_wake_up_freq, args.mm_min_order_size),
-             (args.mm_window_size, args.mm_pov, args.mm_num_ticks, args.mm_wake_up_freq, args.mm_min_order_size)
+mm_params = [('adaptive', 0.025, 10, '10S', 1),
+             ('adaptive', 0.025, 10, '10S', 1)
              ]
 
 num_mm_agents = len(mm_params)
@@ -259,10 +226,10 @@ agents.extend([AdaptiveMarketMakerAgent(id=j,
                                 num_ticks=mm_params[idx][2],
                                 wake_up_freq=mm_params[idx][3],
                                 cancel_limit_delay=mm_cancel_limit_delay,
-                                skew_beta=args.mm_skew_beta,
-                                level_spacing=args.mm_level_spacing,
-                                spread_alpha=args.mm_spread_alpha,
-                                backstop_quantity=args.mm_backstop_quantity,
+                                skew_beta=0,
+                                level_spacing=5,
+                                spread_alpha=0.75,
+                                backstop_quantity=50000,
                                 log_orders=log_orders,
                                 random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32,
                                                                                           dtype='uint64')))
@@ -289,39 +256,42 @@ agents.extend([MomentumAgent(id=j,
 agent_count += num_momentum_agents
 agent_types.extend("MomentumAgent")
 
-# 6) Execution Agent
+# 6) Experimental Agent
 
-trade = True if args.execution_agents else False
+#### Example Experimental Agent parameters
 
-#### Participation of Volume Agent parameters
+if args.experimental_agent:
+    experimental_agent = ExampleExperimentalAgent(
+        id=agent_count,
+        name='EXAMPLE_EXPERIMENTAL_AGENT',
+        type='ExampleExperimentalAgent',
+        symbol=symbol,
+        starting_cash=starting_cash,
+        levels=5,
+        subscription_freq=1e9,
+        wake_freq='10s',
+        order_size=100,
+        short_window=args.ea_short_window,
+        long_window=args.ea_long_window,
+        log_orders=True,
+        random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32, dtype='uint64'))
+    )
+else:
+    experimental_agent = ExampleExperimentalAgentTemplate(
+        id=agent_count,
+        name='EXAMPLE_EXPERIMENTAL_AGENT',
+        type='ExampleExperimentalAgent',
+        symbol=symbol,
+        starting_cash=starting_cash,
+        levels=5,
+        subscription_freq=1e9,
+        log_orders=True,
+        random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32, dtype='uint64'))
+    )
 
-pov_agent_start_time = mkt_open + pd.to_timedelta('00:30:00')
-pov_agent_end_time = mkt_close - pd.to_timedelta('00:30:00')
-pov_proportion_of_volume = args.execution_pov
-pov_quantity = 12e5
-pov_frequency = '1min'
-pov_direction = "BUY"
-
-pov_agent = POVExecutionAgent(id=agent_count,
-                              name='POV_EXECUTION_AGENT',
-                              type='ExecutionAgent',
-                              symbol=symbol,
-                              starting_cash=starting_cash,
-                              start_time=pov_agent_start_time,
-                              end_time=pov_agent_end_time,
-                              freq=pov_frequency,
-                              lookback_period=pov_frequency,
-                              pov=pov_proportion_of_volume,
-                              direction=pov_direction,
-                              quantity=pov_quantity,
-                              trade=trade,
-                              log_orders=True,  # needed for plots so conflicts with others
-                              random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32,
-                                                                                          dtype='uint64')))
-
-execution_agents = [pov_agent]
-agents.extend(execution_agents)
-agent_types.extend("ExecutionAgent")
+experimental_agents = [experimental_agent]
+agents.extend(experimental_agents)
+agent_types.extend("ExperimentalAgent")
 agent_count += 1
 
 
@@ -365,7 +335,6 @@ kernel.runner(agents=agents,
               defaultComputationDelay=defaultComputationDelay,
               oracle=oracle,
               log_dir=args.log_dir)
-
 
 simulation_end_time = dt.datetime.now()
 print("Simulation End Time: {}".format(simulation_end_time))

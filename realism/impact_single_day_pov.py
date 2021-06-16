@@ -118,7 +118,7 @@ def prepare_shade_dates(start, end, historical_date):
     return shade_start_time, shade_end_time
 
 
-def prep_data(plot_data, cache_file, only_executed, clipped_start_time, clipped_end_time, plot_params_dict):
+def prep_data(plot_data, cache_file, only_executed, clipped_start_time, clipped_end_time, plot_params_dict, compute_impact_stats=False):
     """ Prepares and caches POV market impact experiment output files for further aggregation and processing.
 
     :param plot_data: Data structure holding paths to relevant ABIDES output files, see e.g. plot_configs/single_day/pov_single_day_config.example.json["PLOT_DATA"]
@@ -126,12 +126,15 @@ def prep_data(plot_data, cache_file, only_executed, clipped_start_time, clipped_
     :param only_executed: Switch as to only include transacted volume as opposed to including limit orders.
     :param clipped_start_time: Starting time at which to clip data in format 'HH:MM:SS'
     :param clipped_end_time: Finishing time at which to clip data in format 'HH:MM:SS'
+    :param compute_impact_statistics: Switch whether to compute impact statistics
+
 
     :type plot_data: list
     :type cache_file: str
     :type only_executed: bool
     :type clipped_start_time: str
     :type clipped_end_time: str
+    :type compute_impact_stats: bool
 
     :return:
     """
@@ -164,26 +167,33 @@ def prep_data(plot_data, cache_file, only_executed, clipped_start_time, clipped_
         pov = data_dict["participation_of_volume"]
         seed = data_dict["seed"]
 
-        stats_dict = compute_impact_statistics(abides_orderbook_df, abides_execution_orderbook_df,
-                                               shade_start_time, shade_end_time,
-                                               date_str=date_str,
-                                               pov=pov,
-                                               seed=seed,
-                                               experiment_name=plot_params_dict['experiment_name'],
-                                               execution_agent_name=plot_params_dict['execution_agent_name'],
-                                               log_dir=plot_params_dict['log_dir'],
-                                               spread_lookback=plot_params_dict['spread_lookback']
-                                               )
+        if compute_impact_stats:
+            stats_dict = compute_impact_statistics(abides_orderbook_df, abides_execution_orderbook_df,
+                                                   shade_start_time, shade_end_time,
+                                                   date_str=date_str,
+                                                   pov=pov,
+                                                   seed=seed,
+                                                   experiment_name=plot_params_dict['experiment_name'],
+                                                   execution_agent_name=plot_params_dict['execution_agent_name'],
+                                                   log_dir=plot_params_dict['log_dir'],
+                                                   spread_lookback=plot_params_dict['spread_lookback']
+                                                   )
 
-        print(f"Statistics for participation of volume at level {100 * data_dict['participation_of_volume']}%")
-        print("Statistics:")
-        pprint(stats_dict)
-        out_data.append({
-            "no_execution_df": abides_orderbook_df,
-            "yes_execution_df": abides_execution_orderbook_df,
-            "impact_statistics": stats_dict,
-            "pov": data_dict['participation_of_volume']
-        })
+            print(f"Statistics for participation of volume at level {100 * data_dict['participation_of_volume']}%")
+            print("Statistics:")
+            pprint(stats_dict)
+            out_data.append({
+                "no_execution_df": abides_orderbook_df,
+                "yes_execution_df": abides_execution_orderbook_df,
+                "impact_statistics": stats_dict,
+                "pov": data_dict['participation_of_volume']
+            })
+        else:
+            out_data.append({
+                "no_execution_df": abides_orderbook_df,
+                "yes_execution_df": abides_execution_orderbook_df,
+                "pov": data_dict['participation_of_volume']
+            })
 
     with open(cache_file, 'wb') as f:
         pickle.dump(out_data, f)
@@ -205,7 +215,7 @@ def main(config_path):
 
     # TODO: do this without global vars
     global ONLY_EXECUTED, CLIPPED_START_TIME, CLIPPED_FINISH_TIME, PLOT_DATA, CACHE_FILE, USE_CACHE, PLOT_PARAMS_DICT, \
-        SPREAD_PLOT_LOG_SCALE, ORDERBOOK_IMBALANCE_PLOT_LOG_SCALE
+        SPREAD_PLOT_LOG_SCALE, ORDERBOOK_IMBALANCE_PLOT_LOG_SCALE, COMPUTE_IMPACT_STATS
 
     ONLY_EXECUTED = config_dict["ONLY_EXECUTED"]
     CLIPPED_START_TIME = config_dict["CLIPPED_START_TIME"]
@@ -216,13 +226,15 @@ def main(config_path):
     PLOT_PARAMS_DICT = config_dict["PLOT_PARAMS_DICT"]
     SPREAD_PLOT_LOG_SCALE = config_dict["SPREAD_PLOT_LOG_SCALE"]
     ORDERBOOK_IMBALANCE_PLOT_LOG_SCALE = config_dict["ORDERBOOK_IMBALANCE_PLOT_LOG_SCALE"]
+    COMPUTE_IMPACT_STATS = config_dict["COMPUTE_IMPACT_STATS"]
 
     if USE_CACHE and os.path.exists(CACHE_FILE):
         with open(CACHE_FILE, 'rb') as f:
             print("Using cache...")
             out_data = pickle.load(f)
     else:
-        out_data = prep_data(PLOT_DATA, CACHE_FILE, ONLY_EXECUTED, CLIPPED_START_TIME, CLIPPED_FINISH_TIME, PLOT_PARAMS_DICT)
+        out_data = prep_data(PLOT_DATA, CACHE_FILE, ONLY_EXECUTED, CLIPPED_START_TIME, CLIPPED_FINISH_TIME,
+                             PLOT_PARAMS_DICT, compute_impact_stats=COMPUTE_IMPACT_STATS)
 
     print("Constructing plots...")
 

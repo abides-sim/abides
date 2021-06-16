@@ -3,6 +3,7 @@ import pandas as pd
 from contextlib import contextmanager
 import warnings
 from scipy.spatial.distance import pdist
+from scipy import stats
 
 
 # General purpose utility functions for the simulator, attached to no particular class.
@@ -156,3 +157,53 @@ def sigmoid(x, beta):
         z = np.exp(beta*x)
         return z / (1 + z)
 
+
+class OrderSizeDistribution(stats.rv_continuous):
+    """ Class representing distribution of order sizes.
+    """
+
+    # def __init__(self, a, name="OrderSizeDistribution", *args, **kwargs):
+    #     self.name = name
+    #     self.mixture_probs = np.array(args)
+    #     super().__init__(*args, **kwargs)
+    #     self.submodels = [stats.powerlaw(a)]#, loc=self.loc, scale=self.scale)]
+    #     for idx in range(1, len(self.mixture_probs)):
+    #         self.submodels.append(stats.norm(idx * 100, 0.001))
+
+    @staticmethod
+    def get_shape_list(probs):
+        out_str = "a, "
+        out_str += ", ".join([f'p{i}' for i in range(len(probs))])
+        return out_str
+
+    def _pdf(self, x, a, *mixture_probs):
+        submodels = [stats.powerlaw(a)]#, loc=self.loc, scale=self.scale)]
+        for idx in range(1, len(mixture_probs)):
+            submodels.append(stats.norm(idx * 100, 0.001))
+
+        pdf = mixture_probs[0] * self.submodels[0].pdf(x)
+        for idx, submodel in enumerate(submodels)[1:]:
+            pdf += mixture_probs[idx] * submodel.pdf(x)
+        return pdf
+
+    # def _pdf(self, x):
+    #     pdf = self.mixture_probs[0] * self.submodels[0].pdf(x)
+    #     for idx, submodel in enumerate(self.submodels)[1:]:
+    #         pdf += self.mixture_probs[idx] * submodel.pdf(x)
+    #     return pdf
+
+    def _argcheck(self, *args):
+        a = args[0]
+        mixture_probs = np.array(args[1:])
+        args_good = True
+        if a <= 0:
+            args_good = False
+        if not np.all(mixture_probs >= 0.) or np.all(mixture_probs <= 1.):
+            args_good = False
+        if not np.isclose(np.sum(mixture_probs), 1.):
+            args_good = False
+
+        return args_good
+
+    # def _fitstart(self):
+    #     return (0.15, *self.mixture_probs)

@@ -17,7 +17,7 @@ class TradingAgent(FinancialAgent):
 
   def __init__(self, id, name, type, random_state=None, starting_cash=100000, log_orders=False):
     # Base class init.
-    super().__init__(id, name, type, random_state)
+    super().__init__(id, name, type, random_state, log_events=log_orders)
 
     # We don't yet know when the exchange opens or closes.
     self.mkt_open = None
@@ -358,14 +358,16 @@ class TradingAgent(FinancialAgent):
     else:
       log_print("TradingAgent ignored market order of quantity zero: {}", order)
 
-  def cancelOrder (self, order):
+  def cancelOrder(self, order):
     """Used by any Trading Agent subclass to cancel any order.  The order must currently
     appear in the agent's open orders list."""
-    self.sendMessage(self.exchangeID, Message({ "msg" : "CANCEL_ORDER", "sender": self.id,
-                                                "order" : order })) 
-
-    # Log this activity.
-    if self.log_orders: self.logEvent('CANCEL_SUBMITTED', order.to_dict())
+    if isinstance(order, LimitOrder):
+      self.sendMessage(self.exchangeID, Message({"msg": "CANCEL_ORDER", "sender": self.id,
+                                                 "order": order}))
+      # Log this activity.
+      if self.log_orders: self.logEvent('CANCEL_SUBMITTED', order.to_dict())
+    else:
+      log_print("order {} of type, {} cannot be cancelled", order, type(order))
 
   def modifyOrder (self, order, newOrder):
     """ Used by any Trading Agent subclass to modify any existing limit order.  The order must currently

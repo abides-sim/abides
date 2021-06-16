@@ -489,6 +489,12 @@ class OrderBook:
 
     def isEqualPrice(self, order, o):
         return order.limit_price == o.limit_price
+        # try:
+        #     return order.limit_price == o.limit_price
+        # except AttributeError:
+        #     print("AttributeError caught")
+        #     print(f"order: {order.__str__()}")
+        #     print(f"o: {o.__str__()}")
 
     def isSameOrder(self, order, new_order):
         return order.order_id == new_order.order_id

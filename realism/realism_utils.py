@@ -1,9 +1,9 @@
 import sys
 import pandas as pd
 import numpy as np
-
-sys.path.append('../util/formatting')
-sys.path.append('../util')
+from pathlib import Path
+p = str(Path(__file__).resolve().parents[1])  # directory one level up from this file
+sys.path.append(p)
 from util.formatting.convert_order_book import process_orderbook, is_wide_book
 from util.formatting.convert_order_stream import convert_stream_to_format
 import itertools
@@ -22,7 +22,11 @@ LIQUIDITY_DROPOUT_WARNING_MSG = "No liquidity on one side of the order book duri
 def get_trades(sim_file):
   
   # Code taken from `read_simulated_trades`
-  df = pd.read_pickle(sim_file, compression='bz2')
+  try:
+    df = pd.read_pickle(sim_file, compression='bz2')
+  except OSError:
+      return None
+  
   df = df[df['EventType'] == 'LAST_TRADE']
   if len(df) <= 0:
     print("There appear to be no simulated trades.")

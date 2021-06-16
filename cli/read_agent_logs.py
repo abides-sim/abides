@@ -8,7 +8,7 @@ pd.options.display.max_rows = 500000
 pd.options.display.max_colwidth = 200
 
 if len(sys.argv) < 2:
-  print ("Usage: python dump.py <log directory>")
+  print ("Usage: python read_agent_logs.py <log directory>")
   sys.exit()
 
 
@@ -28,30 +28,30 @@ for log_dir in log_dirs:
   if dir_count % 100 == 0: print ("Completed {} directories".format(dir_count))
   dir_count += 1
   for file in os.listdir(log_dir):
-    df = pd.read_pickle(os.path.join(log_dir,file), compression='bz2')
-  
-    events = [ 'AGENT_TYPE', 'STARTING_CASH', 'ENDING_CASH', 'FINAL_CASH_POSITION', 'FINAL_VALUATION' ]
-    event = "|".join(events)
-    df = df[df['EventType'].str.contains(event)]
-  
-    at = df.loc[df['EventType'] == 'AGENT_TYPE', 'Event'][0]
-  
-    if 'Exchange' in at:
-      # There may be different fields to look at later on.
+    try:
+      df = pd.read_pickle(os.path.join(log_dir,file), compression='bz2')
+      # print(df)
+      events = [ 'AGENT_TYPE', 'STARTING_CASH', 'ENDING_CASH', 'FINAL_CASH_POSITION', 'MARKED_TO_MARKET' ]
+      event = "|".join(events)
+      df = df[df['EventType'].str.contains(event)]
+
+      at = df.loc[df['EventType'] == 'AGENT_TYPE', 'Event'][0]
+      if 'Exchange' in at:
+        # There may be different fields to look at later on.
+        continue
+
+      file_count += 1
+
+      sc = df.loc[df['EventType'] == 'STARTING_CASH', 'Event'][0]
+      ec = df.loc[df['EventType'] == 'ENDING_CASH', 'Event'][0]
+      fcp = df.loc[df['EventType'] == 'FINAL_CASH_POSITION', 'Event'][0]
+      fv = df.loc[df['EventType'] == 'MARKED_TO_MARKET', 'Event'][0]
+
+      ret = ec - sc
+      surp = fcp - sc + fv
+      stats.append({ 'AgentType' : at, 'Return' : ret, 'Surplus' : surp })
+    except (IndexError, KeyError):
       continue
-  
-    file_count += 1
-
-    sc = df.loc[df['EventType'] == 'STARTING_CASH', 'Event'][0]
-    ec = df.loc[df['EventType'] == 'ENDING_CASH', 'Event'][0]
-    fcp = df.loc[df['EventType'] == 'FINAL_CASH_POSITION', 'Event'][0]
-    fv = df.loc[df['EventType'] == 'FINAL_VALUATION', 'Event'][0]
-  
-    ret = ec - sc
-    surp = fcp - sc + fv
-  
-    stats.append({ 'AgentType' : at, 'Return' : ret, 'Surplus' : surp })
-
 
 df_stats = pd.DataFrame(stats)
 

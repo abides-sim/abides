@@ -15,6 +15,7 @@ class POVExecutionAgent(TradingAgent):
                  direction, quantity, pov, start_time, freq, lookback_period, end_time=None,
                  trade=True, log_orders=False, random_state=None):
         super().__init__(id, name, type, starting_cash=starting_cash, log_orders=log_orders, random_state=random_state)
+        self.log_events = True  # save events for plotting
         self.symbol = symbol
         self.direction = direction
         self.quantity = quantity
@@ -38,9 +39,9 @@ class POVExecutionAgent(TradingAgent):
 
     def wakeup(self, currentTime):
         can_trade = super().wakeup(currentTime)
+        self.setWakeup(currentTime + self.getWakeFrequency())
         if not can_trade: return
-        if self.trade and self.rem_quantity > 0 and currentTime < self.end_time:
-            self.setWakeup(currentTime + self.getWakeFrequency())
+        if self.trade and self.rem_quantity > 0 and self.start_time < currentTime < self.end_time:
             self.cancelOrders()
             self.getCurrentSpread(self.symbol, depth=sys.maxsize)
             self.get_transacted_volume(self.symbol, lookback_period=self.look_back_period)

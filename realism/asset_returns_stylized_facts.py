@@ -10,8 +10,9 @@ from realism_utils import get_trades
 from glob import glob
 from pathlib import Path
 import argparse
-sys.path.append('..')
-from order_flow_stylized_facts import get_plot_colors
+p = str(Path(__file__).resolve().parents[1])  # directory one level up from this file
+sys.path.append(p)
+from realism_utils import get_plot_colors
 from util.formatting.convert_order_stream import dir_path
 
 # Create cache folder if it does not exist
@@ -36,14 +37,15 @@ def get_sims(sim_dir, n, my_metric):
 
     for exchange in exchanges:
         ohlcv = get_trades(exchange)
-        sims += my_metric.compute(ohlcv)
+        if ohlcv is not None:
+            sims += my_metric.compute(ohlcv)
 
     sims = sims * mult  # Duplicate data to match size of historical data
     random.shuffle(sims)
     return sims
 
 
-def plot_metrics(samples_per_day, real_dir, sim_dirs, sim_colors, recompute):
+def plot_metrics(samples_per_day, real_dir, sim_dirs, sim_colors, output_dir, recompute):
     # Loop through all metrics
     for my_metric in all_metrics:
         print(my_metric)
@@ -54,38 +56,38 @@ def plot_metrics(samples_per_day, real_dir, sim_dirs, sim_colors, recompute):
         n = len(real_data)
         pickled_real = "cache/{}_real.pickle".format(my_metric.__class__.__name__)
 
-        # HISTORICAL METRIC
-        if (not os.path.exists(pickled_real)) or recompute: # Pickled historical metric not found in cache.
-            reals = []
-            for f in real_data: # For each historical trading day...
-                print(f)
-                f = os.path.join(real_dir, f)
-                df = pd.read_pickle(f, compression="bz2")
-                df.reset_index(level=-1, inplace=True)
-                df.level_1 = pd.to_datetime(df.level_1)
-                symbols = df.index.unique().tolist()
-                random.shuffle(symbols)
-                symbols = symbols[:samples_per_day] # ...sample `samples_per_day` symbols.
-                df = df[df.index.isin(symbols)] # Only keep data for sampled symbols.
-                for sym in symbols:
-                    select = df[df.index == sym].set_index("level_1") # Set timestamp as index.
-                    vol = select["volume"]
-                    select = select.drop("volume", axis=1)
-                    select = (np.round((1000*select/select.iloc[0]).dropna())*100).astype("int")
-                    select["volume"] = vol
-                    reals += my_metric.compute(select) # Compute metric on sampled data.
-            pickle.dump(reals, open(pickled_real, "wb"))
-        else: # Pickled historical metric found in cache.
-            reals = pickle.load(open(pickled_real, "rb"))
+        # # HISTORICAL METRIC
+        # if (not os.path.exists(pickled_real)) or recompute: # Pickled historical metric not found in cache.
+        #     reals = []
+        #     for f in real_data: # For each historical trading day...
+        #         print(f)
+        #         f = os.path.join(real_dir, f)
+        #         df = pd.read_pickle(f, compression="bz2")
+        #         df.reset_index(level=-1, inplace=True)
+        #         df.level_1 = pd.to_datetime(df.level_1)
+        #         symbols = df.index.unique().tolist()
+        #         random.shuffle(symbols)
+        #         symbols = symbols[:samples_per_day] # ...sample `samples_per_day` symbols.
+        #         df = df[df.index.isin(symbols)] # Only keep data for sampled symbols.
+        #         for sym in symbols:
+        #             select = df[df.index == sym].set_index("level_1") # Set timestamp as index.
+        #             vol = select["volume"]
+        #             select = select.drop("volume", axis=1)
+        #             select = (np.round((1000*select/select.iloc[0]).dropna())*100).astype("int")
+        #             select["volume"] = vol
+        #             reals += my_metric.compute(select) # Compute metric on sampled data.
+        #     pickle.dump(reals, open(pickled_real, "wb"))
+        # else: # Pickled historical metric found in cache.
+        #     reals = pickle.load(open(pickled_real, "rb"))
 
         # SIMULATED METRIC
-        first = True if real_dir is None else False
+        # first = True if real_dir is None else False
         for i, sim_dir in enumerate(sim_dirs):
             # Calculate metrics for simulated data (via sampling)
             pickled_sim = "cache/{}_{}.pickle".format(my_metric.__class__.__name__, sim_dir.replace("/",""))
             if (not os.path.exists(pickled_sim)) or recompute: # Pickled simulated metric not found in cache.
                 sims = get_sims(sim_dir, n, my_metric)
-                sims = sims[:len(reals)] # Ensure length of simulated and historical data matches
+                # sims = sims[:len(reals)] # Ensure length of simulated and historical data matches
                 pickle.dump(sims, open(pickled_sim, "wb"))
             else: # Pickled simulated metric found in cache.
                 sims = pickle.load(open(pickled_sim, "rb"))
@@ -94,13 +96,13 @@ def plot_metrics(samples_per_day, real_dir, sim_dirs, sim_colors, recompute):
             result = {(sim_name, sim_colors[i]): sims}
 
             # Create plot for each config and metric
-            my_metric.visualize(result, reals, plot_real=not first)
-            first = True
+            my_metric.visualize(result, None, plot_real=False)
+            # first = True
 
         plt.title(plt.gca().title.get_text())
-        try: os.mkdir("visualizations")
+        try: os.mkdir(output_dir)
         except: pass
-        plt.savefig("visualizations/{}_{}.png".format(my_metric.__class__.__name__, sim_name),bbox_inches='tight')
+        plt.savefig("{}/{}.png".format(output_dir, my_metric.__class__.__name__), bbox_inches='tight')
         plt.clf()
 
 
@@ -116,7 +118,7 @@ if __name__ == "__main__":
                              "filenames MUST contain the word 'Exchange' in any case. One can add many simulated data "
                              "directories")
     parser.add_argument('-z', '--recompute', action="store_true", help="Rerun computations without caching.")
-
+    parser.add_argument('-o', '--output-dir', default='visualizations', help='Path to output directory', type=dir_path)
 
     args, remaining_args = parser.parse_known_args()
 
@@ -124,6 +126,7 @@ if __name__ == "__main__":
     samples_per_day = 30
     real_dir = args.historical_data_dir
     sim_dirs = args.simulated_data_dir
-    sim_colors = get_plot_colors(sim_dirs, start_idx=1)
+    sim_dirs.sort()
+    sim_colors = get_plot_colors(sim_dirs)
 
-    plot_metrics(samples_per_day, real_dir, sim_dirs, sim_colors, args.recompute)
+    plot_metrics(samples_per_day, real_dir, sim_dirs, sim_colors, args.output_dir, args.recompute)

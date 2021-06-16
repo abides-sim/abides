@@ -47,6 +47,9 @@ class Constants:
     intraday_volume_linewidth = 5
 
 
+YEAR_OFFSET = 0.1  # adds offset of ${YEAR_OFFSET} years to each trace to differentiate between seeds
+
+
 def unpickle_stream_dfs_to_stream_list(dir_containing_pickles):
     """ Extracts pickled dataframes over a number of dates to a dict containing dataframes and their dates.
 
@@ -57,7 +60,7 @@ def unpickle_stream_dfs_to_stream_list(dir_containing_pickles):
     """
 
     bundled_streams = []
-    symbol_regex = r".*\/orders_(\w*)_(\d{8}).pkl"
+    symbol_regex = r".*\/orders_(\w*)_(\d{8}).*.pkl"
 
     stream_file_list = glob.glob(f"{dir_containing_pickles}/orders*.pkl")
     for stream_pkl in stream_file_list:
@@ -86,12 +89,19 @@ def bundled_stream_interarrival_times(bundled_streams):
     """ From bundled streams return dict with interarrival times collated by symbol. """
 
     interarrivals_dict = dict()
+    year_offset = 0
 
     for idx, elem in enumerate(bundled_streams):
         print(f"Processing elem {idx + 1} of {len(bundled_streams)}")
+
+        year_offset_td = pd.Timedelta(int(365 * (year_offset * YEAR_OFFSET)), unit='day')
         orders_df = elem["orders_df"]
         symbol = elem["symbol"]
         arrival_times = orders_df.index.to_series()
+        # offset arrival times by ${YEAR_OFFSET} to separate same day, different seed
+        arrival_times = arrival_times + year_offset_td
+        arrival_times.index = arrival_times.index + year_offset_td
+
         interarrival_times = arrival_times.diff()
         interarrival_times = interarrival_times.iloc[1:].apply(pd.Timedelta.total_seconds)
         interarrival_times = interarrival_times.rename("Interarrival time /s")
@@ -100,6 +110,8 @@ def bundled_stream_interarrival_times(bundled_streams):
             interarrivals_dict[symbol] = interarrival_times
         else:
             interarrivals_dict[symbol] = interarrivals_dict[symbol].append(interarrival_times)
+
+        year_offset += 1
 
     return interarrivals_dict
 
@@ -172,7 +184,7 @@ def bundled_stream_binned_trade_counts(bundled_interarrivals_dict, binwidth):
     trades_within_bins_dict = dict()
 
     for symbol, interarrival_times in bundled_interarrivals_dict.items():
-        series_list = [group[1] for group in interarrival_times.groupby(interarrival_times.index.day)]
+        series_list = [group[1] for group in interarrival_times.groupby(interarrival_times.index.date)]
         for idx, series in enumerate(series_list):
             print(f"Processing series {idx + 1} of {len(series_list)} for symbol {symbol}")
             counted_trades = count_trades_within_bins(series, binwidth=binwidth)

@@ -293,13 +293,13 @@ agent_types.extend("MomentumAgent")
 
 # 6) Execution Agent
 
-"""
+
 trade = True if args.execution_agents else False
 
 #### Participation of Volume Agent parameters
 
-pov_agent_start_time = mkt_open + pd.to_timedelta('00:05:00')
-pov_agent_end_time = mkt_close - pd.to_timedelta('00:05:00')
+pov_agent_start_time = mkt_open + pd.to_timedelta('01:30:00')
+pov_agent_end_time = mkt_open + pd.to_timedelta('03:30:00')
 pov_proportion_of_volume = args.execution_pov
 pov_quantity = 12e5
 pov_frequency = '1min'
@@ -326,7 +326,7 @@ execution_agents = [pov_agent]
 agents.extend(execution_agents)
 agent_types.extend("ExecutionAgent")
 agent_count += 1
-"""
+
 
 ########################################################################################################################
 ########################################### KERNEL AND OTHER CONFIG ####################################################

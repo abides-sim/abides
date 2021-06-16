@@ -31,7 +31,6 @@ class AdaptiveMarketMakerAgent(TradingAgent):
                  skew_beta=0, spread_alpha=0.85, backstop_quantity=None, log_orders=False, random_state=None):
 
         super().__init__(id, name, type, starting_cash=starting_cash, log_orders=log_orders, random_state=random_state)
-        self.log_events = True
         self.is_adaptive = False
         self.symbol = symbol      # Symbol traded
         self.pov = pov  # fraction of transacted volume placed at each price level

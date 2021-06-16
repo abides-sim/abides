@@ -5,7 +5,7 @@ from util.util import log_print
 
 class Agent:
 
-  def __init__ (self, id, name, type, random_state, log_events=False):
+  def __init__ (self, id, name, type, random_state, log_events=True):
 
     # ID must be a unique number (usually autoincremented).
     # Name is for human consumption, should be unique (often type + number).

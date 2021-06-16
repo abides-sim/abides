@@ -3,8 +3,7 @@ import sys
 import os
 
 sys.path.append('../..')
-sys.path.append('../formatting')
-sys.path.insert(0, '../../util')
+
 from realism.realism_utils import make_orderbook_for_analysis, MID_PRICE_CUTOFF
 from matplotlib import pyplot as plt
 import matplotlib.dates as mdates
