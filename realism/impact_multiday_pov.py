@@ -300,7 +300,7 @@ def plot_aggregated(aggregated, plot_params_dict):
     xmin = midnight + pd.to_timedelta(plot_params_dict['xmin'])
     xmax = midnight + pd.to_timedelta(plot_params_dict['xmax'])
 
-    axes.set_ylim(plot_params_dict['ymin'], plot_params_dict['ymax'])
+    axes.set_ylim(int(plot_params_dict['ymin']), int(plot_params_dict['ymax']))
     axes.set_xlim(xmin, xmax)
 
     shade_start = midnight + pd.to_timedelta(plot_params_dict['shade_start_time'])
