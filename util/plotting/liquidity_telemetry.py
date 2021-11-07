@@ -142,10 +142,10 @@ def make_plots(plot_inputs, plot_params_dict, title=None, out_file="liquidity_te
 
     date = plot_inputs['mid_price'].index[0].date()
     midnight = pd.Timestamp(date)
-    xmin = midnight + pd.to_timedelta(plot_params_dict['xmin'])
-    xmax = midnight + pd.to_timedelta(plot_params_dict['xmax'])
-    shade_start = midnight + pd.to_timedelta(plot_params_dict['shade_start_time'])
-    shade_end = midnight + pd.to_timedelta(plot_params_dict['shade_end_time'])
+    xmin = np.datetime64(midnight + pd.to_timedelta(plot_params_dict['xmin']))
+    xmax = np.datetime64(midnight + pd.to_timedelta(plot_params_dict['xmax']))
+    shade_start = np.datetime64(midnight + pd.to_timedelta(plot_params_dict['shade_start_time']))
+    shade_end = np.datetime64(midnight + pd.to_timedelta(plot_params_dict['shade_end_time']))
 
     #  top plot -- mid price + fundamental
     if plot_inputs['fundamental'] is not None:
