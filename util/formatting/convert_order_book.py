@@ -111,7 +111,7 @@ def finalise_processing(orderbook_df, level):
 
 def is_wide_book(df):
     """ Checks if orderbook dataframe is in wide or skinny format. """
-    if isinstance(df.index, pd.core.index.MultiIndex):
+    if isinstance(df.index, pd.MultiIndex):
         return False
     else:
         return True
