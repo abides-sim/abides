@@ -50,7 +50,7 @@ log_dir = args.log_dir
 # before)
 
 seed = args.seed
-if not seed: seed = int(pd.Timestamp.now().timestamp() * 1000000) % (2**32 - 1)
+if not seed: seed = int(pd.Timestamp.now().timestamp() * 1000000) % (2**16)
 np.random.seed(seed)
 
 # Config parameter that causes util.util.print to suppress most output.
@@ -89,7 +89,7 @@ defaultComputationDelay = 1000000000 * 5   # five seconds
 
 
 ### Configure the Kernel.
-kernel = Kernel("Base Kernel", random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32)))
+kernel = Kernel("Base Kernel", random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**16)))
 
 
 ### Configure the agents.  When conducting "agent of change" experiments, the
@@ -106,7 +106,7 @@ num_clients = 10
 ### Configure a sum service agent.
 
 agents.extend([ SumServiceAgent(0, "Sum Service Agent 0", "SumServiceAgent",
-                random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32)),
+                random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**16)),
                 num_clients = num_clients) ])
 agent_types.extend(["SumServiceAgent"])
 agent_count += 1
@@ -116,7 +116,7 @@ agent_count += 1
 ### Configure a population of sum client agents.
 a, b = agent_count, agent_count + num_clients
 
-agents.extend([ SumClientAgent(i, "Sum Client Agent {}".format(i), "SumClientAgent", peer_list = [ x for x in range(a,b) if x != i ], random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32))) for i in range(a,b) ])
+agents.extend([ SumClientAgent(i, "Sum Client Agent {}".format(i), "SumClientAgent", peer_list = [ x for x in range(a,b) if x != i ], random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**16 - 1))) for i in range(a,b) ])
 agent_types.extend([ "SumClientAgent" for i in range(a,b) ])
 agent_count += num_clients
 

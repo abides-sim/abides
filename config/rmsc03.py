@@ -130,7 +130,7 @@ if args.config_help:
 
 log_dir = args.log_dir  # Requested log directory.
 seed = args.seed  # Random seed specification on the command line.
-if not seed: seed = int(pd.Timestamp.now().timestamp() * 1000000) % (2 ** 32 - 1)
+if not seed: seed = int(pd.Timestamp.now().timestamp() * 1000000) % (2 ** 16 - 1)
 np.random.seed(seed)
 
 util.silent_mode = not args.verbose
@@ -169,7 +169,7 @@ symbols = {symbol: {'r_bar': r_bar,
                     'megashock_lambda_a': 2.77778e-18,
                     'megashock_mean': 1e3,
                     'megashock_var': 5e4,
-                    'random_state': np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32, dtype='uint64'))}}
+                    'random_state': np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16, dtype='uint64'))}}
 
 oracle = SparseMeanRevertingOracle(mkt_open, mkt_close, symbols)
 
@@ -191,7 +191,7 @@ agents.extend([ExchangeAgent(id=0,
                              stream_history=stream_history_length,
                              book_freq=book_freq,
                              wide_book=True,
-                             random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32, dtype='uint64')))])
+                             random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16, dtype='uint64')))])
 agent_types.extend("ExchangeAgent")
 agent_count += 1
 
@@ -224,7 +224,7 @@ agents.extend([ValueAgent(id=j,
                           kappa=kappa,
                           lambda_a=lambda_a,
                           log_orders=log_orders,
-                          random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32, dtype='uint64')))
+                          random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16, dtype='uint64')))
                for j in range(agent_count, agent_count + num_value)])
 agent_count += num_value
 agent_types.extend(['ValueAgent'])
@@ -264,7 +264,7 @@ agents.extend([AdaptiveMarketMakerAgent(id=j,
                                 spread_alpha=args.mm_spread_alpha,
                                 backstop_quantity=args.mm_backstop_quantity,
                                 log_orders=log_orders,
-                                random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32,
+                                random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16,
                                                                                           dtype='uint64')))
                for idx, j in enumerate(range(agent_count, agent_count + num_mm_agents))])
 agent_count += num_mm_agents
@@ -283,7 +283,7 @@ agents.extend([MomentumAgent(id=j,
                              max_size=10,
                              wake_up_freq='20s',
                              log_orders=log_orders,
-                             random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32,
+                             random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16,
                                                                                        dtype='uint64')))
                for j in range(agent_count, agent_count + num_momentum_agents)])
 agent_count += num_momentum_agents
@@ -316,7 +316,7 @@ pov_agent = POVExecutionAgent(id=agent_count,
                               quantity=pov_quantity,
                               trade=trade,
                               log_orders=True,  # needed for plots so conflicts with others
-                              random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32,
+                              random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16,
                                                                                           dtype='uint64')))
 
 execution_agents = [pov_agent]
@@ -328,7 +328,7 @@ agent_count += 1
 ########################################################################################################################
 ########################################### KERNEL AND OTHER CONFIG ####################################################
 
-kernel = Kernel("RMSC03 Kernel", random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32,
+kernel = Kernel("RMSC03 Kernel", random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16,
                                                                                                   dtype='uint64')))
 
 kernelStartTime = historical_date
@@ -338,7 +338,7 @@ defaultComputationDelay = 50  # 50 nanoseconds
 
 # LATENCY
 
-latency_rstate = np.random.RandomState(seed=np.random.randint(low=0, high=2**32))
+latency_rstate = np.random.RandomState(seed=np.random.randint(low=0, high=2**16))
 pairwise = (agent_count, agent_count)
 
 # All agents sit on line from Seattle to NYC

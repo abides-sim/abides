@@ -36,7 +36,7 @@ class SumClientAgent(Agent):
                self.id, self.serviceAgentID)
 
     # Request a wake-up call as in the base Agent (spread across five seconds).
-    super().kernelStarting(startTime + pd.Timedelta(self.random_state.randint(low = 0, high = 5000000000), unit='ns'))
+    super().kernelStarting(startTime + pd.Timedelta(self.random_state.randint(low = 0, high = 50000), unit='ns'))
 
 
   ### Simulation participation messages.
