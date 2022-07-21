@@ -22,17 +22,18 @@ class ZeroIntelligenceAgent(TradingAgent):
         super().__init__(id, name, type, starting_cash=starting_cash, log_orders=log_orders, random_state=random_state)
 
         # Store important parameters particular to the ZI agent.
-        self.symbol = symbol  # symbol to trade
-        self.sigma_n = sigma_n  # observation noise variance
+        self.symbol = symbol  # symbol to trade        
+        self.sigma_n = sigma_n  # observation noise variance 
         self.r_bar = r_bar  # true mean fundamental value
         self.kappa = kappa  # mean reversion parameter
         self.sigma_s = sigma_s  # shock variance
-        self.q_max = q_max  # max unit holdings
+        self.q_max = q_max  # max unit holdings     
         self.sigma_pv = sigma_pv  # private value variance
         self.R_min = R_min  # min requested surplus
         self.R_max = R_max  # max requested surplus
         self.eta = eta  # strategic threshold
         self.lambda_a = lambda_a  # mean arrival rate of ZI agents
+        #TODO: add paramters for 1. length of position hold 2. size of trades 
 
         # The agent uses this to track whether it has begun its strategy or is still
         # handling pre-market tasks.

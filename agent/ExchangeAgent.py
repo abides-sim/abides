@@ -384,7 +384,7 @@ class ExchangeAgent(FinancialAgent):
       # Final cleanup
       if not self.wide_book:
         dfLog.rename('Volume')
-        df = pd.SparseDataFrame(index=dfLog.index)
+        df = pd.DataFrame(index=dfLog.index)
         df['Volume'] = dfLog
       else:
         df = dfLog
