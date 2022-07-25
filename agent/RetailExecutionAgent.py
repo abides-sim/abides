@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 
-class ZeroIntelligenceAgent(TradingAgent):
+class RetailExecutionAgent(TradingAgent):
     
     """
     Retail trading agent, designed to behave like a real life retail trader.
@@ -35,6 +35,8 @@ class ZeroIntelligenceAgent(TradingAgent):
         self.lambda_a = lambda_a  # mean arrival rate of ZI agents
         #TODO: add paramters for 1. length of position hold 2. size of trades 
 
+        # Execution tracking parameters
+        
         # The agent uses this to track whether it has begun its strategy or is still
         # handling pre-market tasks.
         self.trading = False
@@ -160,7 +162,7 @@ class ZeroIntelligenceAgent(TradingAgent):
         # If the calling agent is a subclass, don't initiate the strategy section of wakeup(), as it
         # may want to do something different.
 
-        if type(self) == ZeroIntelligenceAgent:
+        if type(self) == RetailAgent:
             self.getCurrentSpread(self.symbol)
             self.state = 'AWAITING_SPREAD'
         else:

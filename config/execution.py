@@ -71,7 +71,7 @@ if args.config_help:
     sys.exit()
 
 seed = args.seed  # Random seed specification on the command line.
-if not seed: seed = int(pd.Timestamp.now().timestamp() * 1000000) % (2 ** 32 - 1)
+if not seed: seed = int(pd.Timestamp.now().timestamp() * 1000000) % (2 ** 16 - 1)
 np.random.seed(seed)
 
 util.silent_mode = not args.verbose
@@ -105,7 +105,7 @@ symbols = {symbol: {'r_bar': r_bar,
                     'megashock_lambda_a': 2.77778e-18,
                     'megashock_mean': 1e3,
                     'megashock_var': 5e4,
-                    'random_state': np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32))}}
+                    'random_state': np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16))}}
 
 oracle = SparseMeanRevertingOracle(mkt_open, mkt_close, symbols)
 
@@ -115,7 +115,7 @@ oracle = SparseMeanRevertingOracle(mkt_open, mkt_close, symbols)
 symbols = {
     symbol: {
         'fundamental_file_path': args.fundamental_file_path,
-        'random_state': np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32))
+        'random_state': np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16))
     }
 }
 oracle = ExternalFileOracle(symbols)
@@ -140,7 +140,7 @@ agents.extend([ExchangeAgent(id=0,
                              stream_history=stream_history_length,
                              book_freq=0,
                              wide_book=True,
-                             random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32)))])
+                             random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16)))])
 agent_types.extend("ExchangeAgent")
 agent_count += 1
 
@@ -156,7 +156,7 @@ agents.extend([NoiseAgent(id=j,
                           wakeup_time=util.get_wake_time(noise_mkt_open, noise_mkt_close),
                           log_orders=False,
                           log_to_file=False,
-                          random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32)))
+                          random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16)))
                for j in range(agent_count, agent_count + num_noise)])
 agent_count += num_noise
 agent_types.extend(['NoiseAgent'])
@@ -174,7 +174,7 @@ agents.extend([ValueAgent(id=j,
                           lambda_a=7e-11,
                           log_orders=False,
                           log_to_file=False,
-                          random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32)))
+                          random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16)))
                for j in range(agent_count, agent_count + num_value)])
 agent_count += num_value
 agent_types.extend(['ValueAgent'])
@@ -212,7 +212,7 @@ agents.extend([AdaptiveMarketMakerAgent(id=j,
                                         spread_alpha=0.75,
                                         backstop_quantity=50000,
                                         log_orders=True,
-                                        random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32)))
+                                        random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16)))
                for idx, j in enumerate(range(agent_count, agent_count + num_mm_agents))])
 agent_count += num_mm_agents
 agent_types.extend('AdaptiveMarketMakerAgent')
@@ -228,7 +228,7 @@ agents.extend([MomentumAgent(id=j,
                              max_size=10,
                              wake_up_freq='20s',
                              log_orders=True,
-                             random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32)))
+                             random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16)))
                for j in range(agent_count, agent_count + num_momentum_agents)])
 agent_count += num_momentum_agents
 agent_types.extend("MomentumAgent")
@@ -255,7 +255,7 @@ twap_agent = TWAPExecutionAgent(id=agent_count,
                                 freq=execution_frequency,
                                 trade=trade,
                                 log_orders=True,
-                                random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32)))
+                                random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16)))
 execution_agents = [twap_agent]
 
 """
@@ -271,7 +271,7 @@ vwap_agent = VWAPExecutionAgent(id=agent_count,
                                 volume_profile_path=None,
                                 trade=trade,
                                 log_orders=True,
-                                random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32)))
+                                random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16)))
 execution_agents = [vwap_agent]
 
 pov_agent = POVExecutionAgent(id=agent_count,
@@ -288,7 +288,7 @@ pov_agent = POVExecutionAgent(id=agent_count,
                               quantity=execution_quantity,
                               trade=trade,
                               log_orders=True,
-                              random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32)))
+                              random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16)))
 execution_agents = [pov_agent]
 """
 
@@ -299,7 +299,7 @@ agent_count += 1
 ########################################################################################################################
 ########################################### KERNEL AND OTHER CONFIG ####################################################
 
-kernel = Kernel("Kernel", random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32)))
+kernel = Kernel("Kernel", random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16)))
 
 kernelStartTime = historical_date
 kernelStopTime = mkt_close + pd.to_timedelta('00:01:00')
@@ -307,7 +307,7 @@ kernelStopTime = mkt_close + pd.to_timedelta('00:01:00')
 defaultComputationDelay = 50  # 50 nanoseconds
 
 # LATENCY
-latency_rstate = np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32))
+latency_rstate = np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16))
 pairwise = (agent_count, agent_count)
 
 # All agents sit on line from Seattle to NYC

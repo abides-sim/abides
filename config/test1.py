@@ -1,9 +1,8 @@
 # Test-1 :
 # - 1     Exchange Agent
 # - 1     Market Maker Agent
-# - 50    ZI Agent (retail)
-# - 25    HBL Agent (institutional)
-# - 24    Momentum Agent
+# - 30    ZI Agent (retail)
+# - 70   HBL Agent (institutional)
 
 import argparse
 import numpy as np
@@ -12,7 +11,7 @@ import sys
 import datetime as dt
 import importlib
 
-from Kernel import Kernel
+from Kernel import Kernel   
 from util import util
 from util.order import LimitOrder
 from util.oracle.SparseMeanRevertingOracle import SparseMeanRevertingOracle
@@ -20,10 +19,10 @@ from model.LatencyModel import LatencyModel
 
 from agent.ExchangeAgent import ExchangeAgent
 from agent.market_makers.MarketMakerAgent import MarketMakerAgent
-from agent.examples.MomentumAgent import MomentumAgent
 
-from agent.RetailAgent import RetailAgent   
+from agent.RetailExecutionAgent import RetailExecutionAgent   
 from agent.HeuristicBeliefLearningAgent import HeuristicBeliefLearningAgent
+from agent.examples.MomentumAgent import MomentumAgent
 
 ########################################################################################################################
 ############################################### GENERAL CONFIG #########################################################
@@ -44,6 +43,10 @@ parser.add_argument('-s',
                     type=int,
                     default=None,
                     help='numpy.random.seed() for simulation')
+#parser.add_argument('-d',
+ #                   '--historical_date',
+  #                  default=pd.to_datetime('2019-06-28'),
+   #                 help='date to test')
 parser.add_argument('-v',
                     '--verbose',
                     action='store_true',
@@ -55,6 +58,7 @@ parser.add_argument('-a',
                     '--agent_name',
                     default=None,
                     help='Specify the agent to test with')
+                    
 
 args, remaining_args = parser.parse_known_args()
 
@@ -79,14 +83,25 @@ print("Configuration seed: {}\n".format(seed))
 
 # Historical date to simulate.
 historical_date = pd.to_datetime('2019-06-28')
-symbol = 'JPM'
+symbol = 'ABC'
 
 agent_count, agents, agent_types = 0, [], []
-starting_cash = 10000000  # Cash in this simulator is always in CENTS.
+
+
+mm_cash = 50000000000 # $500,000,000
+
+def random_retail_start_cash(retail_cash = 250000):
+    # Draws start cash from a normal distribution around retail_cash
+    return np.random.normal(retail_cash, retail_cash * 0.1) # TODO: improve?
+
+def random_institution_start_cash(institution_cash = 50000000000):
+    # Draws start cash from a normal distribution around institution_cash
+    return np.random.normal(institution_cash, institution_cash * 0.1) # TODO: improve?
 
 # 1) 1 Exchange Agent
 mkt_open = historical_date + pd.to_timedelta('09:30:00')
 mkt_close = historical_date + pd.to_timedelta('16:00:00')
+stream_history_length = 25000
 
 agents.extend([ExchangeAgent(id=0,
                              name="EXCHANGE_AGENT",
@@ -94,10 +109,12 @@ agents.extend([ExchangeAgent(id=0,
                              mkt_open=mkt_open,
                              mkt_close=mkt_close,
                              symbols=[symbol],
-                             log_orders=False,
+                             log_orders=True,
+                             stream_history=stream_history_length,
                              pipeline_delay=0,
                              computation_delay=0,
                              stream_history=10,
+                             wide_book=True,
                              book_freq=0,
                              random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16,
                                                                                        dtype='uint64')))])
@@ -110,8 +127,8 @@ agents.extend([MarketMakerAgent(id=j,
                                 name="MARKET_MAKER_AGENT_{}".format(j),
                                 type='MarketMakerAgent',
                                 symbol=symbol,
-                                starting_cash=starting_cash,
-                                min_size=500,
+                                starting_cash=mm_cash,
+                                min_size=1,
                                 max_size=1000,
                                 log_orders=False,
                                 random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16,
@@ -136,11 +153,11 @@ oracle = SparseMeanRevertingOracle(mkt_open, mkt_close, symbols)
 
 #TODO: randomise starting cash
 num_retail_agents = 30
-agents.extend([RetailAgent(id=j,
-                                     name="ZI_AGENT_{}".format(j),
-                                     type="ZeroIntelligenceAgent",
+agents.extend([RetailExecutionAgent(id=j,
+                                     name="RETAIL_{}".format(j),
+                                     type="RetailExecutionAgent",
                                      symbol=symbol,
-                                     starting_cash=starting_cash,
+                                     starting_cash=random_retail_start_cash(),
                                      sigma_n=10000,
                                      sigma_s=symbols[symbol]['fund_vol'],
                                      kappa=symbols[symbol]['agent_kappa'],
@@ -164,12 +181,12 @@ agents.extend([HeuristicBeliefLearningAgent(id=j,
                                             name="HBL_AGENT_{}".format(j),
                                             type="HeuristicBeliefLearningAgent",
                                             symbol=symbol,
-                                            starting_cash=starting_cash,
-                                            sigma_n=100 * 10000,      # more starting cash than retail agents
+                                            starting_cash=random_institution_start_cash(), 
+                                            sigma_n=10000,      
                                             sigma_s=symbols[symbol]['fund_vol'],
                                             kappa=symbols[symbol]['agent_kappa'],
                                             r_bar=symbols[symbol]['r_bar'],
-                                            q_max=10,               # willing to hold more positions 
+                                            q_max=10*100,               # willing to hold more positions than retail
                                             sigma_pv=5e4,
                                             R_min=0,
                                             R_max=100,
@@ -191,7 +208,7 @@ kernel = Kernel("RMSC01 Kernel", random_state=np.random.RandomState(seed=np.rand
                                                                                                   dtype='uint64')))
 
 kernelStartTime = historical_date
-kernelStopTime = mkt_close + pd.to_timedelta('00:01:00')
+kernelStopTime = mkt_open + pd.to_timedelta('04:00:00')
 
 defaultComputationDelay = 50  # 50 nanoseconds
 
