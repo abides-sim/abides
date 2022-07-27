@@ -151,7 +151,6 @@ symbols = {symbol: {'r_bar': 1e5,
                                                                                  dtype='uint64'))}}
 oracle = SparseMeanRevertingOracle(mkt_open, mkt_close, symbols)
 
-#TODO: randomise starting cash
 num_retail_agents = 30
 agents.extend([RetailExecutionAgent(id=j,
                                      name="RETAIL_{}".format(j),
@@ -169,10 +168,10 @@ agents.extend([RetailExecutionAgent(id=j,
                                      eta=1,
                                      lambda_a=1e-12,
                                      log_orders=False,
-                                     random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32,
+                                     random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16,
                                                                                                dtype='uint64')))
                for j in range(agent_count, agent_count + num_retail_agents)])
-agent_types.extend("RetailAgent")
+agent_types.extend("RetailExecutionAgent")
 agent_count += num_retail_agents
 
 # 4) 70 Heuristic Belief Learning Agents    - smarter, represent institutions 
@@ -204,13 +203,13 @@ agent_count += num_hbl_agents
 ########################################################################################################################
 ########################################### KERNEL AND OTHER CONFIG ####################################################
 
-kernel = Kernel("RMSC01 Kernel", random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32,
+kernel = Kernel("Test1 Kernel", random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16,
                                                                                                   dtype='uint64')))
 
 kernelStartTime = historical_date
-kernelStopTime = mkt_open + pd.to_timedelta('04:00:00')
+kernelStopTime = mkt_open + pd.to_timedelta('02:00:00')
 
-defaultComputationDelay = 50  # 50 nanoseconds
+defaultComputationDelay = 50  # nanoseconds
 
 # LATENCY
 

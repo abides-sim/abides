@@ -10,7 +10,7 @@ pd.options.display.max_rows = 1000
 pd.options.display.max_colwidth = 200
 
 BETWEEN_START = pd.to_datetime('09:30').time()
-BETWEEN_END = pd.to_datetime('16:00:00').time()
+BETWEEN_END = pd.to_datetime('10:00:00').time()
 
 # Linewidth for plots.
 LW = 2

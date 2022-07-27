@@ -86,7 +86,7 @@ print("Configuration seed: {}".format(seed))
 # Historical date to simulate.
 historical_date = pd.to_datetime(args.historical_date)
 mkt_open = historical_date + pd.to_timedelta('09:30:00')
-mkt_close = historical_date + pd.to_timedelta('11:30:00')
+mkt_close = historical_date + pd.to_timedelta('10:00:00')
 
 agent_count, agents, agent_types = 0, [], []
 
@@ -145,7 +145,7 @@ agent_types.extend("ExchangeAgent")
 agent_count += 1
 
 # 2) Noise Agents
-num_noise = 5000
+num_noise = 50
 noise_mkt_open = historical_date + pd.to_timedelta("09:00:00")
 noise_mkt_close = historical_date + pd.to_timedelta("16:00:00")
 agents.extend([NoiseAgent(id=j,
@@ -162,7 +162,7 @@ agent_count += num_noise
 agent_types.extend(['NoiseAgent'])
 
 # 3) Value Agents
-num_value = 100
+num_value = 10
 agents.extend([ValueAgent(id=j,
                           name="ValueAgent_{}".format(j),
                           type="ValueAgent",
@@ -236,8 +236,8 @@ agent_types.extend("MomentumAgent")
 # 6) Execution Agent Config
 trade = True if args.execution_agents else False
 
-execution_agent_start_time = historical_date + pd.to_timedelta("10:00:00")
-execution_agent_end_time = historical_date + pd.to_timedelta("11:00:00")
+execution_agent_start_time = historical_date + pd.to_timedelta("9:30:00")
+execution_agent_end_time = historical_date + pd.to_timedelta("10:00:00")
 execution_quantity = 12e5
 execution_frequency = '1min'
 execution_direction = "BUY"
@@ -294,7 +294,7 @@ execution_agents = [pov_agent]
 
 agents.extend(execution_agents)
 agent_types.extend("ExecutionAgent")
-agent_count += 1
+agent_count += 2
 
 ########################################################################################################################
 ########################################### KERNEL AND OTHER CONFIG ####################################################

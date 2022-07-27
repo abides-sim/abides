@@ -12,7 +12,7 @@ pd.options.display.max_rows = 1000
 pd.options.display.max_colwidth = 200
 
 # Initialize a persistent memcache.
-mem_sim = Memory(cachedir='./.cached_plot_sim', verbose=0)
+mem_sim = Memory(location='./.cached_plot_sim', verbose=0)
 
 
 # Used to read and cache simulated quotes (best bid/ask).
@@ -40,8 +40,8 @@ def read_simulated_quotes (file, symbol):
   df_ask['BEST_ASK'] = [a for s,a,av in df_ask['Event'].str.split(',')]
   df_ask['BEST_ASK_VOL'] = [av for s,a,av in df_ask['Event'].str.split(',')]
 
-  df_bid['BEST_BID'] = df_bid['BEST_BID'].str.replace('$','').astype('float64')
-  df_ask['BEST_ASK'] = df_ask['BEST_ASK'].str.replace('$','').astype('float64')
+  df_bid['BEST_BID'] = df_bid['BEST_BID'].astype('str').str.replace('$','').astype('float64')
+  df_ask['BEST_ASK'] = df_ask['BEST_ASK'].astype('str').str.replace('$','').astype('float64')
 
   df_bid['BEST_BID_VOL'] = df_bid['BEST_BID_VOL'].astype('float64')
   df_ask['BEST_ASK_VOL'] = df_ask['BEST_ASK_VOL'].astype('float64')

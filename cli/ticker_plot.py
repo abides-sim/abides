@@ -14,8 +14,8 @@ pd.options.display.max_rows = 1000
 pd.options.display.max_colwidth = 200
 
 # Initialize a persistent memcache.
-mem_hist = Memory(cachedir='./.cached_plot_hist', verbose=0)
-mem_sim = Memory(cachedir='./.cached_plot_sim', verbose=0)
+mem_hist = Memory(location='./.cached_plot_hist', verbose=0)
+mem_sim = Memory(location='./.cached_plot_sim', verbose=0)
 
 # We could use some good argparse parameters here instead of
 # a bunch of constants to fiddle with.
@@ -157,7 +157,7 @@ elif PRINT_BASELINE:
   axes[0].legend(['Baseline', 'With Impact'])
 
 else:
-  #df_sim['PRICE'] = df_sim['PRICE'].rolling(window=sim_window).mean()
+  # df_sim['PRICE'] = df_sim['PRICE'].rolling(window=sim_window).mean()
 
   # For nanosecond experiments, turn it into int index.  Pandas gets weird if all
   # the times vary only by a few nanoseconds.
