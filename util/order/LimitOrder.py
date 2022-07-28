@@ -49,6 +49,10 @@ class LimitOrder(Order):
                            tag=self.tag)
         Order._order_ids.pop()  # remove duplicate agent ID
         order.fill_price = self.fill_price
+        order.filled = self.filled
+        order.fill_time = self.fill_time
+        order.fill_percentage = self.fill_percentage
+        
         return order
 
     def __deepcopy__(self, memodict={}):
@@ -62,10 +66,16 @@ class LimitOrder(Order):
         order_id = deepcopy(self.order_id, memodict)
         tag = deepcopy(self.tag, memodict)
         fill_price = deepcopy(self.fill_price, memodict)
+        fill_time = deepcopy(self.fill_time, memodict)
+        fill_percentage = deepcopy(self.fill_percentage, memodict)
+        filled = deepcopy(self.filled, memodict)
 
         # Create new order object
         order = LimitOrder(agent_id, time_placed, symbol, quantity, is_buy_order, limit_price,
                            order_id=order_id, tag=tag)
         order.fill_price = fill_price
+        order.filled = filled
+        order.fill_time = fill_time
+        order.fill_percentage = fill_percentage
 
         return order

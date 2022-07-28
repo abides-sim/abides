@@ -77,6 +77,9 @@ class OrderBook:
                 filled_order = deepcopy(order)
                 filled_order.quantity = matched_order.quantity
                 filled_order.fill_price = matched_order.fill_price
+                # filled order time = current time
+                filled_order.fill_time = self.owner.currentTime
+                matched_order.fill_time = filled_order.fill_time
 
                 order.quantity -= filled_order.quantity
 

@@ -67,7 +67,7 @@ if args.config_help:
     sys.exit()
 
 
-log_dir = args.log_dir  # Requested log directory.
+log_dir = args.log_dir  # Requested log directory. # TODO: if it exists, overwrite
 seed = args.seed  # Random seed specification on the command line.
 if not seed: seed = int(pd.Timestamp.now().timestamp() * 1000000) % (2 ** 32 - 1)
 np.random.seed(seed)
@@ -113,7 +113,6 @@ agents.extend([ExchangeAgent(id=0,
                              stream_history=stream_history_length,
                              pipeline_delay=0,
                              computation_delay=0,
-                             stream_history=10,
                              wide_book=True,
                              book_freq=0,
                              random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16,
@@ -167,7 +166,8 @@ agents.extend([RetailExecutionAgent(id=j,
                                      R_max=100,
                                      eta=1,
                                      lambda_a=1e-12,
-                                     log_orders=False,
+                                     log_orders=True,
+                                     execution=True,
                                      random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16,
                                                                                                dtype='uint64')))
                for j in range(agent_count, agent_count + num_retail_agents)])

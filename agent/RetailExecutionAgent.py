@@ -1,6 +1,6 @@
 from agent.TradingAgent import TradingAgent
 from util.util import log_print
-
+from util.order import LimitOrder
 from math import sqrt
 import numpy as np
 import pandas as pd
@@ -16,7 +16,7 @@ class RetailExecutionAgent(TradingAgent):
     def __init__(self, id, name, type, symbol='IBM', starting_cash=100000, sigma_n=1000,
                  r_bar=100000, kappa=0.05, sigma_s=100000, q_max=10,
                  sigma_pv=5000000, R_min=0, R_max=250, eta=1.0,
-                 lambda_a=0.005, log_orders=False, random_state=None, track=True):
+                 lambda_a=0.005, log_orders=False, random_state=None, execution=True):
 
         # Base class init.
         super().__init__(id, name, type, starting_cash=starting_cash, log_orders=log_orders, random_state=random_state)
@@ -35,15 +35,13 @@ class RetailExecutionAgent(TradingAgent):
         self.lambda_a = lambda_a  # mean arrival rate of ZI agents
         #TODO: add paramters for 1. length of position hold 2. size of trades 
 
-        # Execution tracking parameters
-        self.trade = track
-        self.arrival_times = []
-        self.execute_times = []
-        self.arrival_prices = []
-        self.arrival_sizes = []
-        self.accepted_orders = []
+        # Execution tracking parameters - replace with limit order instances? and get stats from them?
+        self.execution = execution # boolean to track execution quality
+        self.all_orders = {} # addition to self.orders from super - also tracks closed orders
+        self.order_num = id * 1000  # 1000 current max orders per agent, needed so order ids don't overlap - TODO: better solution
         self.slippages = []
-        self.directions = []
+        self.execution_times = []
+
 
         # The agent uses this to track whether it has begun its strategy or is still
         # handling pre-market tasks.
@@ -107,36 +105,23 @@ class RetailExecutionAgent(TradingAgent):
         surplus += self.holdings['CASH'] - self.starting_cash
 
         # Log executions
-        if self.track:
-
+        if self.execution:
+# TODO: implement properly fix to work with order instance model
             def getPct(self):
                 # Calculate percentage of orders executed inside (and at) arrival price
-                # TODO: implement properly
+                
                 pct_in = 0
                 pct_out = 0
 
-                for i, d in enumerate(self.directions):
-                    if d and self.arrival_prices[i] <= self.accepted_orders[i]: # buying
-                        pct_in += 1
-                    elif not(d) and self.arrival_prices[i] >= self.accepted_orders[i]:  # selling
-                        pct_in += 1
-                    elif d  and self.arrival_prices[i] > self.accepted_orders[i]: # buying
-                        pct_out += 1
-                    else:
-                        pct_out += 1
-                
-                tot = pct_in + pct_out
-                pct_in = pct_in / tot
-                pct_out = pct_out / tot
-
+           
                 return pct_in, pct_out
 
             self.logEvent('AVG ABS SLIPPAGE', np.mean(np.abs(self.slippages)), True)
-            self.logEvent('AVG PERCENTAGE SLIPPAGE', 100*np.abs(self.slippages)/self.arrival_prices, True)
+            self.logEvent('AVG PERCENTAGE SLIPPAGE', 100*np.abs(self.slippages), True) #TODO: fix to work with order instance model
             self.logEvent('NET SLIPPAGE', np.sum(self.slippages), True)
             self.logEvent('PCT IN', getPct(self)[0], True)
             self.logEvent('PCT OUT', getPct(self)[1], True)
-            self.logEvent('AVG EXECUTION TIME', self.execute_times - self.arrival_times, True)
+            #self.logEvent('AVG EXECUTION TIME', self.execute_times - self.arrival_times, True)
 
         self.logEvent('FINAL_VALUATION', surplus, True)
 
@@ -326,24 +311,11 @@ class RetailExecutionAgent(TradingAgent):
 
         # Place the order.
         size = 100
-
-        # Execution parameter logging for ordes
-        self.arrival_prices.append(p)
-        self.arrival_sizes.append(size)
-        self.arrival_times.append(self.currentTime)
-        self.directions.append(buy)
-
-        # POTENTIAL ISSUE - if order not filled before next order, the arrays get out of sync - use order class?
-        # order = LimitOrder(self.id, self.currentTime, symbol, quantity, is_buy_order, limit_price, order_id, tag)
-        # memory inefficient to duplicate orders here as well as place limit order - overwrite placelimitorder method from superclass?
-
-        self.placeLimitOrder(self.symbol, size, buy, p)
-
-    def orderExecuted (self, order):
-        super().orderAccepted(self, order)
-
+        self.placeLimitOrder(self.symbol, size, buy, p, order_id=self.order_num)
+        self.all_orders[self.order_num] = self.orders[self.order_num].__deepcopy__()
+        self.order_num += 1
+       
         
-
     def receiveMessage(self, currentTime, msg):
         # Parent class schedules market open wakeup call once market open/close times are known.
         super().receiveMessage(currentTime, msg)
