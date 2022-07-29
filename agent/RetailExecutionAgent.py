@@ -106,22 +106,40 @@ class RetailExecutionAgent(TradingAgent):
 
         # Log executions
         if self.execution:
-# TODO: implement properly fix to work with order instance model
+            self.slippages = []
+            self.prices = []
+            self.times = []
+
+            for o in self.all_orders.values():
+                if o is not None:
+                    self.slippages.append(o.slippage)
+                    self.prices.append(o.fill_price)
+                    self.times.append(o.fill_time)
+            print(self.slippages,self.times)
+            # TODO: fix none time error
+            
+
             def getPct(self):
                 # Calculate percentage of orders executed inside (and at) arrival price
-                
-                pct_in = 0
-                pct_out = 0
+                # PIn equal to percentage of 0 or positive slippage
+                num_in = len([x if x >= 0 else 0 for x in self.slippages])  
+                num_out = len(self.slippages) - num_in
+                pct_in = num_in/len(self.slippages)
+                pct_out = num_out/len(self.slippages)
+                return pct_in, pct_out
 
            
                 return pct_in, pct_out
 
             self.logEvent('AVG ABS SLIPPAGE', np.mean(np.abs(self.slippages)), True)
-            self.logEvent('AVG PERCENTAGE SLIPPAGE', 100*np.abs(self.slippages), True) #TODO: fix to work with order instance model
+            #self.logEvent('AVG PERCENTAGE SLIPPAGE', 100*np.abs(self.slippages)/self.prices, True) #TODO: fix to work with order instance model
             self.logEvent('NET SLIPPAGE', np.sum(self.slippages), True)
+            self.logEvent('MAX SLIPPAGE', np.max(self.slippages), True)
             self.logEvent('PCT IN', getPct(self)[0], True)
             self.logEvent('PCT OUT', getPct(self)[1], True)
-            #self.logEvent('AVG EXECUTION TIME', self.execute_times - self.arrival_times, True)
+            self.logEvent('AVG EXECUTION TIME', np.mean(self.times), True)
+            self.logEvent('MAX EXECUTION TIME', np.max(self.times), True)
+
 
         self.logEvent('FINAL_VALUATION', surplus, True)
 

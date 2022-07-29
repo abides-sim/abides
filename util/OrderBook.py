@@ -70,16 +70,19 @@ class OrderBook:
         executed = []
 
         while matching:
-            matched_order = deepcopy(self.executeOrder(order))
+            matched_order = deepcopy(self.executeOrder(order))  
 
             if matched_order:
                 # Decrement quantity on new order and notify traders of execution.
                 filled_order = deepcopy(order)
                 filled_order.quantity = matched_order.quantity
                 filled_order.fill_price = matched_order.fill_price
-                # filled order time = current time
-                filled_order.fill_time = self.owner.currentTime
-                matched_order.fill_time = filled_order.fill_time
+                filled_order.fill_time = matched_order.fill_time 
+
+                if filled_order.is_buy_order:
+                    filled_order.slippage = filled_order.limit_price - filled_order.fill_price
+                else:   # ensures slippage away is negative
+                    filled_order.slippage = filled_order.fill_price - filled_order.limit_price
 
                 order.quantity -= filled_order.quantity
 
@@ -95,7 +98,10 @@ class OrderBook:
                 executed.append((filled_order.quantity, filled_order.fill_price))
 
                 if order.quantity <= 0:
+                    # Order completely filled
+                    
                     matching = False
+
 
             else:
                 # No matching order was found, so the new order enters the order book.  Notify the agent.
@@ -222,6 +228,7 @@ class OrderBook:
             # Note that book[i] is a LIST of all orders (oldest at index book[i][0]) at the same price.
 
             # The matched order might be only partially filled. (i.e. new order is smaller)
+           # TODO: what is fill price for a partial fill?
             if order.quantity >= book[0][0].quantity:
                 # Consumed entire matched order.
                 matched_order = book[0].pop(0)
@@ -240,7 +247,9 @@ class OrderBook:
             # When two limit orders are matched, they execute at the price that
             # was being "advertised" in the order book.
             matched_order.fill_price = matched_order.limit_price
-
+            matched_order.fill_time = self.owner.currentTime
+            matched_order.slippage = 0
+            
             # Record the transaction in the order history and push the indices
             # out one, possibly truncating to the maximum history length.
 

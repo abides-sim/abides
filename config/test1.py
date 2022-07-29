@@ -207,7 +207,7 @@ kernel = Kernel("Test1 Kernel", random_state=np.random.RandomState(seed=np.rando
                                                                                                   dtype='uint64')))
 
 kernelStartTime = historical_date
-kernelStopTime = mkt_open + pd.to_timedelta('02:00:00')
+kernelStopTime = mkt_open + pd.to_timedelta('00:05:00')
 
 defaultComputationDelay = 50  # nanoseconds
 

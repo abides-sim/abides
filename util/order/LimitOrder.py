@@ -21,6 +21,7 @@ class LimitOrder(Order):
         # The limit price is the minimum price the agent will accept (for a sell order) or
         # the maximum price the agent will pay (for a buy order).
         self.limit_price: int = limit_price
+        self.slippage = 0   # positive slippage = buy moved away 
 
     def __str__(self):
         if silent_mode: return ''
