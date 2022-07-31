@@ -25,6 +25,7 @@ class TradingAgent(FinancialAgent):
 
     # Log order activity?
     self.log_orders = log_orders
+    self.all_orders = {} # addition to self.orders from super - also tracks closed orders
 
     # Log all activity to file?
     if log_orders is None:
@@ -250,6 +251,8 @@ class TradingAgent(FinancialAgent):
     elif msg.body['msg'] == 'MARKET_DATA':
       self.handleMarketData(msg)
 
+    elif msg.body['msg'] == 'FILLED':
+      self.handleFilledOrder(msg)
     # Now do we know the market hours?
     have_mkt_hours = self.mkt_open is not None and self.mkt_close is not None
 
@@ -270,6 +273,11 @@ class TradingAgent(FinancialAgent):
     self.sendMessage(self.exchangeID, Message({ "msg" : "QUERY_LAST_TRADE", "sender": self.id,
                                                 "symbol" : symbol })) 
 
+  def handleFilledOrder(self, msg):
+    order_id = msg.body['order_id']
+    self.all_orders[order_id].filled = True
+    # print("Agent " + str(self.id) + " filled order " + str(order_id))
+    
 
   # Used by any Trading Agent subclass to query the current spread for a symbol.
   # This activity is not logged.
@@ -322,7 +330,7 @@ class TradingAgent(FinancialAgent):
       self.orders[order.order_id] = deepcopy(order)
       self.sendMessage(self.exchangeID, Message({ "msg" : "LIMIT_ORDER", "sender": self.id,
                                                   "order" : order })) 
-
+      self.all_orders[order.order_id] = self.orders[order.order_id]
       # Log this activity.
       if self.log_orders: self.logEvent('ORDER_SUBMITTED', order.to_dict())
 
@@ -358,6 +366,7 @@ class TradingAgent(FinancialAgent):
                     order, self.fmtHoldings(self.holdings))
           return
       self.orders[order.order_id] = deepcopy(order)
+      self.all_orders[order.order_id] = self.orders[order.order_id]
       self.sendMessage(self.exchangeID, Message({"msg" : "MARKET_ORDER", "sender": self.id, "order": order}))
       if self.log_orders: self.logEvent('ORDER_SUBMITTED', order.to_dict())
     else:

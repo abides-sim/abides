@@ -43,10 +43,10 @@ parser.add_argument('-s',
                     type=int,
                     default=None,
                     help='numpy.random.seed() for simulation')
-#parser.add_argument('-d',
- #                   '--historical_date',
-  #                  default=pd.to_datetime('2019-06-28'),
-   #                 help='date to test')
+parser.add_argument('-d',
+                    '--historical_date',
+                    default=pd.to_datetime('2019-06-28'),
+                    help='date to test')
 parser.add_argument('-v',
                     '--verbose',
                     action='store_true',
@@ -207,7 +207,7 @@ kernel = Kernel("Test1 Kernel", random_state=np.random.RandomState(seed=np.rando
                                                                                                   dtype='uint64')))
 
 kernelStartTime = historical_date
-kernelStopTime = mkt_open + pd.to_timedelta('00:05:00')
+kernelStopTime = mkt_open + pd.to_timedelta('01:00:00')
 
 defaultComputationDelay = 50  # nanoseconds
 

@@ -77,8 +77,17 @@ class OrderBook:
                 filled_order = deepcopy(order)
                 filled_order.quantity = matched_order.quantity
                 filled_order.fill_price = matched_order.fill_price
-                filled_order.fill_time = matched_order.fill_time 
+                filled_order.fill_time = self.owner.currentTime - filled_order.time_placed
+                filled_order.filled = True
+                # ensure change is permeated through all copies
+                id = filled_order.order_id 
+                a_id = filled_order.agent_id
+                self.owner.sendMessage(a_id, Message({"msg": "FILLED", "order_id": id}))
 
+                id = matched_order.order_id 
+                a_id = matched_order.agent_id
+                self.owner.sendMessage(a_id, Message({"msg": "FILLED", "order_id": id}))
+                # problem when not a retail agent - they don't update all_orders 
                 if filled_order.is_buy_order:
                     filled_order.slippage = filled_order.limit_price - filled_order.fill_price
                 else:   # ensures slippage away is negative
@@ -247,7 +256,7 @@ class OrderBook:
             # When two limit orders are matched, they execute at the price that
             # was being "advertised" in the order book.
             matched_order.fill_price = matched_order.limit_price
-            matched_order.fill_time = self.owner.currentTime
+            matched_order.fill_time = self.owner.currentTime - matched_order.time_placed
             matched_order.slippage = 0
             
             # Record the transaction in the order history and push the indices
