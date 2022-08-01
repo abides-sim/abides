@@ -139,7 +139,7 @@ class AdaptiveMarketMakerAgent(TradingAgent):
         """
 
         super().receiveMessage(currentTime, msg)
-        if self.last_mid is not None:
+        if self.last_mid is not None: # TODO: bug here sometimes
             mid = self.last_mid
 
         if self.last_spread is not None and self.is_adaptive:

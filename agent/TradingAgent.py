@@ -7,6 +7,7 @@ from util.util import log_print
 
 from copy import deepcopy
 import sys
+import numpy as np
 
 # The TradingAgent class (via FinancialAgent, via Agent) is intended as the
 # base class for all trading agents (i.e. not things like exchanges) in a
@@ -15,7 +16,7 @@ import sys
 # implementing a strategy without too much bookkeeping.
 class TradingAgent(FinancialAgent):
 
-  def __init__(self, id, name, type, random_state=None, starting_cash=100000, log_orders=False, log_to_file=True):
+  def __init__(self, id, name, type, random_state=None, starting_cash=100000, log_orders=False, log_to_file=True, execution=True):
     # Base class init.
     super().__init__(id, name, type, random_state, log_to_file)
 
@@ -23,10 +24,13 @@ class TradingAgent(FinancialAgent):
     self.mkt_open = None
     self.mkt_close = None
 
+    self.order_num = id * 1000  # 1000 current max orders per agent, needed so order ids don't overlap - TODO: better solution
+    self.execution = execution
+
     # Log order activity?
     self.log_orders = log_orders
     self.all_orders = {} # addition to self.orders from super - also tracks closed orders
-
+    
     # Log all activity to file?
     if log_orders is None:
       self.log_orders = False
@@ -135,6 +139,56 @@ class TradingAgent(FinancialAgent):
     print ("Final holdings for {}: {}.  Marked to market: {}".format(self.name, self.fmtHoldings(self.holdings),
                                                                      cash))
     
+    # Log executions
+    if self.execution:
+        self.slippages = []
+        self.prices = []
+        self.times = []
+
+        self.book_count = 0
+        self.instant_count = 0
+        self.fill_count = 0
+
+        flag = False 
+        for o in self.all_orders.values(): 
+            if o is not None and o.filled:
+                flag = True 
+                self.fill_count += 1
+                self.slippages.append(o.slippage)
+                self.prices.append(o.fill_price)
+                self.times.append(o.fill_time) # dont need days 
+
+                if o.fill_type == "BOOK":
+                    self.book_count += 1
+                elif o.fill_type == "INSTANT":
+                    self.instant_count += 1
+
+        def getPct(self):
+            # Calculate percentage of orders executed inside (and at) arrival price
+            # PIn equal to percentage of 0 or positive slippage
+            num_in = len([x if x >= 0 else 0 for x in self.slippages])  
+            num_out = len(self.slippages) - num_in
+            pct_in = num_in/len(self.slippages)
+            pct_out = num_out/len(self.slippages)
+            return pct_in, pct_out
+
+        if not(flag):
+            self.logEvent("No orders executed") 
+        else:
+            log_print(len("EXECUTION")*"=\n" + "EXECUTION\n" + len("EXECUTION")*"=")
+            self.logEvent('TOTAL ORDERS', len(self.all_orders), True)
+            self.logEvent('TOTAL FILLED', self.fill_count, True)
+            self.logEvent('AVG ABS SLIPPAGE', np.mean(np.abs(self.slippages)), True) # currently always zero
+            self.logEvent('AVG PERCENTAGE SLIPPAGE', np.mean(100*np.abs(self.slippages)/self.prices), True) 
+            self.logEvent('NET SLIPPAGE', np.sum(self.slippages), True)
+            self.logEvent('MAX SLIPPAGE', np.max(self.slippages), True)
+            self.logEvent('PCT IN', getPct(self)[0], True)
+            self.logEvent('PCT OUT', getPct(self)[1], True)
+            self.logEvent('AVG EXECUTION TIME', np.mean(self.times).total_seconds(), True)
+            self.logEvent('MAX EXECUTION TIME', np.max(self.times).total_seconds(), True)
+            self.logEvent('NUM OF ORDERS TO BOOK', self.book_count, True)
+            self.logEvent('NUM OF ORDERS FILLED FROM BOOK', self.instant_count, True)
+
     # Record final results for presentation/debugging.  This is an ugly way
     # to do this, but it is useful for now.
     mytype = self.type
@@ -276,6 +330,10 @@ class TradingAgent(FinancialAgent):
   def handleFilledOrder(self, msg):
     order_id = msg.body['order_id']
     self.all_orders[order_id].filled = True
+    self.all_orders[order_id].fill_price = msg.body['fill_price']
+    self.all_orders[order_id].fill_time = msg.body['fill_time']
+    self.all_orders[order_id].fill_quantity = msg.body['quantity']
+    self.all_orders[order_id].fill_type = msg.body['fill_type']
     # print("Agent " + str(self.id) + " filled order " + str(order_id))
     
 
@@ -301,7 +359,9 @@ class TradingAgent(FinancialAgent):
   # The call may optionally specify an order_id (otherwise global autoincrement is used) and
   # whether cash or risk limits should be enforced or ignored for the order.
   def placeLimitOrder (self, symbol, quantity, is_buy_order, limit_price, order_id=None, ignore_risk = True, tag = None):
+    if order_id is None: order_id = self.order_num
     order = LimitOrder(self.id, self.currentTime, symbol, quantity, is_buy_order, limit_price, order_id, tag)
+    self.order_num += 1
 
     if quantity > 0:
       # Test if this order can be permitted given our at-risk limits.

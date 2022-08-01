@@ -16,7 +16,7 @@ class RetailExecutionAgent(TradingAgent):
     def __init__(self, id, name, type, symbol='IBM', starting_cash=100000, sigma_n=1000,
                  r_bar=100000, kappa=0.05, sigma_s=100000, q_max=10,
                  sigma_pv=5000000, R_min=0, R_max=250, eta=1.0,
-                 lambda_a=0.005, log_orders=False, random_state=None, execution=True):
+                 lambda_a=0.005, log_orders=False, random_state=None):
 
         # Base class init.
         super().__init__(id, name, type, starting_cash=starting_cash, log_orders=log_orders, random_state=random_state)
@@ -34,11 +34,7 @@ class RetailExecutionAgent(TradingAgent):
         self.eta = eta  # strategic threshold
         self.lambda_a = lambda_a  # mean arrival rate of ZI agents
         #TODO: add parameters for 1. length of position hold 2. size of trades 
-
-        # Execution tracking parameters - replace with limit order instances? and get stats from them?
-        self.execution = execution # boolean to track execution quality
         
-        self.order_num = id * 1000  # 1000 current max orders per agent, needed so order ids don't overlap - TODO: better solution
         self.slippages = []
         self.execution_times = []
 
@@ -104,46 +100,7 @@ class RetailExecutionAgent(TradingAgent):
         # Add ending cash value and subtract starting cash value.
         surplus += self.holdings['CASH'] - self.starting_cash
 
-        # Log executions
-        if self.execution:
-            self.slippages = []
-            self.prices = []
-            self.times = []
-
-            print(self.order_num)
-            for o in self.all_orders.values():
-                print(o.filled) # always false???
-                flag = False 
-                if o is not None and o.filled:
-                    flag = True 
-                    self.slippages.append(o.slippage)
-                    self.prices.append(o.fill_price)
-                    self.times.append(o.fill_time)
-            
-            print(self.slippages)
-
-            def getPct(self):
-                # Calculate percentage of orders executed inside (and at) arrival price
-                # PIn equal to percentage of 0 or positive slippage
-                num_in = len([x if x >= 0 else 0 for x in self.slippages])  
-                num_out = len(self.slippages) - num_in
-                pct_in = num_in/len(self.slippages)
-                pct_out = num_out/len(self.slippages)
-                return pct_in, pct_out
-
-            if not(flag):
-                self.logEvent("No orders executed") # TODO: bug here
-            else:
-                self.logEvent('TOTAL ORDERS', len(self.all_orders))
-                self.logEvent('AVG ABS SLIPPAGE', np.mean(np.abs(self.slippages)), True)
-                #self.logEvent('AVG PERCENTAGE SLIPPAGE', 100*np.abs(self.slippages)/self.prices, True) #TODO: fix to work with order instance model
-                self.logEvent('NET SLIPPAGE', np.sum(self.slippages), True)
-                self.logEvent('MAX SLIPPAGE', np.max(self.slippages), True)
-                self.logEvent('PCT IN', getPct(self)[0], True)
-                self.logEvent('PCT OUT', getPct(self)[1], True)
-              #  self.logEvent('AVG EXECUTION TIME', np.mean(self.times), True)
-               # self.logEvent('MAX EXECUTION TIME', np.max(self.times), True)
-
+        
 
         self.logEvent('FINAL_VALUATION', surplus, True)
 
@@ -334,8 +291,7 @@ class RetailExecutionAgent(TradingAgent):
         # Place the order.
         size = 100
         self.placeLimitOrder(self.symbol, size, buy, p, order_id=self.order_num)
-        # always false as copied before it can be set true
-        self.order_num += 1
+        
        
         
     def receiveMessage(self, currentTime, msg):
