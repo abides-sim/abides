@@ -186,8 +186,8 @@ class TradingAgent(FinancialAgent):
             self.logEvent('PCT OUT', getPct(self)[1], True)
             self.logEvent('AVG EXECUTION TIME', np.mean(self.times).total_seconds(), True)
             self.logEvent('MAX EXECUTION TIME', np.max(self.times).total_seconds(), True)
-            self.logEvent('NUM OF ORDERS TO BOOK', self.book_count, True)
-            self.logEvent('NUM OF ORDERS FILLED FROM BOOK', self.instant_count, True)
+            self.logEvent('NUM OF ORDERS FILLED AFTER GOING TO BOOK', self.book_count, True)
+            self.logEvent('NUM OF ORDERS FILLED INSTANTLY BY BOOK', self.instant_count, True)
 
     # Record final results for presentation/debugging.  This is an ugly way
     # to do this, but it is useful for now.
@@ -359,7 +359,7 @@ class TradingAgent(FinancialAgent):
   # The call may optionally specify an order_id (otherwise global autoincrement is used) and
   # whether cash or risk limits should be enforced or ignored for the order.
   def placeLimitOrder (self, symbol, quantity, is_buy_order, limit_price, order_id=None, ignore_risk = True, tag = None):
-    if order_id is None: order_id = self.order_num
+    order_id = self.order_num
     order = LimitOrder(self.id, self.currentTime, symbol, quantity, is_buy_order, limit_price, order_id, tag)
     self.order_num += 1
 
@@ -408,7 +408,10 @@ class TradingAgent(FinancialAgent):
       :param ignore_risk (bool):  Determines whether cash or risk limits should be enforced or ignored for the order
       :return:
     """
+    order_id=self.order_num
     order = MarketOrder(self.id, self.currentTime, symbol, quantity, is_buy_order, order_id)
+    self.order_num += 1
+
     if quantity > 0:
       # compute new holdings
       new_holdings = self.holdings.copy()
@@ -426,8 +429,8 @@ class TradingAgent(FinancialAgent):
                     order, self.fmtHoldings(self.holdings))
           return
       self.orders[order.order_id] = deepcopy(order)
-      self.all_orders[order.order_id] = self.orders[order.order_id]
       self.sendMessage(self.exchangeID, Message({"msg" : "MARKET_ORDER", "sender": self.id, "order": order}))
+      self.all_orders[order.order_id] = self.orders[order.order_id]
       if self.log_orders: self.logEvent('ORDER_SUBMITTED', order.to_dict())
     else:
       log_print("TradingAgent ignored market order of quantity zero: {}", order)

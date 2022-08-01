@@ -16,10 +16,10 @@ class RetailExecutionAgent(TradingAgent):
     def __init__(self, id, name, type, symbol='IBM', starting_cash=100000, sigma_n=1000,
                  r_bar=100000, kappa=0.05, sigma_s=100000, q_max=10,
                  sigma_pv=5000000, R_min=0, R_max=250, eta=1.0,
-                 lambda_a=0.005, log_orders=False, random_state=None):
+                 lambda_a=0.005, log_orders=False, random_state=None, execution=True):
 
         # Base class init.
-        super().__init__(id, name, type, starting_cash=starting_cash, log_orders=log_orders, random_state=random_state)
+        super().__init__(id, name, type, starting_cash=starting_cash, log_orders=log_orders, random_state=random_state, execution=execution)
 
         # Store important parameters particular to the ZI agent.
         self.symbol = symbol  # symbol to trade        
@@ -289,10 +289,11 @@ class RetailExecutionAgent(TradingAgent):
                 log_print("{} demands R = {}, limit price {}", self.name, R, p)
 
         # Place the order.
-        size = 100
-        self.placeLimitOrder(self.symbol, size, buy, p, order_id=self.order_num)
-        
-       
+        size = 100  #TODO: variable sizes
+        #self.placeLimitOrder(self.symbol, size, buy, p)
+        self.placeMarketOrder(self.symbol, size, buy)
+        # TODO: now ignores calculated p to buy at market price - break the agent?
+        # TODO: slippage still not working
         
     def receiveMessage(self, currentTime, msg):
         # Parent class schedules market open wakeup call once market open/close times are known.
