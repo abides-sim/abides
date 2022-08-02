@@ -41,7 +41,7 @@ parser.add_argument('-l',
 parser.add_argument('-s',
                     '--seed',
                     type=int,
-                    default=None,
+                    default=1,
                     help='numpy.random.seed() for simulation')
 parser.add_argument('-d',
                     '--historical_date',
@@ -58,7 +58,14 @@ parser.add_argument('-a',
                     '--agent_name',
                     default=None,
                     help='Specify the agent to test with')
-                    
+parser.add_argument('-t',
+                    '--ticker',
+                    default="IBM",
+                    help='Stock Ticker')
+parser.add_argument('-e',
+                    '--experiment_length',
+                    default=pd.to_timedelta('01:00:00'),
+                    help='Experiment length')                                       
 
 args, remaining_args = parser.parse_known_args()
 
@@ -82,8 +89,8 @@ print("Configuration seed: {}\n".format(seed))
 ############################################### AGENTS CONFIG ##########################################################
 
 # Historical date to simulate.
-historical_date = pd.to_datetime('2019-06-28')
-symbol = 'ABC'
+historical_date = args.historical_date
+symbol = args.ticker
 
 agent_count, agents, agent_types = 0, [], []
 
@@ -98,9 +105,22 @@ def random_institution_start_cash(institution_cash = 50000000000):
     # Draws start cash from a normal distribution around institution_cash
     return int(np.random.normal(institution_cash, institution_cash * 0.1)) # TODO: improve?
 
-# 1) 1 Exchange Agent
+# Oracle
 mkt_open = historical_date + pd.to_timedelta('09:30:00')
 mkt_close = historical_date + pd.to_timedelta('16:00:00')
+symbols = {symbol: {'r_bar': 1e4,   # base price of asset
+                    'kappa': 1.67e-12,  
+                    'agent_kappa': 1.67e-15,
+                    'sigma_s': 0,
+                    'fund_vol': 1e-8,
+                    'megashock_lambda_a': 2.77778e-13,
+                    'megashock_mean': 1e3,
+                    'megashock_var': 5e4,
+                    'random_state': np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16,
+                                                                                 dtype='uint64'))}}
+oracle = SparseMeanRevertingOracle(mkt_open, mkt_close, symbols)
+
+# 1) 1 Exchange Agent
 stream_history_length = 25000
 
 agents.extend([ExchangeAgent(id=0,
@@ -138,17 +158,6 @@ agent_types.extend('MarketMakerAgent')
 agent_count += num_mm_agents
 
 # 3) 30 retail Agents   -   30% of total agents
-symbols = {symbol: {'r_bar': 1e5,
-                    'kappa': 1.67e-12,
-                    'agent_kappa': 1.67e-15,
-                    'sigma_s': 0,
-                    'fund_vol': 1e-8,
-                    'megashock_lambda_a': 2.77778e-13,
-                    'megashock_mean': 1e3,
-                    'megashock_var': 5e4,
-                    'random_state': np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16,
-                                                                                 dtype='uint64'))}}
-oracle = SparseMeanRevertingOracle(mkt_open, mkt_close, symbols)
 
 num_retail_agents = 30
 agents.extend([RetailExecutionAgent(id=j,
@@ -207,7 +216,7 @@ kernel = Kernel("Test1 Kernel", random_state=np.random.RandomState(seed=np.rando
                                                                                                   dtype='uint64')))
 
 kernelStartTime = historical_date
-kernelStopTime = mkt_open + pd.to_timedelta('01:00:00')
+kernelStopTime = mkt_open + pd.to_timedelta(args.experiment_length)
 
 defaultComputationDelay = 50  # nanoseconds
 

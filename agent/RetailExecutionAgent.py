@@ -292,7 +292,7 @@ class RetailExecutionAgent(TradingAgent):
                 log_print("{} demands R = {}, limit price {}", self.name, R, p)
 
         # Place the order.
-        size = 100  #TODO: variable sizes - size determined by p for market orders?
+        size = 5  #TODO: variable sizes - size determined by p for market orders?
 
         if self.order_type == "limit":
             self.placeLimitOrder(self.symbol, size, buy, p)

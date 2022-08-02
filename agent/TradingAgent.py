@@ -179,18 +179,16 @@ class TradingAgent(FinancialAgent):
             #log_print(len("EXECUTION")*"=\n" + "EXECUTION\n" + len("EXECUTION")*"=")
             #print(self.slippages)
             #print(self.prices)
-            self.logEvent('TOTAL ORDERS', len(self.all_orders), True)
-            self.logEvent('TOTAL FILLED', self.fill_count, True)
-            self.logEvent('AVG ABS SLIPPAGE', np.mean(np.abs(self.slippages)), True) # currently always zero
+            self.logEvent('TOTAL_ORDERS', len(self.all_orders), True)
+            self.logEvent('TOTAL_FILLED', self.fill_count, True)
+            self.logEvent('AVG_ABS_SLIPPAGE', np.mean(np.abs(self.slippages)), True) # currently always zero
            # self.logEvent('AVG PERCENTAGE SLIPPAGE', np.mean(100*np.abs(self.slippages)/self.prices)+"%", True) # TODO: correct with volume/price??
-            self.logEvent('NET SLIPPAGE', np.sum(self.slippages), True)
-            self.logEvent('MAX SLIPPAGE', np.max(self.slippages), True)
-            self.logEvent('PCT IN', getPct(self)[0], True)
-            self.logEvent('PCT OUT', getPct(self)[1], True)
-            self.logEvent('AVG EXECUTION TIME', np.mean(self.times).total_seconds(), True)
-            self.logEvent('MAX EXECUTION TIME', np.max(self.times).total_seconds(), True)
-            self.logEvent('ORDERS FILLED AFTER GOING TO BOOK', self.book_count, True)
-            self.logEvent('ORDERS FILLED INSTANTLY BY BOOK', self.instant_count, True)
+            self.logEvent('NET_SLIPPAGE', np.sum(self.slippages), True)
+            self.logEvent('MAX_SLIPPAGE', np.max(self.slippages), True)
+            self.logEvent('PCT_IN', int(getPct(self)[0]*100), True)
+            self.logEvent('PCT_OUT', int(getPct(self)[1]*100), True)
+            self.logEvent('AVG_EXECUTION_TIME', np.mean(self.times).total_seconds(), True)
+            self.logEvent('MAX_EXECUTION_TIME', np.max(self.times).total_seconds(), True)
 
     # Record final results for presentation/debugging.  This is an ugly way
     # to do this, but it is useful for now.

@@ -20,10 +20,14 @@ df = pd.read_pickle(file, compression='bz2')
 df2 = df.reset_index(drop=True)
 
 # get starting cash and ending cash rows
-ending_cash = df2.iloc[51]
-starting_cash = df2.iloc[1]
+ending_cash = df2[df2['EventType'] == "ENDING_CASH"]
+starting_cash = df2[df2['EventType'] == "STARTING_CASH"]
 
 df2 = df2.tail(13)
+
+# drop marked to market rows
+df2 = df2[df2['EventType'] != 'MARKED_TO_MARKET']
+df2 = df2[df2['EventType'] != 'MARK_TO_MARKET']
 
 df2 = df2.append([starting_cash, ending_cash], ignore_index=True)
 
