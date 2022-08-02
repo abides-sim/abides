@@ -100,7 +100,7 @@ class RetailExecutionAgent(TradingAgent):
         log_print("surplus after holdings: {}", surplus)
 
         # Add ending cash value and subtract starting cash value.
-        surplus += self.holdings['CASH'] - self.starting_cash
+        surplus += self.markToMarket(self.holdings) - self.starting_cash
 
         surplus = dollarize(int(surplus))   
         # TODO BUG : surplus is float  - should be int as in cents (cannot divide)

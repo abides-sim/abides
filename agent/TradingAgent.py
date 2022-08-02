@@ -136,7 +136,7 @@ class TradingAgent(FinancialAgent):
     # Mark to market.
     cash = self.markToMarket(self.holdings)
 
-    self.logEvent('ENDING_CASH', cash, True)
+    self.logEvent('ENDING_CASH', dollarize(cash), True)
     print ("Final holdings for {}: {}.  Marked to market: {}".format(self.name, self.fmtHoldings(self.holdings),
                                                                      cash))
     
@@ -182,7 +182,7 @@ class TradingAgent(FinancialAgent):
             self.logEvent('TOTAL ORDERS', len(self.all_orders), True)
             self.logEvent('TOTAL FILLED', self.fill_count, True)
             self.logEvent('AVG ABS SLIPPAGE', np.mean(np.abs(self.slippages)), True) # currently always zero
-            self.logEvent('AVG PERCENTAGE SLIPPAGE', np.mean(100*np.abs(self.slippages)/self.prices), True) 
+           # self.logEvent('AVG PERCENTAGE SLIPPAGE', np.mean(100*np.abs(self.slippages)/self.prices)+"%", True) # TODO: correct with volume/price??
             self.logEvent('NET SLIPPAGE', np.sum(self.slippages), True)
             self.logEvent('MAX SLIPPAGE', np.max(self.slippages), True)
             self.logEvent('PCT IN', getPct(self)[0], True)

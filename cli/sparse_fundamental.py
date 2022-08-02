@@ -7,6 +7,9 @@ import os
 import re
 import sys
 
+sys.path.append("C:\Users\joest\OneDrive\Documents\Actual Docs\Bristol\IP\code_L\\abides-MSc")
+
+from FinancialAgent import dollarize
 from joblib import Memory
 
 # Auto-detect terminal width.
@@ -44,7 +47,7 @@ df_sim = pd.read_pickle(sim_file, compression='bz2')
 
 plt.rcParams.update({'font.size': 12})
 
-print (df_sim.head())
+#print (df_sim.head())
 
 # Use to restrict time to plot.
 #df_sim = df_sim.between_time(BETWEEN_START, BETWEEN_END)
@@ -70,7 +73,6 @@ plt.suptitle('Fundamental Value: {}'.format(symbol))
 axes[0].set_ylabel('Fundamental Value')
 axes[0].set_xlabel('Fundamental Time')
 
-#plt.savefig('background_{}.png'.format(b))
-
+# plt.savefig('fundamental_{}.png'.format(symbol))
 plt.show()
 

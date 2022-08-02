@@ -16,9 +16,19 @@ df = pd.read_pickle(file, compression='bz2')
 
 # TODO: filter df
 # take last 13 rows of df
-df = df.tail(13)
 
-# drop index
-df = df.reset_index(drop=True)
-print(df)
+df2 = df.reset_index(drop=True)
 
+# get starting cash and ending cash rows
+ending_cash = df2.iloc[51]
+starting_cash = df2.iloc[1]
+
+df2 = df2.tail(13)
+
+df2 = df2.append([starting_cash, ending_cash], ignore_index=True)
+
+
+print(df2)
+
+
+# TODO: export to file?
