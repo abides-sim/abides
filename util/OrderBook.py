@@ -44,6 +44,7 @@ class OrderBook:
         }
 
     def handleLimitOrder(self, order):
+
         # Matches a limit order or adds it to the order book.  Handles partial matches piecewise,
         # consuming all possible shares at the best price before moving on, without regard to
         # order size "fit" or minimizing number of transactions.  Sends one notification per
@@ -96,11 +97,6 @@ class OrderBook:
                                                     "fill_time": filled_order.fill_time, 
                                                     "quantity": filled_order.quantity,
                                                     "fill_type": "BOOK"}))
-
-                if filled_order.is_buy_order:
-                    filled_order.slippage = filled_order.limit_price - filled_order.fill_price
-                else:   # ensures slippage away is negative
-                    filled_order.slippage = filled_order.fill_price - filled_order.limit_price
 
                 order.quantity -= filled_order.quantity
 
@@ -198,8 +194,13 @@ class OrderBook:
 
         limit_orders = {} # limit orders to be placed (key=price, value=quantity)
         order_quantity = order.quantity
+        i = 0
+        best = None
         for price_level in orderbook_side:
             price, size = price_level[0], price_level[1]
+            if i == 0:
+            # best price, record for slippage
+               best = price
             if order_quantity <= size:
                 limit_orders[price] = order_quantity #i.e. the top of the book has enough volume for the full order
                 break
@@ -209,9 +210,20 @@ class OrderBook:
                 order_quantity -= size
                 continue
         log_print("{} placing market order as multiple limit orders", order.symbol, order.quantity)
+        
+        order_num = order.order_id
         for lo in limit_orders.items():
             p, q = lo[0], lo[1]
-            limit_order = LimitOrder(order.agent_id, order.time_placed, order.symbol, q, order.is_buy_order, p)
+            if order.is_buy_order:
+                slippage = p - best
+            else:
+                slippage = best - p
+
+            limit_order = LimitOrder(order.agent_id, order.time_placed, order.symbol, q, order.is_buy_order, p, order_id=order_num, slippage=slippage)
+            self.owner.sendMessage(order.agent_id,
+                                    Message({"msg": "NEW_SPLIT_MARKET_ORDER", "order": limit_order}))
+            order_num += 1
+            # BUG  - doesn't assign correct order number, doesn't assign these to all orders
             self.handleLimitOrder(limit_order)
 
     def executeOrder(self, order):

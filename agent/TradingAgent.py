@@ -176,6 +176,8 @@ class TradingAgent(FinancialAgent):
             self.logEvent("No orders executed") 
         else:
             log_print(len("EXECUTION")*"=\n" + "EXECUTION\n" + len("EXECUTION")*"=")
+            print(self.slippages)
+            print(self.prices)
             self.logEvent('TOTAL ORDERS', len(self.all_orders), True)
             self.logEvent('TOTAL FILLED', self.fill_count, True)
             self.logEvent('AVG ABS SLIPPAGE', np.mean(np.abs(self.slippages)), True) # currently always zero
@@ -307,6 +309,10 @@ class TradingAgent(FinancialAgent):
 
     elif msg.body['msg'] == 'FILLED':
       self.handleFilledOrder(msg)
+
+    elif msg.body['msg'] == 'NEW_SPLIT_MARKET_ORDER':
+      self.handleNewSplitMarketOrder(msg)
+
     # Now do we know the market hours?
     have_mkt_hours = self.mkt_open is not None and self.mkt_close is not None
 
@@ -326,6 +332,11 @@ class TradingAgent(FinancialAgent):
   def getLastTrade (self, symbol):
     self.sendMessage(self.exchangeID, Message({ "msg" : "QUERY_LAST_TRADE", "sender": self.id,
                                                 "symbol" : symbol })) 
+
+  def handleNewSplitMarketOrder(self, msg):
+    order = msg.body['order']
+    self.all_orders[order.order_id] = order
+    self.order_num += 1
 
   def handleFilledOrder(self, msg):
     order_id = msg.body['order_id']
@@ -411,7 +422,6 @@ class TradingAgent(FinancialAgent):
     order_id=self.order_num
     order = MarketOrder(self.id, self.currentTime, symbol, quantity, is_buy_order, order_id)
     self.order_num += 1
-
     if quantity > 0:
       # compute new holdings
       new_holdings = self.holdings.copy()
@@ -428,9 +438,10 @@ class TradingAgent(FinancialAgent):
           log_print("TradingAgent ignored market order due to at-risk constraints: {}\n{}",
                     order, self.fmtHoldings(self.holdings))
           return
+
       self.orders[order.order_id] = deepcopy(order)
       self.sendMessage(self.exchangeID, Message({"msg" : "MARKET_ORDER", "sender": self.id, "order": order}))
-      self.all_orders[order.order_id] = self.orders[order.order_id]
+ 
       if self.log_orders: self.logEvent('ORDER_SUBMITTED', order.to_dict())
     else:
       log_print("TradingAgent ignored market order of quantity zero: {}", order)

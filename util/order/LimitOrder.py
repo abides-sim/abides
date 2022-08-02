@@ -14,14 +14,14 @@ silent_mode = False
 
 class LimitOrder(Order):
 
-    def __init__(self, agent_id, time_placed, symbol, quantity, is_buy_order, limit_price, order_id=None, tag=None):
+    def __init__(self, agent_id, time_placed, symbol, quantity, is_buy_order, limit_price, order_id=None, tag=None, slippage=0):
 
         super().__init__(agent_id, time_placed, symbol, quantity, is_buy_order, order_id, tag=tag)
         self.filled = False
         # The limit price is the minimum price the agent will accept (for a sell order) or
         # the maximum price the agent will pay (for a buy order).
         self.limit_price: int = limit_price
-        self.slippage = 0   # positive slippage = buy moved away 
+        self.slippage = slippage   # positive slippage = buy moved away 
 
     def __str__(self):
         if silent_mode: return ''

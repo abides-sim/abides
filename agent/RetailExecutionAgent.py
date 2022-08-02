@@ -289,7 +289,7 @@ class RetailExecutionAgent(TradingAgent):
                 log_print("{} demands R = {}, limit price {}", self.name, R, p)
 
         # Place the order.
-        size = 100  #TODO: variable sizes
+        size = 100  #TODO: variable sizes - size determined by p for market orders?
         #self.placeLimitOrder(self.symbol, size, buy, p)
         self.placeMarketOrder(self.symbol, size, buy)
         # TODO: now ignores calculated p to buy at market price - break the agent?
