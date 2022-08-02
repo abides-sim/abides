@@ -14,11 +14,11 @@ file = sys.argv[1]
 
 df = pd.read_pickle(file, compression='bz2')
 
-if len(sys.argv) > 2:
-  events = sys.argv[2:]
-  event = "|".join(events)
-  df = df[df['EventType'].str.contains(event)]
+# TODO: filter df
+# take last 13 rows of df
+df = df.tail(13)
 
+# drop index
 df = df.reset_index(drop=True)
 print(df)
 

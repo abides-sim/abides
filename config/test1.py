@@ -92,11 +92,11 @@ mm_cash = 50000000000 # $500,000,000
 
 def random_retail_start_cash(retail_cash = 250000):
     # Draws start cash from a normal distribution around retail_cash
-    return np.random.normal(retail_cash, retail_cash * 0.1) # TODO: improve?
+    return int(np.random.normal(retail_cash, retail_cash * 0.1)) # TODO: improve?
 
 def random_institution_start_cash(institution_cash = 50000000000):
     # Draws start cash from a normal distribution around institution_cash
-    return np.random.normal(institution_cash, institution_cash * 0.1) # TODO: improve?
+    return int(np.random.normal(institution_cash, institution_cash * 0.1)) # TODO: improve?
 
 # 1) 1 Exchange Agent
 mkt_open = historical_date + pd.to_timedelta('09:30:00')
