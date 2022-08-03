@@ -181,7 +181,7 @@ class OrderBook:
         self.prettyPrint()
 
     def handleMarketOrder(self, order):
-
+        #print(order.best)
         if order.symbol != self.symbol:
             log_print("{} order discarded.  Does not match OrderBook symbol: {}", order.symbol, self.symbol)
             return
@@ -195,12 +195,8 @@ class OrderBook:
         limit_orders = {} # limit orders to be placed (key=price, value=quantity)
         order_quantity = order.quantity
         i = 0
-        best = None
         for price_level in orderbook_side:
             price, size = price_level[0], price_level[1]
-            if i == 0:
-            # best price, record for slippage
-               best = price
             if order_quantity <= size:
                 limit_orders[price] = order_quantity #i.e. the top of the book has enough volume for the full order
                 break
@@ -211,19 +207,26 @@ class OrderBook:
                 continue
         log_print("{} placing market order as multiple limit orders", order.symbol, order.quantity)
         
+        best = order.best
         order_num = order.order_id
         for lo in limit_orders.items():
             p, q = lo[0], lo[1]
-            if order.is_buy_order:
-                slippage = p - best
+            if order.is_buy_order: 
+               # print("Price achieved: " + str(p) + " at time " + str(self.owner.currentTime.strftime("%H:%M:%S")))
+                if best is None: # first order to market
+                    slippage = 0    
+                else:
+                    slippage = p - best
             else:
-                slippage = best - p
+                if best is None:
+                    slippage = 0
+                else:
+                    slippage = best - p
 
             limit_order = LimitOrder(order.agent_id, order.time_placed, order.symbol, q, order.is_buy_order, p, order_id=order_num, slippage=slippage)
             self.owner.sendMessage(order.agent_id,
                                     Message({"msg": "NEW_SPLIT_MARKET_ORDER", "order": limit_order}))
             order_num += 1
-            # BUG  - doesn't assign correct order number, doesn't assign these to all orders
             self.handleLimitOrder(limit_order)
 
     def executeOrder(self, order):

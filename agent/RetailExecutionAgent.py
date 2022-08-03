@@ -18,7 +18,7 @@ class RetailExecutionAgent(TradingAgent):
     def __init__(self, id, name, type, symbol='IBM', starting_cash=100000, sigma_n=1000,
                  r_bar=100000, kappa=0.05, sigma_s=100000, q_max=10,
                  sigma_pv=5000000, R_min=0, R_max=250, eta=1.0,
-                 lambda_a=0.005, log_orders=False, random_state=None, execution=True, order_type=None):
+                 lambda_a=0.005, log_orders=False, random_state=None, execution=True, order_type=None, retail_delay=1000000000):
 
         # Base class init.
         super().__init__(id, name, type, starting_cash=starting_cash, log_orders=log_orders, random_state=random_state, execution=execution)
@@ -40,6 +40,7 @@ class RetailExecutionAgent(TradingAgent):
         self.slippages = []
         self.execution_times = []
         self.order_type = order_type # 'limit' or 'market', default market. limit guarantees 0 slippage but less likely to fill
+        self.retail_delay = retail_delay # delay for slippage simulation
 
         # The agent uses this to track whether it has begun its strategy or is still
         # handling pre-market tasks.
@@ -103,7 +104,6 @@ class RetailExecutionAgent(TradingAgent):
         surplus += self.markToMarket(self.holdings) - self.starting_cash
 
         surplus = dollarize(int(surplus))   
-        # TODO BUG : surplus is float  - should be int as in cents (cannot divide)
 
         self.logEvent('FINAL_SURPLUS', surplus, True)
 
@@ -293,12 +293,16 @@ class RetailExecutionAgent(TradingAgent):
 
         # Place the order.
         size = 5  #TODO: variable sizes - size determined by p for market orders?
-
         if self.order_type == "limit":
             self.placeLimitOrder(self.symbol, size, buy, p)
         else:
-            self.placeMarketOrder(self.symbol, size, buy)
-
+            if buy:      
+                self.placeMarketOrder(self.symbol, size, buy, best=ask, delay=self.retail_delay)
+                # TODO: Use volume to calc NBBO 
+                # print("Best ask at order: " + str(ask) + " at time " + str(self.currentTime.strftime("%H:%M:%S")))
+            else:
+                self.placeMarketOrder(self.symbol, size, buy, best=bid, delay=self.retail_delay)
+        #TODO handle best bid and best ask to calc slippage
         
     def receiveMessage(self, currentTime, msg):
         # Parent class schedules market open wakeup call once market open/close times are known.

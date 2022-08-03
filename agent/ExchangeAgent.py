@@ -251,6 +251,8 @@ class ExchangeAgent(FinancialAgent):
         log_print("Market Order discarded.  Unknown symbol: {}", order.symbol)
       else:
         # Hand the market order to the order book for processing.
+        # TODO: arbitary delay conditional on sender type msg.body['sender'] == "Retail":
+        
         self.order_books[order.symbol].handleMarketOrder(deepcopy(order))
         self.publishOrderBookData()
     elif msg.body['msg'] == "CANCEL_ORDER":

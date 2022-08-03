@@ -14,7 +14,6 @@ file = sys.argv[1]
 
 df = pd.read_pickle(file, compression='bz2')
 
-# TODO: filter df
 # take last 13 rows of df
 
 df2 = df.reset_index(drop=True)

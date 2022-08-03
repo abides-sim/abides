@@ -136,10 +136,11 @@ class TradingAgent(FinancialAgent):
     # Mark to market.
     cash = self.markToMarket(self.holdings)
 
-    self.logEvent('ENDING_CASH', dollarize(cash), True)
+    self.logEvent('ENDING_CASH', dollarize(int(cash)), True)
     print ("Final holdings for {}: {}.  Marked to market: {}".format(self.name, self.fmtHoldings(self.holdings),
                                                                      cash))
-    
+    gain = cash - self.starting_cash
+
     # Log executions
     if self.execution:
         self.slippages = []
@@ -184,17 +185,17 @@ class TradingAgent(FinancialAgent):
             self.logEvent('AVG_ABS_SLIPPAGE', np.mean(np.abs(self.slippages)), True) # currently always zero
            # self.logEvent('AVG PERCENTAGE SLIPPAGE', np.mean(100*np.abs(self.slippages)/self.prices)+"%", True) # TODO: correct with volume/price??
             self.logEvent('NET_SLIPPAGE', np.sum(self.slippages), True)
-            self.logEvent('MAX_SLIPPAGE', np.max(self.slippages), True)
+            self.logEvent('MAX_SLIPPAGE', np.max(np.abs(self.slippages)), True)
             self.logEvent('PCT_IN', int(getPct(self)[0]*100), True)
             self.logEvent('PCT_OUT', int(getPct(self)[1]*100), True)
             self.logEvent('AVG_EXECUTION_TIME', np.mean(self.times).total_seconds(), True)
             self.logEvent('MAX_EXECUTION_TIME', np.max(self.times).total_seconds(), True)
-
+            self.logEvent('SLIPPAGE_ADJUSTED_PROFITS', np.sum(self.slippages) + gain, True)
+    
     # Record final results for presentation/debugging.  This is an ugly way
     # to do this, but it is useful for now.
     mytype = self.type
-    gain = cash - self.starting_cash
-
+    
     if mytype in self.kernel.meanResultByAgentType:
       self.kernel.meanResultByAgentType[mytype] += gain
       self.kernel.agentCountByType[mytype] += 1
@@ -407,7 +408,7 @@ class TradingAgent(FinancialAgent):
     else:
       log_print ("TradingAgent ignored limit order of quantity zero: {}", order)
 
-  def placeMarketOrder(self, symbol, quantity, is_buy_order, order_id=None, ignore_risk = True, tag=None):
+  def placeMarketOrder(self, symbol, quantity, is_buy_order, order_id=None, ignore_risk = True, tag=None, best=None, delay=0):
     """
       Used by any Trading Agent subclass to place a market order. The market order is created as multiple limit orders
       crossing the spread walking the book until all the quantities are matched.
@@ -419,7 +420,7 @@ class TradingAgent(FinancialAgent):
       :return:
     """
     order_id=self.order_num
-    order = MarketOrder(self.id, self.currentTime, symbol, quantity, is_buy_order, order_id)
+    order = MarketOrder(self.id, self.currentTime, symbol, quantity, is_buy_order, order_id, best=best)
     self.order_num += 1
     if quantity > 0:
       # compute new holdings
@@ -439,7 +440,7 @@ class TradingAgent(FinancialAgent):
           return
 
       self.orders[order.order_id] = deepcopy(order)
-      self.sendMessage(self.exchangeID, Message({"msg" : "MARKET_ORDER", "sender": self.id, "order": order}))
+      self.sendMessage(self.exchangeID, Message({"msg" : "MARKET_ORDER", "sender": self.id, "order": order}), delay=delay)
  
       if self.log_orders: self.logEvent('ORDER_SUBMITTED', order.to_dict())
     else:

@@ -10,9 +10,9 @@ silent_mode = False
 
 class MarketOrder(Order):
 
-    def __init__(self, agent_id, time_placed, symbol, quantity, is_buy_order, order_id=None, tag=None):
+    def __init__(self, agent_id, time_placed, symbol, quantity, is_buy_order, order_id=None, tag=None, best=None):
         super().__init__(agent_id, time_placed, symbol, quantity, is_buy_order, order_id=order_id, tag=tag)
-
+        self.best = best
     def __str__(self):
         if silent_mode: return ''
 
@@ -27,7 +27,8 @@ class MarketOrder(Order):
     def __copy__(self):
         order = MarketOrder(self.agent_id, self.time_placed, self.symbol, self.quantity, self.is_buy_order,
                             order_id=self.order_id,
-                            tag=self.tag)
+                            tag=self.tag,
+                            best=self.best)
         Order._order_ids.pop()  # remove duplicate agent ID
         order.fill_price = self.fill_price
         return order
@@ -42,9 +43,10 @@ class MarketOrder(Order):
         order_id = deepcopy(self.order_id, memodict)
         tag = deepcopy(self.tag, memodict)
         fill_price = deepcopy(self.fill_price, memodict)
+        best = deepcopy(self.best, memodict)
 
         # Create new order object
-        order = MarketOrder(agent_id, time_placed, symbol, quantity, is_buy_order, order_id=order_id, tag=tag)
+        order = MarketOrder(agent_id, time_placed, symbol, quantity, is_buy_order, order_id=order_id, tag=tag, best=best)
         order.fill_price = fill_price
 
         return order

@@ -23,6 +23,7 @@ from agent.market_makers.MarketMakerAgent import MarketMakerAgent
 from agent.RetailExecutionAgent import RetailExecutionAgent   
 from agent.HeuristicBeliefLearningAgent import HeuristicBeliefLearningAgent
 from agent.examples.MomentumAgent import MomentumAgent
+from agent.NoiseAgent import NoiseAgent
 
 ########################################################################################################################
 ############################################### GENERAL CONFIG #########################################################
@@ -65,7 +66,11 @@ parser.add_argument('-t',
 parser.add_argument('-e',
                     '--experiment_length',
                     default=pd.to_timedelta('01:00:00'),
-                    help='Experiment length')                                       
+                    help='Experiment length')               
+parser.add_argument('-n',
+                    '--noise',
+                    default=True,
+                    help='Include noise agents')                             
 
 args, remaining_args = parser.parse_known_args()
 
@@ -97,11 +102,11 @@ agent_count, agents, agent_types = 0, [], []
 
 mm_cash = 50000000000 # $500,000,000
 
-def random_retail_start_cash(retail_cash = 250000):
+def random_retail_start_cash(retail_cash = 250000): # $2,500
     # Draws start cash from a normal distribution around retail_cash
     return int(np.random.normal(retail_cash, retail_cash * 0.1)) # TODO: improve?
 
-def random_institution_start_cash(institution_cash = 50000000000):
+def random_institution_start_cash(institution_cash = 5000000000): # $50,000,000
     # Draws start cash from a normal distribution around institution_cash
     return int(np.random.normal(institution_cash, institution_cash * 0.1)) # TODO: improve?
 
@@ -177,6 +182,7 @@ agents.extend([RetailExecutionAgent(id=j,
                                      lambda_a=1e-12,
                                      log_orders=True,
                                      execution=True,
+                                     retail_delay=2000000000, # 2 second delay on messages
                                      random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16,
                                                                                                dtype='uint64')))
                for j in range(agent_count, agent_count + num_retail_agents)])
@@ -208,6 +214,18 @@ agents.extend([HeuristicBeliefLearningAgent(id=j,
 agent_types.extend("HeuristicBeliefLearningAgent")
 agent_count += num_hbl_agents
 
+# 5) Noise Agents
+num_noise = 1000
+agents.extend([NoiseAgent(id=j,
+                          name="NoiseAgent {}".format(j),
+                          type="NoiseAgent",
+                          symbol=symbol,
+                          wakeup_time=util.get_wake_time(mkt_open, mkt_close),
+                          log_orders=False,
+                          random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32, dtype='uint64')))
+               for j in range(agent_count, agent_count + num_noise)])
+agent_count += num_noise
+agent_types.extend(['NoiseAgent'])
 
 ########################################################################################################################
 ########################################### KERNEL AND OTHER CONFIG ####################################################
