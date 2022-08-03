@@ -103,9 +103,10 @@ class RetailExecutionAgent(TradingAgent):
         # Add ending cash value and subtract starting cash value.
         surplus += self.markToMarket(self.holdings) - self.starting_cash
 
-        surplus = dollarize(int(surplus))   
+        # surplus = dollarize(int(surplus))   
 
-        self.logEvent('FINAL_SURPLUS', surplus, True)
+        percentage_profit = round(surplus/self.starting_cash*100, 3)
+        self.logEvent('FINAL_PCT_PROFIT', percentage_profit, True)
 
         log_print(
             "{} final report.  Holdings {}, end cash {}, start cash {}, final fundamental {}, preferences {}, surplus {}",
