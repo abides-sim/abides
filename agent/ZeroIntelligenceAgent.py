@@ -89,9 +89,12 @@ class ZeroIntelligenceAgent(TradingAgent):
 
         # Add ending cash value and subtract starting cash value.
         surplus += self.holdings['CASH'] - self.starting_cash
-
-        self.logEvent('FINAL_VALUATION', surplus, True)
-
+        cash = self.markToMarket(self.holdings)
+        gain = cash - self.starting_cash
+        percentage_profit = round(100*(gain)/self.starting_cash, 5)
+        # BUG: gives 0 from rounding error
+        self.logEvent('FINAL_PCT_PROFIT', percentage_profit, True) # add these 2 lines to agents
+        
         log_print(
             "{} final report.  Holdings {}, end cash {}, start cash {}, final fundamental {}, preferences {}, surplus {}",
             self.name, H, self.holdings['CASH'], self.starting_cash, rT, self.theta, surplus)

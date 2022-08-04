@@ -168,7 +168,10 @@ class TradingAgent(FinancialAgent):
         def getPct(self):
             # Calculate percentage of orders executed inside (and at) arrival price
             # PIn equal to percentage of 0 or positive slippage
-            num_in = len([x if x >= 0 else 0 for x in self.slippages])  
+            num_in = 0
+            for x in self.slippages:
+                if x >= 0:
+                    num_in += 1
             num_out = len(self.slippages) - num_in
             pct_in = num_in/len(self.slippages)
             pct_out = num_out/len(self.slippages)
@@ -183,15 +186,15 @@ class TradingAgent(FinancialAgent):
             self.logEvent('TOTAL_ORDERS', len(self.all_orders), True)
             self.logEvent('TOTAL_FILLED', self.fill_count, True)
             self.logEvent('AVG_ABS_SLIPPAGE', np.mean(np.abs(self.slippages)), True) # currently always zero
-           # self.logEvent('AVG PERCENTAGE SLIPPAGE', np.mean(100*np.abs(self.slippages)/self.prices)+"%", True) # TODO: correct with volume/price??
+           # self.logEvent('AVG PCT SLIPPAGE', np.mean(100*np.abs(self.slippages)/self.prices)+"%", True) # TODO: correct with volume/price??
             self.logEvent('NET_SLIPPAGE', np.sum(self.slippages), True)
-            self.logEvent('MAX_SLIPPAGE', np.max(np.abs(self.slippages)), True)
+            self.logEvent('MAX_ABS_SLIPPAGE', np.max(np.abs(self.slippages)), True)
             self.logEvent('PCT_IN', int(getPct(self)[0]*100), True)
             self.logEvent('PCT_OUT', int(getPct(self)[1]*100), True)
             self.logEvent('AVG_EXECUTION_TIME', np.mean(self.times).total_seconds(), True)
-            self.logEvent('MAX_EXECUTION_TIME', np.max(self.times).total_seconds(), True)
-            self.logEvent('SLIPPAGE_ADJUSTED_PROFITS', np.sum(self.slippages) + gain, True)
-    
+          #  self.logEvent('MAX_EXECUTION_TIME', np.max(self.times).total_seconds(), True)
+            self.logEvent('SLIP_ADJ_PCT_PROFIT', round(100*(np.sum(self.slippages) + gain)/self.starting_cash, 5), True)
+   
     # Record final results for presentation/debugging.  This is an ugly way
     # to do this, but it is useful for now.
     mytype = self.type
@@ -203,7 +206,7 @@ class TradingAgent(FinancialAgent):
       self.kernel.meanResultByAgentType[mytype] = gain
       self.kernel.agentCountByType[mytype] = 1
 
-
+  
   # Simulation participation messages.
 
   def wakeup (self, currentTime):

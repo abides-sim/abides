@@ -46,7 +46,6 @@ class MarketMakerAgent(TradingAgent):
         self.num_levels = None
         self.size_split = None
         self.last_spread = 10
-
     def kernelStarting(self, startTime):
         super().kernelStarting(startTime)
 

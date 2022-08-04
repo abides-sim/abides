@@ -74,7 +74,6 @@ class RetailExecutionAgent(TradingAgent):
     def kernelStopping(self):
         # Always call parent method to be safe.
         super().kernelStopping()
-
         # Print end of day valuation.
         H = int(round(self.getHoldings(self.symbol), -2) / 100)
         # May request real fundamental value from oracle as part of final cleanup/stats.
@@ -101,16 +100,17 @@ class RetailExecutionAgent(TradingAgent):
         log_print("surplus after holdings: {}", surplus)
 
         # Add ending cash value and subtract starting cash value.
-        surplus += self.markToMarket(self.holdings) - self.starting_cash
-
-        # surplus = dollarize(int(surplus))   
-
-        percentage_profit = round(surplus/self.starting_cash*100, 3)
-        self.logEvent('FINAL_PCT_PROFIT', percentage_profit, True)
+        surplus += self.holdings['CASH'] - self.starting_cash
+        cash = self.markToMarket(self.holdings)
+        gain = cash - self.starting_cash
+        percentage_profit = round(100*(gain)/self.starting_cash, 5)
+        self.logEvent('FINAL_PCT_PROFIT', percentage_profit, True) # add these 2 lines to agents
+        
 
         log_print(
             "{} final report.  Holdings {}, end cash {}, start cash {}, final fundamental {}, preferences {}, surplus {}",
             self.name, H, self.holdings['CASH'], self.starting_cash, rT, self.theta, surplus)
+
 
     def wakeup(self, currentTime):
         # Parent class handles discovery of exchange times and market_open wakeup call.
