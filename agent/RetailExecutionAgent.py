@@ -304,6 +304,7 @@ class RetailExecutionAgent(TradingAgent):
         # check agent has enough cash to place order
         # incrementally reduce size until it can be afforded
         
+        # TODO: ban (some?) retail agents from shorting e.g can't sell stocks don't have (or limits) 
         if not(bid is None or ask is None):
             while ask*size > cash and size > 0:
                 size -= 1

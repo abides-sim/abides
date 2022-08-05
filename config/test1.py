@@ -217,7 +217,7 @@ agent_count += num_hbl_agents
 
 # 5) Noise Agents
 if args.noise:
-    num_noise = 1000
+    num_noise = 900
     agents.extend([NoiseAgent(id=j,
                             name="NoiseAgent {}".format(j),
                             type="NoiseAgent",
