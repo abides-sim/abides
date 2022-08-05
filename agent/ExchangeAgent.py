@@ -24,7 +24,7 @@ from copy import deepcopy
 class ExchangeAgent(FinancialAgent):
 
   def __init__(self, id, name, type, mkt_open, mkt_close, symbols, book_freq='S', wide_book=False, pipeline_delay = 40000,
-               computation_delay = 1, stream_history = 0, log_orders = False, random_state = None):
+               computation_delay = 1, stream_history = 0, days = 1, log_orders = False, random_state = None):
 
     super().__init__(id, name, type, random_state)
 
@@ -123,7 +123,7 @@ class ExchangeAgent(FinancialAgent):
     self.setComputationDelay(self.computation_delay)
 
     # Is the exchange closed?  (This block only affects post-close, not pre-open.)
-    if currentTime > self.mkt_close:
+    if self.checkMarketClosed():
       # Most messages after close will receive a 'MKT_CLOSED' message in response.  A few things
       # might still be processed, like requests for final trade prices or such.
       if msg.body['msg'] in ['LIMIT_ORDER', 'MARKET_ORDER', 'CANCEL_ORDER', 'MODIFY_ORDER']:
@@ -132,7 +132,7 @@ class ExchangeAgent(FinancialAgent):
 
         # Don't do any further processing on these messages!
         return
-      elif 'QUERY' in msg.body['msg']:
+      elif 'QUERY' in msg.body['msg']: # TODO: allow when_mkt_open
         # Specifically do allow querying after market close, so agents can get the
         # final trade of the day as their "daily close" price for a symbol.
         pass
@@ -184,7 +184,7 @@ class ExchangeAgent(FinancialAgent):
         # This will return the average share price if multiple executions resulted from a single order.
         self.sendMessage(msg.body['sender'], Message({"msg": "QUERY_LAST_TRADE", "symbol": symbol,
                                                       "data": self.order_books[symbol].last_trade,
-                                                      "mkt_closed": True if currentTime > self.mkt_close else False}))
+                                                      "mkt_closed": self.checkMarketClosed()}))
     elif msg.body['msg'] == "QUERY_SPREAD":
       symbol = msg.body['symbol']
       depth = msg.body['depth']
@@ -200,7 +200,7 @@ class ExchangeAgent(FinancialAgent):
                                                       "bids": self.order_books[symbol].getInsideBids(depth),
                                                       "asks": self.order_books[symbol].getInsideAsks(depth),
                                                       "data": self.order_books[symbol].last_trade,
-                                                      "mkt_closed": True if currentTime > self.mkt_close else False,
+                                                      "mkt_closed": self.checkMarketClosed(),
                                                       "book": ''}))
 
         # It is possible to also send the pretty-printed order book to the agent for logging, but forcing pretty-printing
@@ -220,7 +220,7 @@ class ExchangeAgent(FinancialAgent):
       # We return indices [1:length] inclusive because the agent will want "orders leading up to the last
       # L trades", and the items under index 0 are more recent than the last trade.
       self.sendMessage(msg.body['sender'], Message({"msg": "QUERY_ORDER_STREAM", "symbol": symbol, "length": length,
-                                                    "mkt_closed": True if currentTime > self.mkt_close else False,
+                                                    "mkt_closed": self.checkMarketClosed(),
                                                     "orders": self.order_books[symbol].history[1:length + 1]
                                                     }))
     elif msg.body['msg'] == 'QUERY_TRANSACTED_VOLUME':
@@ -233,7 +233,7 @@ class ExchangeAgent(FinancialAgent):
                   msg.body['sender'])
       self.sendMessage(msg.body['sender'], Message({"msg": "QUERY_TRANSACTED_VOLUME", "symbol": symbol,
                                                     "transacted_volume": self.order_books[symbol].get_transacted_volume(lookback_period),
-                                                    "mkt_closed": True if currentTime > self.mkt_close else False
+                                                    "mkt_closed": self.checkMarketClosed()
                                                     }))
     elif msg.body['msg'] == "LIMIT_ORDER":
       order = msg.body['order']
@@ -418,3 +418,7 @@ class ExchangeAgent(FinancialAgent):
 
   def getMarketClose(self):
     return self.__mkt_close
+
+  def checkMarketClosed(self):
+    # TODO: incorporate different days of trading
+    return self.currentTime >= self.mkt_close

@@ -140,167 +140,168 @@ class Kernel:
     # Note that num_simulations has not yet been really used or tested
     # for anything.  Instead we have been running multiple simulations
     # with coarse parallelization from a shell script.
-    for sim in range(num_simulations):
-      log_print ("Starting sim {}", sim)
+    # for sim in range(num_simulations): removed as not suitable here - agents need resetting in config
+    # log_print ("Starting sim {}", sim)
+    
 
-      # Event notification for kernel init (agents should not try to
-      # communicate with other agents, as order is unknown).  Agents
-      # should initialize any internal resources that may be needed
-      # to communicate with other agents during agent.kernelStarting().
-      # Kernel passes self-reference for agents to retain, so they can
-      # communicate with the kernel in the future (as it does not have
-      # an agentID).
-      log_print ("\n--- Agent.kernelInitializing() ---")
-      for agent in self.agents:
-        agent.kernelInitializing(self)
+    # Set the kernel to its startTime.
+    self.currentTime = self.startTime
+    log_print ("\n--- Kernel Clock started ---")
+    log_print ("Kernel.currentTime is now {}", self.currentTime)
 
-      # Event notification for kernel start (agents may set up
-      # communications or references to other agents, as all agents
-      # are guaranteed to exist now).  Agents should obtain references
-      # to other agents they require for proper operation (exchanges,
-      # brokers, subscription services...).  Note that we generally
-      # don't (and shouldn't) permit agents to get direct references
-      # to other agents (like the exchange) as they could then bypass
-      # the Kernel, and therefore simulation "physics" to send messages
-      # directly and instantly or to perform disallowed direct inspection
-      # of the other agent's state.  Agents should instead obtain the
-      # agent ID of other agents, and communicate with them only via
-      # the Kernel.  Direct references to utility objects that are not
-      # agents are acceptable (e.g. oracles).
-      log_print ("\n--- Agent.kernelStarting() ---")
-      for agent in self.agents:
-        agent.kernelStarting(self.startTime)
+    # Event notification for kernel init (agents should not try to
+    # communicate with other agents, as order is unknown).  Agents
+    # should initialize any internal resources that may be needed
+    # to communicate with other agents during agent.kernelStarting().
+    # Kernel passes self-reference for agents to retain, so they can
+    # communicate with the kernel in the future (as it does not have
+    # an agentID).
+    log_print ("\n--- Agent.kernelInitializing() ---")
+    for agent in self.agents:
+      agent.kernelInitializing(self)
 
-      # Set the kernel to its startTime.
-      self.currentTime = self.startTime
-      log_print ("\n--- Kernel Clock started ---")
-      log_print ("Kernel.currentTime is now {}", self.currentTime)
+    # Event notification for kernel start (agents may set up
+    # communications or references to other agents, as all agents
+    # are guaranteed to exist now).  Agents should obtain references
+    # to other agents they require for proper operation (exchanges,
+    # brokers, subscription services...).  Note that we generally
+    # don't (and shouldn't) permit agents to get direct references
+    # to other agents (like the exchange) as they could then bypass
+    # the Kernel, and therefore simulation "physics" to send messages
+    # directly and instantly or to perform disallowed direct inspection
+    # of the other agent's state.  Agents should instead obtain the
+    # agent ID of other agents, and communicate with them only via
+    # the Kernel.  Direct references to utility objects that are not
+    # agents are acceptable (e.g. oracles).
+    log_print ("\n--- Agent.kernelStarting() ---")
+    for agent in self.agents:
+      agent.kernelStarting(self.startTime)
 
-      # Start processing the Event Queue.
-      log_print ("\n--- Kernel Event Queue begins ---")
-      log_print ("Kernel will start processing messages.  Queue length: {}", len(self.messages.queue))
 
-      # Track starting wall clock time and total message count for stats at the end.
-      eventQueueWallClockStart = pd.Timestamp('now')
-      ttl_messages = 0
+    # Start processing the Event Queue.
+    log_print ("\n--- Kernel Event Queue begins ---")
+    log_print ("Kernel will start processing messages.  Queue length: {}", len(self.messages.queue))
 
-      # Process messages until there aren't any (at which point there never can
-      # be again, because agents only "wake" in response to messages), or until
-      # the kernel stop time is reached.
-      while not self.messages.empty() and self.currentTime and (self.currentTime <= self.stopTime):
-        # Get the next message in timestamp order (delivery time) and extract it.
-        self.currentTime, event = self.messages.get()
-        msg_recipient, msg_type, msg = event
+    # Track starting wall clock time and total message count for stats at the end.
+    eventQueueWallClockStart = pd.Timestamp('now')
+    ttl_messages = 0
 
-        # Periodically print the simulation time and total messages, even if muted.
-        if ttl_messages % 100000 == 0:
-          print ("\n--- Simulation time: {}, messages processed: {}, wallclock elapsed: {} ---\n".format(
-                         self.fmtTime(self.currentTime), ttl_messages, pd.Timestamp('now') - eventQueueWallClockStart))
+    # Process messages until there aren't any (at which point there never can
+    # be again, because agents only "wake" in response to messages), or until
+    # the kernel stop time is reached.
+    while not self.messages.empty() and self.currentTime and (self.currentTime <= self.stopTime):
+      # Get the next message in timestamp order (delivery time) and extract it.
+      self.currentTime, event = self.messages.get()
+      msg_recipient, msg_type, msg = event
 
-        log_print ("\n--- Kernel Event Queue pop ---")
-        log_print ("Kernel handling {} message for agent {} at time {}", 
-                   msg_type, msg_recipient, self.fmtTime(self.currentTime))
+      # Periodically print the simulation time and total messages, even if muted.
+      if ttl_messages % 100000 == 0:
+        print ("\n--- Simulation time: {}, messages processed: {}, wallclock elapsed: {} ---\n".format(
+                        self.fmtTime(self.currentTime), ttl_messages, pd.Timestamp('now') - eventQueueWallClockStart))
 
-        ttl_messages += 1
+      log_print ("\n--- Kernel Event Queue pop ---")
+      log_print ("Kernel handling {} message for agent {} at time {}", 
+                  msg_type, msg_recipient, self.fmtTime(self.currentTime))
 
-        # In between messages, always reset the currentAgentAdditionalDelay.
-        self.currentAgentAdditionalDelay = 0
+      ttl_messages += 1
 
-        # Dispatch message to agent.
-        if msg_type == MessageType.WAKEUP:
+      # In between messages, always reset the currentAgentAdditionalDelay.
+      self.currentAgentAdditionalDelay = 0
 
-          # Who requested this wakeup call?
-          agent = msg_recipient
+      # Dispatch message to agent.
+      if msg_type == MessageType.WAKEUP:
 
-          # Test to see if the agent is already in the future.  If so,
-          # delay the wakeup until the agent can act again.
-          if self.agentCurrentTimes[agent] > self.currentTime:
-            # Push the wakeup call back into the PQ with a new time.
-            self.messages.put((self.agentCurrentTimes[agent],
-                              (msg_recipient, msg_type, msg)))
-            log_print ("Agent in future: wakeup requeued for {}",
-                       self.fmtTime(self.agentCurrentTimes[agent]))
-            continue
-            
-          # Set agent's current time to global current time for start
-          # of processing.
-          self.agentCurrentTimes[agent] = self.currentTime
+        # Who requested this wakeup call?
+        agent = msg_recipient
 
-          # Wake the agent.
-          agents[agent].wakeup(self.currentTime)
+        # Test to see if the agent is already in the future.  If so,
+        # delay the wakeup until the agent can act again.
+        if self.agentCurrentTimes[agent] > self.currentTime:
+          # Push the wakeup call back into the PQ with a new time.
+          self.messages.put((self.agentCurrentTimes[agent],
+                            (msg_recipient, msg_type, msg)))
+          log_print ("Agent in future: wakeup requeued for {}",
+                      self.fmtTime(self.agentCurrentTimes[agent]))
+          continue
+          
+        # Set agent's current time to global current time for start
+        # of processing.
+        self.agentCurrentTimes[agent] = self.currentTime
 
-          # Delay the agent by its computation delay plus any transient additional delay requested.
-          self.agentCurrentTimes[agent] += pd.Timedelta(self.agentComputationDelays[agent] +
-                                                        self.currentAgentAdditionalDelay)
+        # Wake the agent.
+        agents[agent].wakeup(self.currentTime)
 
-          log_print ("After wakeup return, agent {} delayed from {} to {}",
-                     agent, self.fmtTime(self.currentTime), self.fmtTime(self.agentCurrentTimes[agent]))
+        # Delay the agent by its computation delay plus any transient additional delay requested.
+        self.agentCurrentTimes[agent] += pd.Timedelta(self.agentComputationDelays[agent] +
+                                                      self.currentAgentAdditionalDelay)
 
-        elif msg_type == MessageType.MESSAGE:
+        log_print ("After wakeup return, agent {} delayed from {} to {}",
+                    agent, self.fmtTime(self.currentTime), self.fmtTime(self.agentCurrentTimes[agent]))
 
-          # Who is receiving this message?
-          agent = msg_recipient
+      elif msg_type == MessageType.MESSAGE:
 
-          # Test to see if the agent is already in the future.  If so,
-          # delay the message until the agent can act again.
-          if self.agentCurrentTimes[agent] > self.currentTime:
-            # Push the message back into the PQ with a new time.
-            self.messages.put((self.agentCurrentTimes[agent],
-                              (msg_recipient, msg_type, msg)))
-            log_print ("Agent in future: message requeued for {}",
-                       self.fmtTime(self.agentCurrentTimes[agent]))
-            continue
+        # Who is receiving this message?
+        agent = msg_recipient
 
-          # Set agent's current time to global current time for start
-          # of processing.
-          self.agentCurrentTimes[agent] = self.currentTime
+        # Test to see if the agent is already in the future.  If so,
+        # delay the message until the agent can act again.
+        if self.agentCurrentTimes[agent] > self.currentTime:
+          # Push the message back into the PQ with a new time.
+          self.messages.put((self.agentCurrentTimes[agent],
+                            (msg_recipient, msg_type, msg)))
+          log_print ("Agent in future: message requeued for {}",
+                      self.fmtTime(self.agentCurrentTimes[agent]))
+          continue
 
-          # Deliver the message.
-          agents[agent].receiveMessage(self.currentTime, msg)
+        # Set agent's current time to global current time for start
+        # of processing.
+        self.agentCurrentTimes[agent] = self.currentTime
 
-          # Delay the agent by its computation delay plus any transient additional delay requested.
-          self.agentCurrentTimes[agent] += pd.Timedelta(self.agentComputationDelays[agent] +
-                                                        self.currentAgentAdditionalDelay)
+        # Deliver the message.
+        agents[agent].receiveMessage(self.currentTime, msg)
 
-          log_print ("After receiveMessage return, agent {} delayed from {} to {}",
-                     agent, self.fmtTime(self.currentTime), self.fmtTime(self.agentCurrentTimes[agent]))
+        # Delay the agent by its computation delay plus any transient additional delay requested.
+        self.agentCurrentTimes[agent] += pd.Timedelta(self.agentComputationDelays[agent] +
+                                                      self.currentAgentAdditionalDelay)
 
-        else:
-          raise ValueError("Unknown message type found in queue",
-                           "currentTime:", self.currentTime,
-                           "messageType:", self.msg.type)
+        log_print ("After receiveMessage return, agent {} delayed from {} to {}",
+                    agent, self.fmtTime(self.currentTime), self.fmtTime(self.agentCurrentTimes[agent]))
 
-      if self.messages.empty():
-        log_print ("\n--- Kernel Event Queue empty ---")
+      else:
+        raise ValueError("Unknown message type found in queue",
+                          "currentTime:", self.currentTime,
+                          "messageType:", self.msg.type)
 
-      if self.currentTime and (self.currentTime > self.stopTime):
-        log_print ("\n--- Kernel Stop Time surpassed ---")
+    if self.messages.empty():
+      log_print ("\n--- Kernel Event Queue empty ---")
 
-      # Record wall clock stop time and elapsed time for stats at the end.
-      eventQueueWallClockStop = pd.Timestamp('now')
+    if self.currentTime and (self.currentTime > self.stopTime):
+      log_print ("\n--- Kernel Stop Time surpassed ---")
 
-      eventQueueWallClockElapsed = eventQueueWallClockStop - eventQueueWallClockStart
+    # Record wall clock stop time and elapsed time for stats at the end.
+    eventQueueWallClockStop = pd.Timestamp('now')
 
-      # Event notification for kernel end (agents may communicate with
-      # other agents, as all agents are still guaranteed to exist).
-      # Agents should not destroy resources they may need to respond
-      # to final communications from other agents.
-      log_print ("\n--- Agent.kernelStopping() ---")
-      for agent in agents:
-        agent.kernelStopping()
+    eventQueueWallClockElapsed = eventQueueWallClockStop - eventQueueWallClockStart
 
-      # Event notification for kernel termination (agents should not
-      # attempt communication with other agents, as order of termination
-      # is unknown).  Agents should clean up all used resources as the
-      # simulation program may not actually terminate if num_simulations > 1.
-      log_print ("\n--- Agent.kernelTerminating() ---")
-      for agent in agents:
-        agent.kernelTerminating()
+    # Event notification for kernel end (agents may communicate with
+    # other agents, as all agents are still guaranteed to exist).
+    # Agents should not destroy resources they may need to respond
+    # to final communications from other agents.
+    log_print ("\n--- Agent.kernelStopping() ---")
+    for agent in agents:
+      agent.kernelStopping()
 
-      print ("Event Queue elapsed: {}, messages: {}, messages per second: {:0.1f}".format(
-             eventQueueWallClockElapsed, ttl_messages, 
-             ttl_messages / (eventQueueWallClockElapsed / (np.timedelta64(1, 's')))))
-      log_print ("Ending sim {}", sim)
+    # Event notification for kernel termination (agents should not
+    # attempt communication with other agents, as order of termination
+    # is unknown).  Agents should clean up all used resources as the
+    # simulation program may not actually terminate if num_simulations > 1.
+    log_print ("\n--- Agent.kernelTerminating() ---")
+    for agent in agents:
+      agent.kernelTerminating()
+
+    print ("Event Queue elapsed: {}, messages: {}, messages per second: {:0.1f}".format(
+            eventQueueWallClockElapsed, ttl_messages, 
+            ttl_messages / (eventQueueWallClockElapsed / (np.timedelta64(1, 's')))))
 
 
     # The Kernel adds a handful of custom state results for all simulations,
@@ -321,7 +322,6 @@ class Kernel:
       count = self.agentCountByType[a]
       print ("{}: {:d}".format(a, int(round(value / count))))
 
-    print ("Simulation ending!")
 
     return self.custom_state
 

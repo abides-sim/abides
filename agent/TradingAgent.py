@@ -244,6 +244,7 @@ class TradingAgent(FinancialAgent):
 
     # Do we know the market hours?
     had_mkt_hours = self.mkt_open is not None and self.mkt_close is not None
+    initial_mkt_open = self.mkt_open
 
     # Record market open or close times.
     if msg.body['msg'] == "WHEN_MKT_OPEN":
@@ -320,14 +321,19 @@ class TradingAgent(FinancialAgent):
     have_mkt_hours = self.mkt_open is not None and self.mkt_close is not None
 
     # Once we know the market open and close times, schedule a wakeup call for market open.
-    # Only do this once, when we first have both items.
-    if have_mkt_hours and not had_mkt_hours:
+    # Also want to wake for next trading day
+    if have_mkt_hours and not had_mkt_hours or initial_mkt_open != self.mkt_open:
       # Agents are asked to generate a wake offset from the market open time.  We structure
       # this as a subclass request so each agent can supply an appropriate offset relative
       # to its trading frequency.
       ns_offset = self.getWakeFrequency()
 
       self.setWakeup(self.mkt_open + ns_offset)
+
+    #  if initial_mkt_open != self.mkt_open:
+     #   print(msg.body['msg'])
+      #  print(initial_mkt_open,self.mkt_open)
+       # print("DAY 2 ###############################################################################")
 
 
   # Used by any Trading Agent subclass to query the last trade price for a symbol.
@@ -549,6 +555,9 @@ class TradingAgent(FinancialAgent):
 
     # Remember that this has happened.
     self.mkt_closed = True
+
+    # Query when market opens next.
+    self.sendMessage(self.exchangeID, Message({"msg": "WHEN_MKT_OPEN", "sender": self.id }))
 
 
   # Handles QUERY_LAST_TRADE messages from an exchange agent.

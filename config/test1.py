@@ -10,6 +10,7 @@ import pandas as pd
 import sys
 import datetime as dt
 import importlib
+import copy 
 
 from Kernel import Kernel   
 from util import util
@@ -65,20 +66,24 @@ parser.add_argument('-t',
                     help='Stock Ticker')
 parser.add_argument('-e',
                     '--experiment_length',
-                    default=pd.to_timedelta('07:00:00'),
+                    default='2:00:00',
                     help='Experiment length')               
 parser.add_argument('-n',
                     '--noise',
-                    default=True,
-                    help='Include noise agents')                             
-
+                    default=1,
+                    help='Include noise agents')        
+parser.add_argument('-i',
+                    '--iterations',
+                    default=1,
+                    help='Number of repeats of experiment')                             
+        
 args, remaining_args = parser.parse_known_args()
-
 if args.config_help:
     parser.print_help()
     sys.exit()
 
 
+ 
 log_dir = args.log_dir  # Requested log directory. # TODO: if it exists, overwrite
 seed = args.seed  # Random seed specification on the command line.
 if not seed: seed = int(pd.Timestamp.now().timestamp() * 1000000) % (2 ** 32 - 1)
@@ -94,7 +99,7 @@ print("Configuration seed: {}\n".format(seed))
 ############################################### AGENTS CONFIG ##########################################################
 
 # Historical date to simulate.
-historical_date = args.historical_date
+historical_date = args.historical_date # midnight on date
 symbol = args.ticker
 
 agent_count, agents, agent_types = 0, [], []
@@ -112,7 +117,9 @@ def random_institution_start_cash(institution_cash = 5000000000): # $50,000,000
 
 # Oracle
 mkt_open = historical_date + pd.to_timedelta('9:00:00')
-mkt_close = mkt_open + pd.to_timedelta(args.experiment_length)
+mkt_close = historical_date +  pd.to_timedelta('9:10:00')
+day_length = mkt_close - mkt_open
+days = pd.to_timedelta(args.experiment_length)/day_length
 
 symbols = {symbol: {'r_bar': 1e4,   # base price of asset
                     'kappa': 1.67e-12,  
@@ -216,7 +223,7 @@ agent_types.extend("HeuristicBeliefLearningAgent")
 agent_count += num_hbl_agents
 
 # 5) Noise Agents
-if args.noise:
+if bool(int(args.noise)):
     num_noise = 900
     agents.extend([NoiseAgent(id=j,
                             name="NoiseAgent {}".format(j),
@@ -236,7 +243,7 @@ kernel = Kernel("Test1 Kernel", random_state=np.random.RandomState(seed=np.rando
                                                                                                   dtype='uint64')))
 
 kernelStartTime = historical_date
-kernelStopTime = mkt_close + pd.to_timedelta('01:00:00')
+kernelStopTime = mkt_open + pd.to_timedelta(args.experiment_length)
 defaultComputationDelay = 50  # nanoseconds
 
 # LATENCY
@@ -260,15 +267,18 @@ latency_model = LatencyModel(latency_model='deterministic',
                              kwargs=model_args
                              )
 # KERNEL
-
-kernel.runner(agents=agents,
-              startTime=kernelStartTime,
-              stopTime=kernelStopTime,
-              agentLatencyModel=latency_model,
-              defaultComputationDelay=defaultComputationDelay,
-              oracle=oracle,
-              log_dir=args.log_dir)
-
+for sim in range(int(args.iterations)):
+    print("Simulation iteration {} starting".format(sim))
+    agents1 = copy.deepcopy(agents)
+    log_dir = args.log_dir + '_{}'.format(sim + 1)
+    kernel.runner(agents=agents1,
+                startTime=kernelStartTime,
+                stopTime=kernelStopTime,
+                agentLatencyModel=latency_model,
+                defaultComputationDelay=defaultComputationDelay,
+                oracle=oracle,
+                log_dir=log_dir)
+    print("Simulation iteration {} ending".format(sim + 1))
 
 simulation_end_time = dt.datetime.now()
 print("Simulation End Time: {}".format(simulation_end_time))
