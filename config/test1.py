@@ -65,7 +65,7 @@ parser.add_argument('-t',
                     help='Stock Ticker')
 parser.add_argument('-e',
                     '--experiment_length',
-                    default=pd.to_timedelta('01:00:00'),
+                    default=pd.to_timedelta('07:00:00'),
                     help='Experiment length')               
 parser.add_argument('-n',
                     '--noise',
@@ -111,8 +111,9 @@ def random_institution_start_cash(institution_cash = 5000000000): # $50,000,000
     return int(np.random.normal(institution_cash, institution_cash * 0.1)) # TODO: improve?
 
 # Oracle
-mkt_open = historical_date + pd.to_timedelta('09:30:00')
-mkt_close = historical_date + pd.to_timedelta('16:00:00')
+mkt_open = historical_date + pd.to_timedelta('9:00:00')
+mkt_close = mkt_open + pd.to_timedelta(args.experiment_length)
+
 symbols = {symbol: {'r_bar': 1e4,   # base price of asset
                     'kappa': 1.67e-12,  
                     'agent_kappa': 1.67e-15,
@@ -215,17 +216,18 @@ agent_types.extend("HeuristicBeliefLearningAgent")
 agent_count += num_hbl_agents
 
 # 5) Noise Agents
-num_noise = 1000
-agents.extend([NoiseAgent(id=j,
-                          name="NoiseAgent {}".format(j),
-                          type="NoiseAgent",
-                          symbol=symbol,
-                          wakeup_time=util.get_wake_time(mkt_open, mkt_close),
-                          log_orders=False,
-                          random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32, dtype='uint64')))
-               for j in range(agent_count, agent_count + num_noise)])
-agent_count += num_noise
-agent_types.extend(['NoiseAgent'])
+if args.noise:
+    num_noise = 1000
+    agents.extend([NoiseAgent(id=j,
+                            name="NoiseAgent {}".format(j),
+                            type="NoiseAgent",
+                            symbol=symbol,
+                            wakeup_time=util.get_wake_time(mkt_open, mkt_close),
+                            log_orders=False,
+                            random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 32, dtype='uint64')))
+                for j in range(agent_count, agent_count + num_noise)])
+    agent_count += num_noise
+    agent_types.extend(['NoiseAgent'])
 
 ########################################################################################################################
 ########################################### KERNEL AND OTHER CONFIG ####################################################
@@ -234,8 +236,7 @@ kernel = Kernel("Test1 Kernel", random_state=np.random.RandomState(seed=np.rando
                                                                                                   dtype='uint64')))
 
 kernelStartTime = historical_date
-kernelStopTime = mkt_open + pd.to_timedelta(args.experiment_length)
-
+kernelStopTime = mkt_close + pd.to_timedelta('01:00:00')
 defaultComputationDelay = 50  # nanoseconds
 
 # LATENCY

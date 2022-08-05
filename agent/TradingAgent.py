@@ -191,7 +191,7 @@ class TradingAgent(FinancialAgent):
             self.logEvent('MAX_ABS_SLIPPAGE', np.max(np.abs(self.slippages)), True)
             self.logEvent('PCT_IN', int(getPct(self)[0]*100), True)
             self.logEvent('PCT_OUT', int(getPct(self)[1]*100), True)
-            self.logEvent('AVG_EXECUTION_TIME', np.mean(self.times).total_seconds(), True)
+            self.logEvent('AVG_TIME', np.mean(self.times).total_seconds(), True)
           #  self.logEvent('MAX_EXECUTION_TIME', np.max(self.times).total_seconds(), True)
             self.logEvent('SLIP_ADJ_PCT_PROFIT', round(100*(np.sum(self.slippages) + gain)/self.starting_cash, 5), True)
    

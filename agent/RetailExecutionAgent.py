@@ -18,7 +18,7 @@ class RetailExecutionAgent(TradingAgent):
     def __init__(self, id, name, type, symbol='IBM', starting_cash=100000, sigma_n=1000,
                  r_bar=100000, kappa=0.05, sigma_s=100000, q_max=10,
                  sigma_pv=5000000, R_min=0, R_max=250, eta=1.0,
-                 lambda_a=0.005, log_orders=False, random_state=None, execution=True, order_type=None, retail_delay=1000000000):
+                 lambda_a=0.005, log_orders=False, random_state=None, execution=True, risk_factor=0.1, order_type=None, retail_delay=1000000000):
 
         # Base class init.
         super().__init__(id, name, type, starting_cash=starting_cash, log_orders=log_orders, random_state=random_state, execution=execution)
@@ -35,6 +35,7 @@ class RetailExecutionAgent(TradingAgent):
         self.R_max = R_max  # max requested surplus
         self.eta = eta  # strategic threshold
         self.lambda_a = lambda_a  # mean arrival rate of ZI agents
+        self.risk_factor = risk_factor # proportion of portfolio to move on each trade
         #TODO: add parameters for 1. length of position hold 2. size of trades 
         
         self.slippages = []
@@ -293,17 +294,38 @@ class RetailExecutionAgent(TradingAgent):
                 log_print("{} demands R = {}, limit price {}", self.name, R, p)
 
         # Place the order.
-        size = 5  #TODO: variable sizes - size determined by p for market orders?
+        cash = self.holdings['CASH']
+
+        # draw size from Poisson distribution 
+        # mean is current cash/estimated price (max stocks could buy) times by risk factor
+        # risk factor determines how much of portfolio to shift on each trade
+        size = self.random_state.poisson(int((cash / p) * self.risk_factor))
+
+        # check agent has enough cash to place order
+        # incrementally reduce size until it can be afforded
+        
+        if not(bid is None or ask is None):
+            while ask*size > cash and size > 0:
+                size -= 1
+                if size == 0:
+                    log_print("{} could not afford {} shares at ask = {}", self.name, size, ask)
+                    return
+            
+            while bid*size > cash and size > 0:
+                size -= 1
+                if size == 0:
+                    log_print("{} could not afford {} shares at bid = {}", self.name, size, ask)
+                    return
+
         if self.order_type == "limit":
             self.placeLimitOrder(self.symbol, size, buy, p)
         else:
             if buy:      
                 self.placeMarketOrder(self.symbol, size, buy, best=ask, delay=self.retail_delay)
-                # TODO: Use volume to calc NBBO 
+                # TODO: Use volume to calc NBBO?
                 # print("Best ask at order: " + str(ask) + " at time " + str(self.currentTime.strftime("%H:%M:%S")))
             else:
                 self.placeMarketOrder(self.symbol, size, buy, best=bid, delay=self.retail_delay)
-        #TODO handle best bid and best ask to calc slippage
         
     def receiveMessage(self, currentTime, msg):
         # Parent class schedules market open wakeup call once market open/close times are known.

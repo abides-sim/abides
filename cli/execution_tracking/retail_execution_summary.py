@@ -28,30 +28,40 @@ for log_dir in log_dirs:
     try:
       df = pd.read_pickle(os.path.join(log_dir,file), compression='bz2')
       # print(df)
-      events = [ 'AGENT_TYPE', 'STARTING_CASH', 'ENDING_CASH', 'FINAL_CASH_POSITION', 'MARKED_TO_MARKET' ]
+      events = [ 'AGENT_TYPE', 'TOTAL_ORDERS', 'AVG_ABS_SLIPPAGE', 'NET_SLIPPAGE', 'MAX_ABS_SLIPPAGE', 'PCT_IN', 'PCT_OUT', 'AVG_TIME', 'FINAL_PCT_PROFIT', 'SLIP_ADJ_PCT_PROFIT']
       event = "|".join(events)
       df = df[df['EventType'].str.contains(event)]
 
       at = df.loc[df['EventType'] == 'AGENT_TYPE', 'Event'][0]
-      if 'Exchange' in at:
-        # There may be different fields to look at later on.
-        continue
-
       file_count += 1
 
-      sc = df.loc[df['EventType'] == 'STARTING_CASH', 'Event'][0]
-      ec = df.loc[df['EventType'] == 'ENDING_CASH', 'Event'][0]
-      fcp = df.loc[df['EventType'] == 'FINAL_CASH_POSITION', 'Event'][0]
-      fv = df.loc[df['EventType'] == 'MARKED_TO_MARKET', 'Event'][0]
+      # TODO: calculate any derivative stats?
+      to = df.loc[df['EventType'] == 'TOTAL_ORDERS', 'Event'][0]
+      aas = df.loc[df['EventType'] == 'AVG_ABS_SLIPPAGE', 'Event'][0]
+      ns = df.loc[df['EventType'] == 'NET_SLIPPAGE', 'Event'][0]
+      mas = df.loc[df['EventType'] == 'MAX_ABS_SLIPPAGE', 'Event'][0]
+      pin = df.loc[df['EventType'] == 'PCT_IN', 'Event'][0]
+      pout = df.loc[df['EventType'] == 'PCT_OUT', 'Event'][0]
+      ati = df.loc[df['EventType'] == 'AVG_TIME', 'Event'][0]
+      fpp = df.loc[df['EventType'] == 'FINAL_PCT_PROFIT', 'Event'][0]
+      sapp = df.loc[df['EventType'] == 'SLIP_ADJ_PCT_PROFIT', 'Event'][0]
 
-      ret = fcp - sc
-      surp = fv - sc
-      stats.append({ 'AgentType' : at, 'Return' : ret, 'Surplus' : surp })
+      stats.append({ 'AgentType' : at, 'TotalOrders': to, 'AvgAbsSlippage': aas, 'NetSlippage': ns, 'MaxAbsSlippage': mas, 'PctIn': pin, 'PctOut': pout, 'AvgTime': ati, 'FinalPctProfit': fpp, 'SlipAdjPctProfit': sapp })
+
     except (IndexError, KeyError):
       continue
 
 df_stats = pd.DataFrame(stats)
-
 print (df_stats.groupby('AgentType').mean())
 
 print ("\nRead {} files in {} log directories.".format(file_count, dir_count))
+
+# converting to csv
+path = "CSVs\\Summaries\\"
+if not os.path.isdir(path):
+   os.makedirs(path)
+
+# drop log directory from file
+dir_name = log_dirs[0].split("\\")[-1]
+df_stats.to_csv(path + dir_name + '_ALL.csv', index=False)
+df_stats.groupby('AgentType').mean().to_csv(path + dir_name + '_SUMMARY.csv')
