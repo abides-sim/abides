@@ -47,7 +47,7 @@ parser.add_argument('-s',
                     help='numpy.random.seed() for simulation')
 parser.add_argument('-d',
                     '--historical_date',
-                    default=pd.to_datetime('2019-06-28'),
+                    default=pd.to_datetime('2020-01-01'),
                     help='date to test')
 parser.add_argument('-v',
                     '--verbose',
@@ -66,7 +66,7 @@ parser.add_argument('-t',
                     help='Stock Ticker')
 parser.add_argument('-e',
                     '--experiment_length',
-                    default='2:00:00',
+                    default='70:00:00', #TODO     test odd times that dont split evenly into days
                     help='Experiment length')               
 parser.add_argument('-n',
                     '--noise',
@@ -117,7 +117,7 @@ def random_institution_start_cash(institution_cash = 5000000000): # $50,000,000
 
 # Oracle
 mkt_open = historical_date + pd.to_timedelta('9:00:00')
-mkt_close = historical_date +  pd.to_timedelta('9:10:00')
+mkt_close = historical_date +  pd.to_timedelta('16:00:00')
 day_length = mkt_close - mkt_open
 days = pd.to_timedelta(args.experiment_length)/day_length
 
@@ -142,12 +142,13 @@ agents.extend([ExchangeAgent(id=0,
                              mkt_open=mkt_open,
                              mkt_close=mkt_close,
                              symbols=[symbol],
-                             log_orders=True,
+                             log_orders=False,
                              stream_history=stream_history_length,
                              pipeline_delay=0,
                              computation_delay=0,
                              wide_book=True,
                              book_freq=0,
+                             days=days,
                              random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16,
                                                                                        dtype='uint64')))])
 agent_types.extend("ExchangeAgent")
@@ -188,7 +189,7 @@ agents.extend([RetailExecutionAgent(id=j,
                                      R_max=100,
                                      eta=1,
                                      lambda_a=1e-12,
-                                     log_orders=True,
+                                     log_orders=False,
                                      execution=True,
                                      retail_delay=2000000000, # 2 second delay on messages
                                      random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16,
@@ -241,9 +242,9 @@ if bool(int(args.noise)):
 
 kernel = Kernel("Test1 Kernel", random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2 ** 16,
                                                                                                   dtype='uint64')))
-
+offset = pd.to_timedelta(1, unit='h') # ensure kernel can complete shut down process after final mkt close
 kernelStartTime = historical_date
-kernelStopTime = mkt_open + pd.to_timedelta(args.experiment_length)
+kernelStopTime = mkt_close + pd.to_timedelta(days, unit='D') + offset
 defaultComputationDelay = 50  # nanoseconds
 
 # LATENCY
@@ -270,7 +271,8 @@ latency_model = LatencyModel(latency_model='deterministic',
 for sim in range(int(args.iterations)):
     print("Simulation iteration {} starting".format(sim))
     agents1 = copy.deepcopy(agents)
-    log_dir = args.log_dir + '_{}'.format(sim + 1)
+    if log_dir is not None:
+        log_dir = args.log_dir + '_{}'.format(sim + 1)
     kernel.runner(agents=agents1,
                 startTime=kernelStartTime,
                 stopTime=kernelStopTime,

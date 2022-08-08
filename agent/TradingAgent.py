@@ -211,7 +211,7 @@ class TradingAgent(FinancialAgent):
 
   def wakeup (self, currentTime):
     super().wakeup(currentTime)
-
+    
     if self.first_wake:
       # Log initial holdings.
       self.logEvent('HOLDINGS_UPDATED', self.holdings)
@@ -221,6 +221,16 @@ class TradingAgent(FinancialAgent):
       # Ask our exchange when it opens and closes.
       self.sendMessage(self.exchangeID, Message({ "msg" : "WHEN_MKT_OPEN", "sender": self.id }))
       self.sendMessage(self.exchangeID, Message({ "msg" : "WHEN_MKT_CLOSE", "sender": self.id }))
+
+    elif self.mkt_closed:
+      # Can only enter this after full market day - mkt_close only set at EOD 
+      # check if its open by our records (should have been reset for next day before wakeup was set)
+      if self.mkt_open <= currentTime and self.mkt_close >= currentTime:    
+        if self.id == 1:
+          print("Agent {} waking up for mkt open at {}".format(self.id, currentTime)) # this won't work on first day as elif,  don't be alarmed
+          print(self.mkt_open)
+        self.mkt_closed = False
+
 
     # For the sake of subclasses, TradingAgent now returns a boolean
     # indicating whether the agent is "ready to trade" -- has it received
@@ -254,7 +264,7 @@ class TradingAgent(FinancialAgent):
 
     elif msg.body['msg'] == "WHEN_MKT_CLOSE":
       self.mkt_close = msg.body['data']
-
+      
       log_print ("Recorded market close: {}", self.kernel.fmtTime(self.mkt_close))
 
     elif msg.body['msg'] == "ORDER_EXECUTED":
@@ -282,6 +292,11 @@ class TradingAgent(FinancialAgent):
       # so we stop asking for things that can't happen.
 
       self.marketClosed()
+
+    elif msg.body['msg'] == "FINAL_CLOSE":
+      # We've tried to ask the exchange for something after it closed.  Remember this
+      # so we stop asking for things that can't happen.
+      self.finalClose()
 
     elif msg.body['msg'] == 'QUERY_LAST_TRADE':
       # Call the queryLastTrade method, which subclasses may extend.
@@ -321,20 +336,20 @@ class TradingAgent(FinancialAgent):
     have_mkt_hours = self.mkt_open is not None and self.mkt_close is not None
 
     # Once we know the market open and close times, schedule a wakeup call for market open.
-    # Also want to wake for next trading day
-    if have_mkt_hours and not had_mkt_hours or initial_mkt_open != self.mkt_open:
+    # Also want to wake for next trading day - this is when we have received a different mkt_open
+    if (have_mkt_hours and not had_mkt_hours) or (initial_mkt_open != self.mkt_open):
       # Agents are asked to generate a wake offset from the market open time.  We structure
       # this as a subclass request so each agent can supply an appropriate offset relative
       # to its trading frequency.
       ns_offset = self.getWakeFrequency()
-
+      if self.id == 1:
+       print("Agent {} sleeping until {}".format(self.id, self.kernel.fmtTime(self.mkt_open + ns_offset)))
       self.setWakeup(self.mkt_open + ns_offset)
-
+      
     #  if initial_mkt_open != self.mkt_open:
      #   print(msg.body['msg'])
       #  print(initial_mkt_open,self.mkt_open)
        # print("DAY 2 ###############################################################################")
-
 
   # Used by any Trading Agent subclass to query the last trade price for a symbol.
   # This activity is not logged.
@@ -525,7 +540,6 @@ class TradingAgent(FinancialAgent):
     # Log this activity.
     if self.log_orders: self.logEvent('ORDER_ACCEPTED', order.to_dict())
 
-
     # We may later wish to add a status to the open orders so an agent can tell whether
     # a given order has been accepted or not (instead of needing to override this method).
 
@@ -556,9 +570,9 @@ class TradingAgent(FinancialAgent):
     # Remember that this has happened.
     self.mkt_closed = True
 
-    # Query when market opens next.
+    # Query when market opens and closes next.
     self.sendMessage(self.exchangeID, Message({"msg": "WHEN_MKT_OPEN", "sender": self.id }))
-
+    self.sendMessage(self.exchangeID, Message({"msg": "WHEN_MKT_CLOSE", "sender": self.id }))
 
   # Handles QUERY_LAST_TRADE messages from an exchange agent.
   def queryLastTrade (self, symbol, price):
@@ -572,6 +586,11 @@ class TradingAgent(FinancialAgent):
 
       log_print ("Received daily close price of {} for {}.", self.last_trade[symbol], symbol)
 
+  def finalClose (self):
+    self.logEvent('MKT_CLOSED')
+
+    # Remember that this has happened.
+    self.mkt_closed = True
 
   # Handles QUERY_SPREAD messages from an exchange agent.
   def querySpread (self, symbol, price, bids, asks, book):

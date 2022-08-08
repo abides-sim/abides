@@ -275,6 +275,7 @@ class Kernel:
     if self.messages.empty():
       log_print ("\n--- Kernel Event Queue empty ---")
 
+
     if self.currentTime and (self.currentTime > self.stopTime):
       log_print ("\n--- Kernel Stop Time surpassed ---")
 
@@ -400,7 +401,7 @@ class Kernel:
     # kernel will not supply any parameters to the wakeup() call.
 
     if requestedTime is None:
-        requestedTime = self.currentTime + pd.TimeDelta(1)
+        requestedTime = self.currentTime + pd.to_timedelta(1, 'ns')
 
     if sender is None:
       raise ValueError("setWakeup() called without valid sender ID",

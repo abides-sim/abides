@@ -34,6 +34,9 @@ class ExchangeAgent(FinancialAgent):
     # Store this exchange's open and close times.
     self.mkt_open = mkt_open
     self.mkt_close = mkt_close
+    self.sim_days = days
+    self.current_day = 1
+    self.first_mkt_open = True # flag for first opening allowing messages before 
 
     # Right now, only the exchange agent has a parallel processing pipeline delay.  This is an additional
     # delay added only to order activity (placing orders, etc) and not simple inquiries (market operating
@@ -132,9 +135,10 @@ class ExchangeAgent(FinancialAgent):
 
         # Don't do any further processing on these messages!
         return
-      elif 'QUERY' in msg.body['msg']: # TODO: allow when_mkt_open
+      elif 'QUERY' in msg.body['msg'] or 'WHEN_MKT_OPEN' in msg.body['msg'] or 'WHEN_MKT_CLOSE' in msg.body['msg']: 
         # Specifically do allow querying after market close, so agents can get the
         # final trade of the day as their "daily close" price for a symbol.
+        # Also allow when_mkt_open for interday sims
         pass
       else:
         log_print("{} received {}, discarded: market is closed.", self.name, msg.body['msg'])
@@ -163,7 +167,15 @@ class ExchangeAgent(FinancialAgent):
       # quotes or trades.
       self.setComputationDelay(0)
 
+      # check if market has shut for last time
+      # TODO: improve this so it works with getMarketClosed function 
+      if self.currentTime > self.mkt_close and self.currentTime > self.mkt_open and (self.sim_days == self.current_day):
+        # TODO: never enters this block?
+        self.sendMessage(msg.body['sender'], Message({"msg": "FINAL_CLOSE"}))
+        return
+
       self.sendMessage(msg.body['sender'], Message({"msg": "WHEN_MKT_OPEN", "data": self.mkt_open}))
+   
     elif msg.body['msg'] == "WHEN_MKT_CLOSE":
       log_print("{} received WHEN_MKT_CLOSE request from agent {}", self.name, msg.body['sender'])
 
@@ -171,8 +183,13 @@ class ExchangeAgent(FinancialAgent):
       # hours?") instantly.  This does NOT include anything that queries mutable data, like equity
       # quotes or trades.
       self.setComputationDelay(0)
+      # check if market has shut for last time
+      if self.currentTime > self.mkt_close and self.currentTime > self.mkt_open and (self.sim_days == self.current_day):
+        self.sendMessage(msg.body['sender'], Message({"msg": "FINAL_CLOSE"}))
+        return
 
       self.sendMessage(msg.body['sender'], Message({"msg": "WHEN_MKT_CLOSE", "data": self.mkt_close}))
+    
     elif msg.body['msg'] == "QUERY_LAST_TRADE":
       symbol = msg.body['symbol']
       if symbol not in self.order_books:
@@ -420,5 +437,40 @@ class ExchangeAgent(FinancialAgent):
     return self.__mkt_close
 
   def checkMarketClosed(self):
-    # TODO: incorporate different days of trading
-    return self.currentTime >= self.mkt_close
+    if self.first_mkt_open and self.currentTime < self.mkt_open:
+      return False # need to allow certain messages before first market open
+   
+    elif self.first_mkt_open and self.currentTime >= self.mkt_open:
+      self.first_mkt_open = False
+      return False
+
+    if self.sim_days == self.current_day:
+      # market will shut for last time if EOD
+      if self.currentTime > self.mkt_close:
+        print("MARKET CLOSED FOR DAY {}, SHUTTING DOWN".format(self.current_day))
+      return self.currentTime > self.mkt_close 
+
+    elif self.currentTime < self.mkt_open:
+      # closed for today, but will reopen (params update below)
+      # BUG: agents see this and close down forever?
+      # BUT if false then agents keep running - not desired
+      return True
+
+    elif self.currentTime > self.mkt_close:
+      # market closed for today, but will reopen tomorrow
+      
+      print("MARKET CLOSED FOR DAY {}".format(self.current_day))
+      self.current_day += 1
+
+      # update market open and close times
+      self.mkt_open = self.mkt_open + pd.to_timedelta(1, unit='D')
+      self.mkt_close = self.mkt_close + pd.to_timedelta(1, unit='D') 
+
+      # TODO: wait for market open or fast forward to open time? how to sync with kernel?
+      self.kernel.setWakeup(sender=self.id, requestedTime=self.mkt_open)
+      return True
+
+    
+    else:
+      # market open currently
+      return False
