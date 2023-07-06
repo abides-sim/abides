@@ -9,7 +9,7 @@ pprofile==2.0.2
 pyparsing==2.4.0
 python-dateutil==2.8.0
 pytz==2019.1
-scipy==1.2.1
+scipy==1.10.0
 seaborn==0.9.0
 six==1.12.0
 tqdm==4.36.1
