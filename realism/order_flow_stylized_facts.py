@@ -1,23 +1,26 @@
 import argparse
 import sys
+
 sys.path.append("..")
-from util.formatting.convert_order_stream import dir_path
 import glob
-import re
-import pandas as pd
-import matplotlib.pyplot as plt
-from realism_utils import get_plot_colors
-import numpy as np
-from scipy import stats
-from matplotlib.dates import DateFormatter
-from pandas.plotting import register_matplotlib_converters
 import itertools
 import os
 import pickle
+import re
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from matplotlib.dates import DateFormatter
+from pandas.plotting import register_matplotlib_converters
+from realism_utils import get_plot_colors
+from scipy import stats
+
+from util.formatting.convert_order_stream import dir_path
 
 
 class Constants:
-    """ Stores constants for use in plotting code. """
+    """Stores constants for use in plotting code."""
 
     # Plot params -- Generic
     fig_height = 10
@@ -26,7 +29,7 @@ class Constants:
     legend_font_size = 20
     axes_label_font_size = 20
     title_font_size = 22
-    scatter_marker_styles_sizes = [('x', 60), ('+', 60), ('o', 14), (',', 60)]
+    scatter_marker_styles_sizes = [("x", 60), ("+", 60), ("o", 14), (",", 60)]
 
     # Plot params -- Interarrival_times
     interarrival_times_xlabel = "Quote interarrival time /s"
@@ -51,12 +54,12 @@ YEAR_OFFSET = 0.1  # adds offset of ${YEAR_OFFSET} years to each trace to differ
 
 
 def unpickle_stream_dfs_to_stream_list(dir_containing_pickles):
-    """ Extracts pickled dataframes over a number of dates to a dict containing dataframes and their dates.
+    """Extracts pickled dataframes over a number of dates to a dict containing dataframes and their dates.
 
-        :param dir_containing_pickles: path of directory containing pickled data frames, in format `orders_SYMB_YYYYMMDD.pkl`
-        :type dir_containing_pickles: str
+    :param dir_containing_pickles: path of directory containing pickled data frames, in format `orders_SYMB_YYYYMMDD.pkl`
+    :type dir_containing_pickles: str
 
-        :return bundled_streams: list of dicts, where each dict has symbol, date and orders_df
+    :return bundled_streams: list of dicts, where each dict has symbol, date and orders_df
     """
 
     bundled_streams = []
@@ -65,28 +68,24 @@ def unpickle_stream_dfs_to_stream_list(dir_containing_pickles):
     stream_file_list = glob.glob(f"{dir_containing_pickles}/orders*.pkl")
     for stream_pkl in stream_file_list:
         print(f"Processing {stream_pkl}")
-        match = re.search(symbol_regex, stream_pkl) 
+        match = re.search(symbol_regex, stream_pkl)
         symbol = match.group(1)
         date_YYYYMMDD = match.group(2)
-        orders_df = pd.read_pickle(stream_pkl) 
-        bundled_streams.append({
-            "symbol": symbol,
-            "date": date_YYYYMMDD,
-            "orders_df": orders_df
-        })
+        orders_df = pd.read_pickle(stream_pkl)
+        bundled_streams.append({"symbol": symbol, "date": date_YYYYMMDD, "orders_df": orders_df})
     return bundled_streams
 
 
 def set_up_plotting():
-    """ Sets matplotlib variables for plotting. """
-    plt.rc('xtick', labelsize=Constants.tick_label_size)
-    plt.rc('ytick', labelsize=Constants.tick_label_size)
-    plt.rc('legend', fontsize=Constants.legend_font_size)
-    plt.rc('axes', labelsize=Constants.axes_label_font_size)
+    """Sets matplotlib variables for plotting."""
+    plt.rc("xtick", labelsize=Constants.tick_label_size)
+    plt.rc("ytick", labelsize=Constants.tick_label_size)
+    plt.rc("legend", fontsize=Constants.legend_font_size)
+    plt.rc("axes", labelsize=Constants.axes_label_font_size)
 
 
 def bundled_stream_interarrival_times(bundled_streams):
-    """ From bundled streams return dict with interarrival times collated by symbol. """
+    """From bundled streams return dict with interarrival times collated by symbol."""
 
     interarrivals_dict = dict()
     year_offset = 0
@@ -94,7 +93,7 @@ def bundled_stream_interarrival_times(bundled_streams):
     for idx, elem in enumerate(bundled_streams):
         print(f"Processing elem {idx + 1} of {len(bundled_streams)}")
 
-        year_offset_td = pd.Timedelta(int(365 * (year_offset * YEAR_OFFSET)), unit='day')
+        year_offset_td = pd.Timedelta(int(365 * (year_offset * YEAR_OFFSET)), unit="day")
         orders_df = elem["orders_df"]
         symbol = elem["symbol"]
         arrival_times = orders_df.index.to_series()
@@ -116,12 +115,12 @@ def bundled_stream_interarrival_times(bundled_streams):
     return interarrivals_dict
 
 
-def plot_interarrival_times(interarrivals_dict, output_dir, scale='log'):
-    """ Plots histogram of the interarrival times for symbols. """
+def plot_interarrival_times(interarrivals_dict, output_dir, scale="log"):
+    """Plots histogram of the interarrival times for symbols."""
 
     fig, ax = plt.subplots(figsize=(Constants.fig_width, Constants.fig_height))
 
-    if scale == 'log':
+    if scale == "log":
         ax.set(xscale="symlog", yscale="log")
 
     ax.set_ylabel(Constants.interarrival_times_ylabel)
@@ -138,8 +137,16 @@ def plot_interarrival_times(interarrivals_dict, output_dir, scale='log'):
         interarrival_times_series = interarrivals_dict[symbol]
         x = interarrival_times_series.sort_values()
         x_s.append(x)
-        plt.hist(x, bins="sqrt", density=True, label=symbol, color=color, alpha=alpha, histtype="step",
-                 linewidth=Constants.interarrival_linewidth)
+        plt.hist(
+            x,
+            bins="sqrt",
+            density=True,
+            label=symbol,
+            color=color,
+            alpha=alpha,
+            histtype="step",
+            linewidth=Constants.interarrival_linewidth,
+        )
 
     ylim = ax.get_ylim()
     xlim = ax.get_xlim()
@@ -156,25 +163,40 @@ def plot_interarrival_times(interarrivals_dict, output_dir, scale='log'):
         x_right = xx[xx > x.max()]
         xxx = np.concatenate((x_left, x_mid, x_right))
 
-        plt.plot(xxx, stats.weibull_min.pdf(xxx, *weibull_params), linestyle="--", color=color,
-                 label=f"{symbol} Weibull fit", linewidth=Constants.interarrival_linewidth)
+        plt.plot(
+            xxx,
+            stats.weibull_min.pdf(xxx, *weibull_params),
+            linestyle="--",
+            color=color,
+            label=f"{symbol} Weibull fit",
+            linewidth=Constants.interarrival_linewidth,
+        )
 
     plt.legend(fontsize=Constants.legend_font_size)
     ax.set_ylim(ylim)
 
-    fig.savefig(f'{output_dir}/{Constants.interarrival_times_filename}.png', format='png', dpi=300,
-                transparent=False, bbox_inches='tight', pad_inches=0.03)
+    fig.savefig(
+        f"{output_dir}/{Constants.interarrival_times_filename}.png",
+        format="png",
+        dpi=300,
+        transparent=False,
+        bbox_inches="tight",
+        pad_inches=0.03,
+    )
 
 
 def count_trades_within_bins(interarrival_times_series, binwidth=1):
-    """ Bins trades into specified-width bins and counts the number.
+    """Bins trades into specified-width bins and counts the number.
 
-        :param interarrival_times_series: pandas Series object corresponding to the interarrival times, indexed on timestamp
-        :param binwidth: width of time bin in seconds
+    :param interarrival_times_series: pandas Series object corresponding to the interarrival times, indexed on timestamp
+    :param binwidth: width of time bin in seconds
 
     """
-    bins = pd.interval_range(start=interarrival_times_series.index[0].floor('min'), end=interarrival_times_series.index[-1].ceil('min'),
-                             freq=pd.DateOffset(seconds=binwidth)) 
+    bins = pd.interval_range(
+        start=interarrival_times_series.index[0].floor("min"),
+        end=interarrival_times_series.index[-1].ceil("min"),
+        freq=pd.DateOffset(seconds=binwidth),
+    )
     binned = pd.cut(interarrival_times_series.index, bins=bins)
     counted = interarrival_times_series.groupby(binned).count()
     return counted
@@ -189,21 +211,21 @@ def bundled_stream_binned_trade_counts(bundled_interarrivals_dict, binwidth):
             print(f"Processing series {idx + 1} of {len(series_list)} for symbol {symbol}")
             counted_trades = count_trades_within_bins(series, binwidth=binwidth)
             counted_trades_copy = counted_trades.copy(deep=True)
-            
+
             if idx == 0:
                 base_counted = counted_trades_copy
                 hist_index = base_counted.index
-                #print(f'base_counted.index: {base_counted.index}')
-                #print(f'hist_index: {hist_index}')
+                # print(f'base_counted.index: {base_counted.index}')
+                # print(f'hist_index: {hist_index}')
 
             else:
-                #print(f'counted_trades_copy.index: {counted_trades_copy.index}')
-                #print(f'hist_index: {hist_index}')    
+                # print(f'counted_trades_copy.index: {counted_trades_copy.index}')
+                # print(f'hist_index: {hist_index}')
 
                 try:
                     counted_trades_copy.index = hist_index
                     base_counted = base_counted.add(counted_trades_copy)
-                except ValueError: # length mismatch of hist bins (currently ignore)
+                except ValueError:  # length mismatch of hist bins (currently ignore)
                     continue
 
         trades_within_bins_dict[symbol] = base_counted
@@ -212,7 +234,7 @@ def bundled_stream_binned_trade_counts(bundled_interarrivals_dict, binwidth):
 
 
 def plot_binned_trade_counts(trades_within_bins_dict, binwidth, output_dir):
-    """ Plot binned counts of trade volume. """
+    """Plot binned counts of trade volume."""
 
     fig, ax = plt.subplots(figsize=(Constants.fig_width, Constants.fig_height))
 
@@ -232,8 +254,16 @@ def plot_binned_trade_counts(trades_within_bins_dict, binwidth, output_dir):
         binned_trades_counts = binned_trades_counts / binned_trades_counts.sum()
         x = binned_trades_counts.sort_values()
         x_s.append(x)
-        plt.hist(x, bins="sqrt", density=True, label=symbol, color=color, alpha=alpha, histtype="step",
-                 linewidth=Constants.binned_count_linewidth)
+        plt.hist(
+            x,
+            bins="sqrt",
+            density=True,
+            label=symbol,
+            color=color,
+            alpha=alpha,
+            histtype="step",
+            linewidth=Constants.binned_count_linewidth,
+        )
 
     xlim = ax.get_xlim()
     ylim = ax.get_ylim()
@@ -242,39 +272,55 @@ def plot_binned_trade_counts(trades_within_bins_dict, binwidth, output_dir):
     # Plot fitted curves
     for x, symbol, color in zip(x_s, symbols, colors):
         gamma_params = stats.gamma.fit(x.values[x.values > 0], floc=0)
-        plt.plot(xx, stats.gamma.pdf(xx, *gamma_params), linestyle="--", color=color, label=f"{symbol} gamma fit",
-                 linewidth=Constants.binned_count_linewidth)
+        plt.plot(
+            xx,
+            stats.gamma.pdf(xx, *gamma_params),
+            linestyle="--",
+            color=color,
+            label=f"{symbol} gamma fit",
+            linewidth=Constants.binned_count_linewidth,
+        )
 
     ax.set_ylim(ylim)
 
-    plt.title(f"Order volume within time window $\\tau = ${binwidth} seconds, normalized",
-              size=Constants.title_font_size)
+    plt.title(
+        f"Order volume within time window $\\tau = ${binwidth} seconds, normalized",
+        size=Constants.title_font_size,
+    )
     plt.legend(fontsize=Constants.legend_font_size)
 
-    fig.savefig(f'{output_dir}/{Constants.binned_trade_counts_filename}_tau_{binwidth}.png',
-                format='png', dpi=300, transparent=False, bbox_inches='tight', pad_inches=0.03)
+    fig.savefig(
+        f"{output_dir}/{Constants.binned_trade_counts_filename}_tau_{binwidth}.png",
+        format="png",
+        dpi=300,
+        transparent=False,
+        bbox_inches="tight",
+        pad_inches=0.03,
+    )
 
 
 def get_scatter_plot_params_dict(symbols):
-    """ Creates dictionary of parameters used by intraday seasonality plots. """
+    """Creates dictionary of parameters used by intraday seasonality plots."""
     colors = get_plot_colors(symbols)
     scatter_styles_sizes = itertools.cycle(Constants.scatter_marker_styles_sizes)
     scatter_plot_params_dict = dict()
 
     for symbol, color, style_and_size in zip(symbols, colors, scatter_styles_sizes):
-        scatter_plot_params_dict.update({
-            symbol : {
-                'color': color,
-                'marker': style_and_size[0],
-                'marker_size': style_and_size[1]
+        scatter_plot_params_dict.update(
+            {
+                symbol: {
+                    "color": color,
+                    "marker": style_and_size[0],
+                    "marker_size": style_and_size[1],
+                }
             }
-        })
+        )
 
     return scatter_plot_params_dict
 
 
 def plot_intraday_seasonality(trades_within_bins_dict, binsize, output_dir):
-    """ Plots intraday order volume over a day for multiple symbols."""
+    """Plots intraday order volume over a day for multiple symbols."""
 
     fig, ax = plt.subplots(figsize=(Constants.fig_width, Constants.fig_height))
     ax.set_ylabel("Normalized activity")
@@ -312,35 +358,75 @@ def plot_intraday_seasonality(trades_within_bins_dict, binsize, output_dir):
             x.append(elem.right.time())
 
         plt.scatter(x, y, marker=marker, color=color, label=symbol, s=marker_size)
-        plt.plot(x, intraday_quadratic_fitted_y, color=color, label=f"{symbol} quadratic fit",
-                 linewidth=Constants.intraday_volume_linewidth)
+        plt.plot(
+            x,
+            intraday_quadratic_fitted_y,
+            color=color,
+            label=f"{symbol} quadratic fit",
+            linewidth=Constants.intraday_volume_linewidth,
+        )
 
     plt.legend(fontsize=Constants.legend_font_size)
-    plt.title(f"Number of limit orders submitted in $\Delta t = {binsize}$ seconds, normalized by mean volume.", size=Constants.title_font_size, pad=20)
+    plt.title(
+        f"Number of limit orders submitted in $\Delta t = {binsize}$ seconds, normalized by mean volume.",
+        size=Constants.title_font_size,
+        pad=20,
+    )
 
     ax.set_xticklabels(["", "09:45", "11:00", "12:30", "14:00", "15:15"])
     ax.set_ylim(-0.1, 3)
 
-    fig.savefig(f'{output_dir}/{Constants.intraday_volume_filename}.png', format='png', dpi=300,
-                transparent=False, bbox_inches='tight', pad_inches=0.03)
+    fig.savefig(
+        f"{output_dir}/{Constants.intraday_volume_filename}.png",
+        format="png",
+        dpi=300,
+        transparent=False,
+        bbox_inches="tight",
+        pad_inches=0.03,
+    )
 
 
 if __name__ == "__main__":
 
     # Create cache and visualizations folders if they do not exist
-    try: os.mkdir("cache")
-    except: pass
-    try: os.mkdir("visualizations")
-    except: pass
+    try:
+        os.mkdir("cache")
+    except:
+        pass
+    try:
+        os.mkdir("visualizations")
+    except:
+        pass
 
-    parser = argparse.ArgumentParser(description='Process order stream files and produce plots of relevant metrics.')
-    parser.add_argument('targetdir', type=dir_path, help='Path of directory containing order stream files. Note that they must have been preprocessed'
-                                                         ' by formatting scripts into format orders_{symbol}_{date_str}.pkl')
-    parser.add_argument('-o', '--output-dir', default='visualizations', help='Path to output directory', type=dir_path)
-    parser.add_argument('-f','--facts-to-plot', choices=['all'], type=str, default='all',
-                        help="Decide which stylized facts should be plotted.")
+    parser = argparse.ArgumentParser(description="Process order stream files and produce plots of relevant metrics.")
+    parser.add_argument(
+        "targetdir",
+        type=dir_path,
+        help="Path of directory containing order stream files. Note that they must have been preprocessed"
+        " by formatting scripts into format orders_{symbol}_{date_str}.pkl",
+    )
+    parser.add_argument(
+        "-o",
+        "--output-dir",
+        default="visualizations",
+        help="Path to output directory",
+        type=dir_path,
+    )
+    parser.add_argument(
+        "-f",
+        "--facts-to-plot",
+        choices=["all"],
+        type=str,
+        default="all",
+        help="Decide which stylized facts should be plotted.",
+    )
 
-    parser.add_argument('-z', '--recompute', action="store_true", help="Rerun computations without caching.")
+    parser.add_argument(
+        "-z",
+        "--recompute",
+        action="store_true",
+        help="Rerun computations without caching.",
+    )
     args, remaining_args = parser.parse_known_args()
 
     print("### Order stream stylized facts plots ###")
@@ -387,4 +473,3 @@ if __name__ == "__main__":
     ## intraday seasonality
     print("Plotting intraday seasonality...")
     plot_intraday_seasonality(binned_30_days_5_minute, 300, args.output_dir)
-

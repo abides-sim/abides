@@ -1,20 +1,44 @@
-from agent.TradingAgent import TradingAgent
-from util.util import log_print
-
 from math import sqrt
+
 import numpy as np
 import pandas as pd
+
+from agent.TradingAgent import TradingAgent
+from util.util import log_print
 
 
 class ZeroIntelligenceAgent(TradingAgent):
 
-    def __init__(self, id, name, type, symbol='IBM', starting_cash=100000, sigma_n=1000,
-                 r_bar=100000, kappa=0.05, sigma_s=100000, q_max=10,
-                 sigma_pv=5000000, R_min=0, R_max=250, eta=1.0,
-                 lambda_a=0.005, log_orders=False, random_state=None):
+    def __init__(
+        self,
+        id,
+        name,
+        type,
+        symbol="IBM",
+        starting_cash=100000,
+        sigma_n=1000,
+        r_bar=100000,
+        kappa=0.05,
+        sigma_s=100000,
+        q_max=10,
+        sigma_pv=5000000,
+        R_min=0,
+        R_max=250,
+        eta=1.0,
+        lambda_a=0.005,
+        log_orders=False,
+        random_state=None,
+    ):
 
         # Base class init.
-        super().__init__(id, name, type, starting_cash=starting_cash, log_orders=log_orders, random_state=random_state)
+        super().__init__(
+            id,
+            name,
+            type,
+            starting_cash=starting_cash,
+            log_orders=log_orders,
+            random_state=random_state,
+        )
 
         # Store important parameters particular to the ZI agent.
         self.symbol = symbol  # symbol to trade
@@ -35,7 +59,7 @@ class ZeroIntelligenceAgent(TradingAgent):
 
         # The agent begins in its "complete" state, not waiting for
         # any special event or condition.
-        self.state = 'AWAITING_WAKEUP'
+        self.state = "AWAITING_WAKEUP"
 
         # The agent maintains two priors: r_t and sigma_t (value and error estimates).
         self.r_t = r_bar
@@ -46,9 +70,13 @@ class ZeroIntelligenceAgent(TradingAgent):
         self.prev_wake_time = None
 
         # The agent has a private value for each incremental unit.
-        self.theta = [int(x) for x in sorted(
-            np.round(self.random_state.normal(loc=0, scale=sqrt(sigma_pv), size=(q_max * 2))).tolist(),
-            reverse=True)]
+        self.theta = [
+            int(x)
+            for x in sorted(
+                np.round(self.random_state.normal(loc=0, scale=sqrt(sigma_pv), size=(q_max * 2))).tolist(),
+                reverse=True,
+            )
+        ]
 
     def kernelStarting(self, startTime):
         # self.kernel is set in Agent.kernelInitializing()
@@ -65,12 +93,16 @@ class ZeroIntelligenceAgent(TradingAgent):
         # Print end of day valuation.
         H = int(round(self.getHoldings(self.symbol), -2) / 100)
         # May request real fundamental value from oracle as part of final cleanup/stats.
-        if self.symbol != 'ETF':
+        if self.symbol != "ETF":
             rT = self.oracle.observePrice(self.symbol, self.currentTime, sigma_n=0, random_state=self.random_state)
         else:
-            portfolio_rT, rT = self.oracle.observePortfolioPrice(self.symbol, self.portfolio, self.currentTime,
-                                                                 sigma_n=0,
-                                                                 random_state=self.random_state)
+            portfolio_rT, rT = self.oracle.observePortfolioPrice(
+                self.symbol,
+                self.portfolio,
+                self.currentTime,
+                sigma_n=0,
+                random_state=self.random_state,
+            )
 
         # Start with surplus as private valuation of shares held.
         if H > 0:
@@ -88,19 +120,26 @@ class ZeroIntelligenceAgent(TradingAgent):
         log_print("surplus after holdings: {}", surplus)
 
         # Add ending cash value and subtract starting cash value.
-        surplus += self.holdings['CASH'] - self.starting_cash
+        surplus += self.holdings["CASH"] - self.starting_cash
 
-        self.logEvent('FINAL_VALUATION', surplus, True)
+        self.logEvent("FINAL_VALUATION", surplus, True)
 
         log_print(
             "{} final report.  Holdings {}, end cash {}, start cash {}, final fundamental {}, preferences {}, surplus {}",
-            self.name, H, self.holdings['CASH'], self.starting_cash, rT, self.theta, surplus)
+            self.name,
+            H,
+            self.holdings["CASH"],
+            self.starting_cash,
+            rT,
+            self.theta,
+            surplus,
+        )
 
     def wakeup(self, currentTime):
         # Parent class handles discovery of exchange times and market_open wakeup call.
         super().wakeup(currentTime)
 
-        self.state = 'INACTIVE'
+        self.state = "INACTIVE"
 
         if not self.mkt_open or not self.mkt_close:
             # TradingAgent handles discovery of exchange times.
@@ -129,14 +168,14 @@ class ZeroIntelligenceAgent(TradingAgent):
         # distribution in alternate Beta formation with Beta = 1 / lambda, where lambda
         # is the mean arrival rate of the Poisson process.
         delta_time = self.random_state.exponential(scale=1.0 / self.lambda_a)
-        self.setWakeup(currentTime + pd.Timedelta('{}ns'.format(int(round(delta_time)))))
+        self.setWakeup(currentTime + pd.Timedelta("{}ns".format(int(round(delta_time)))))
 
         # If the market has closed and we haven't obtained the daily close price yet,
         # do that before we cease activity for the day.  Don't do any other behavior
         # after market close.
         if self.mkt_closed and (not self.symbol in self.daily_close_price):
             self.getCurrentSpread(self.symbol)
-            self.state = 'AWAITING_SPREAD'
+            self.state = "AWAITING_SPREAD"
             return
 
         # Issue cancel requests for any open orders.  Don't wait for confirmation, as presently
@@ -156,9 +195,9 @@ class ZeroIntelligenceAgent(TradingAgent):
 
         if type(self) == ZeroIntelligenceAgent:
             self.getCurrentSpread(self.symbol)
-            self.state = 'AWAITING_SPREAD'
+            self.state = "AWAITING_SPREAD"
         else:
-            self.state = 'ACTIVE'
+            self.state = "ACTIVE"
 
     def updateEstimates(self):
         # Called by a background agent that wishes to obtain a new fundamental observation,
@@ -167,13 +206,17 @@ class ZeroIntelligenceAgent(TradingAgent):
 
         # The agent obtains a new noisy observation of the current fundamental value
         # and uses this to update its internal estimates in a Bayesian manner.
-        obs_t = self.oracle.observePrice(self.symbol, self.currentTime, sigma_n=self.sigma_n,
-                                         random_state=self.random_state)
+        obs_t = self.oracle.observePrice(
+            self.symbol,
+            self.currentTime,
+            sigma_n=self.sigma_n,
+            random_state=self.random_state,
+        )
 
         log_print("{} observed {} at {}", self.name, obs_t, self.currentTime)
 
         # Flip a coin to decide if we will buy or sell a unit at this time.
-        q = int(self.getHoldings(self.symbol) / 100) # q now represents an index to how many 100 lots are held
+        q = int(self.getHoldings(self.symbol) / 100)  # q now represents an index to how many 100 lots are held
 
         if q >= self.q_max:
             buy = False
@@ -188,14 +231,15 @@ class ZeroIntelligenceAgent(TradingAgent):
         # Update internal estimates of the current fundamental value and our error of same.
 
         # If this is our first estimate, treat the previous wake time as "market open".
-        if self.prev_wake_time is None: self.prev_wake_time = self.mkt_open
+        if self.prev_wake_time is None:
+            self.prev_wake_time = self.mkt_open
 
         # First, obtain an intermediate estimate of the fundamental value by advancing
         # time from the previous wake time to the current time, performing mean
         # reversion at each time step.
 
         # delta must be integer time steps since last wake
-        delta = (self.currentTime - self.prev_wake_time) / np.timedelta64(1, 'ns')
+        delta = (self.currentTime - self.prev_wake_time) / np.timedelta64(1, "ns")
 
         # Update r estimate for time advancement.
         r_tprime = (1 - (1 - self.kappa) ** delta) * self.r_bar
@@ -216,7 +260,7 @@ class ZeroIntelligenceAgent(TradingAgent):
         # Now having a best estimate of the fundamental at time t, we can make our best estimate
         # of the final fundamental (for time T) as of current time t.  Delta is now the number
         # of time steps remaining until the simulated exchange closes.
-        delta = max(0, (self.mkt_close - self.currentTime) / np.timedelta64(1, 'ns'))
+        delta = max(0, (self.mkt_close - self.currentTime) / np.timedelta64(1, "ns"))
 
         # IDEA: instead of letting agent "imagine time forward" to the end of the day,
         #       impose a maximum forward delta, like ten minutes or so.  This could make
@@ -237,7 +281,7 @@ class ZeroIntelligenceAgent(TradingAgent):
         log_print("{} estimates r_T = {} as of {}", self.name, r_T, self.currentTime)
 
         # Determine the agent's total valuation.
-        q += (self.q_max - 1)
+        q += self.q_max - 1
         theta = self.theta[q + 1 if buy else q]
         v = r_T + theta
 
@@ -264,14 +308,26 @@ class ZeroIntelligenceAgent(TradingAgent):
         if buy and ask_vol > 0:
             R_ask = v - ask
             if R_ask >= (self.eta * R):
-                log_print("{} desired R = {}, but took R = {} at ask = {} due to eta", self.name, R, R_ask, ask)
+                log_print(
+                    "{} desired R = {}, but took R = {} at ask = {} due to eta",
+                    self.name,
+                    R,
+                    R_ask,
+                    ask,
+                )
                 p = ask
             else:
                 log_print("{} demands R = {}, limit price {}", self.name, R, p)
         elif (not buy) and bid_vol > 0:
             R_bid = bid - v
             if R_bid >= (self.eta * R):
-                log_print("{} desired R = {}, but took R = {} at bid = {} due to eta", self.name, R, R_bid, bid)
+                log_print(
+                    "{} desired R = {}, but took R = {} at bid = {} due to eta",
+                    self.name,
+                    R,
+                    R_bid,
+                    bid,
+                )
                 p = bid
             else:
                 log_print("{} demands R = {}, limit price {}", self.name, R, p)
@@ -288,28 +344,30 @@ class ZeroIntelligenceAgent(TradingAgent):
         # If our internal state indicates we were waiting for a particular event,
         # check if we can transition to a new state.
 
-        if self.state == 'AWAITING_SPREAD':
+        if self.state == "AWAITING_SPREAD":
             # We were waiting to receive the current spread/book.  Since we don't currently
             # track timestamps on retained information, we rely on actually seeing a
             # QUERY_SPREAD response message.
 
-            if msg.body['msg'] == 'QUERY_SPREAD':
+            if msg.body["msg"] == "QUERY_SPREAD":
                 # This is what we were waiting for.
 
                 # But if the market is now closed, don't advance to placing orders.
-                if self.mkt_closed: return
+                if self.mkt_closed:
+                    return
 
                 # We now have the information needed to place a limit order with the eta
                 # strategic threshold parameter.
                 self.placeOrder()
-                self.state = 'AWAITING_WAKEUP'
+                self.state = "AWAITING_WAKEUP"
 
     # Internal state and logic specific to this agent subclass.
 
     # Cancel all open orders.
     # Return value: did we issue any cancellation requests?
     def cancelOrders(self):
-        if not self.orders: return False
+        if not self.orders:
+            return False
 
         for id, order in self.orders.items():
             self.cancelOrder(order)
@@ -317,4 +375,4 @@ class ZeroIntelligenceAgent(TradingAgent):
         return True
 
     def getWakeFrequency(self):
-        return pd.Timedelta(self.random_state.randint(low=0, high=100), unit='ns')
+        return pd.Timedelta(self.random_state.randint(low=0, high=100), unit="ns")

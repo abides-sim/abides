@@ -1,16 +1,29 @@
-cycler==0.10.0
-joblib==0.13.2
-jsons==0.8.8
-kiwisolver==1.1.0
-matplotlib==3.0.3
-numpy==1.16.3
-pandas==0.25.1
-pprofile==2.0.2
-pyparsing==2.4.0
-python-dateutil==2.8.0
-pytz==2019.1
-scipy==1.2.1
-seaborn==0.9.0
-six==1.12.0
-tqdm==4.36.1
-psutil
+# === Core Scientific Stack ===
+numpy                  # Core numerical operations
+scipy                  # Scientific computing
+pandas>=2.0.0          # Data analysis and manipulation
+
+# === Plotting and Visualization ===
+matplotlib             # Plotting library
+seaborn                # Statistical data visualization
+cycler                 # Cycles through properties (used by matplotlib)
+kiwisolver             # Used by matplotlib for layout
+pyparsing              # Parsing expressions (used by matplotlib)
+python-dateutil        # Date handling (used by matplotlib/pandas)
+pytz                   # Time zone handling
+
+# === Performance ===
+joblib                 # Lightweight pipelining, parallelization
+tqdm                   # Progress bars
+psutil                 # Process monitoring, system utilization
+
+# === JSON and Data Handling ===
+jsons                  # JSON (de)serialization for complex objects
+
+# === Developer Tools (Optional) ===
+pprofile               # Profiling tool for performance testing
+black                  # Code formatter
+isort                  # Import sorter
+
+# === Compatibility ===
+six                    # Python 2/3 compatibility helpers (used by various libs)

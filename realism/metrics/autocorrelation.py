@@ -1,7 +1,8 @@
 import random
+
+import pandas as pd
 from metrics.metric import Metric
 from metrics.minutely_returns import MinutelyReturns
-import pandas as pd
 
 
 class Autocorrelation(Metric):
@@ -22,5 +23,9 @@ class Autocorrelation(Metric):
         for k, v in simulated.items():
             random.shuffle(v)
             simulated[k] = v[:min_sim]
-        self.hist(simulated, title="Autocorrelation (lag={}, window={})".format(self.lag, self.window), xlabel="Correlation coefficient", log=False)
-
+        self.hist(
+            simulated,
+            title="Autocorrelation (lag={}, window={})".format(self.lag, self.window),
+            xlabel="Correlation coefficient",
+            log=False,
+        )

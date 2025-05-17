@@ -1,15 +1,22 @@
 import argparse
 import os
-import pandas as pd
-import numpy as np
-
 import sys
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
 p = str(Path(__file__).resolve().parents[2])  # directory two levels up from this file
 sys.path.append(p)
 
-from util.formatting.convert_order_stream import get_year_month_day, get_start_end_time, dir_path, check_positive
 from tqdm import tqdm
+
+from util.formatting.convert_order_stream import (
+    check_positive,
+    dir_path,
+    get_start_end_time,
+    get_year_month_day,
+)
 
 
 def get_larger_int_and_gap(a, b):
@@ -17,13 +24,13 @@ def get_larger_int_and_gap(a, b):
 
 
 def get_int_from_string(s):
-    int_list = [int(s) for s in s.split('_') if s.isdigit()]
+    int_list = [int(s) for s in s.split("_") if s.isdigit()]
     return int_list[0]
 
 
 def process_row(row, quote_levels):
-    """ Method takes row of unstacked orderbook log and processes into a dictionary representing a row of the LOBSTER-
-        ised DataFrame.
+    """Method takes row of unstacked orderbook log and processes into a dictionary representing a row of the LOBSTER-
+    ised DataFrame.
     """
 
     row_arr = row[1].to_numpy()
@@ -45,28 +52,53 @@ def process_row(row, quote_levels):
     more_bids_then_asks, difference = get_larger_int_and_gap(num_bids, num_asks)
 
     if more_bids_then_asks:
-        ask_values = np.pad(ask_values.astype(np.float32), (0, difference), 'constant', constant_values=np.nan)
-        ask_volumes = np.pad(ask_volumes.astype(np.float32), (0, difference), 'constant', constant_values=np.nan)
+        ask_values = np.pad(
+            ask_values.astype(np.float32),
+            (0, difference),
+            "constant",
+            constant_values=np.nan,
+        )
+        ask_volumes = np.pad(
+            ask_volumes.astype(np.float32),
+            (0, difference),
+            "constant",
+            constant_values=np.nan,
+        )
     else:
-        bid_values = np.pad(bid_values.astype(np.float32), (0, difference), 'constant', constant_values=np.nan)
-        bid_volumes = np.pad(bid_volumes.astype(np.float32), (0, difference), 'constant', constant_values=np.nan)
+        bid_values = np.pad(
+            bid_values.astype(np.float32),
+            (0, difference),
+            "constant",
+            constant_values=np.nan,
+        )
+        bid_volumes = np.pad(
+            bid_volumes.astype(np.float32),
+            (0, difference),
+            "constant",
+            constant_values=np.nan,
+        )
 
     ask_volumes_dict = {f"ask_size_{idx + 1}": ask_volumes[idx] for idx in range(len(ask_volumes))}
     ask_values_dict = {f"ask_price_{idx + 1}": ask_values[idx] for idx in range(len(ask_values))}
     bid_volumes_dict = {f"bid_size_{idx + 1}": bid_volumes[idx] for idx in range(len(bid_volumes))}
     bid_values_dict = {f"bid_price_{idx + 1}": bid_values[idx] for idx in range(len(bid_values))}
 
-    row_dict = {**ask_volumes_dict, **ask_values_dict, **bid_volumes_dict, **bid_values_dict}
+    row_dict = {
+        **ask_volumes_dict,
+        **ask_values_dict,
+        **bid_volumes_dict,
+        **bid_values_dict,
+    }
     return row_dict
 
 
 def reorder_columns(unordered_cols):
-    """ Reorders column list to coincide with columns of LOBSTER csv file format. """
+    """Reorders column list to coincide with columns of LOBSTER csv file format."""
 
-    ask_price_cols = [label for label in unordered_cols if 'ask_price' in label]
-    ask_size_cols = [label for label in unordered_cols if 'ask_size' in label]
-    bid_price_cols = [label for label in unordered_cols if 'bid_price' in label]
-    bid_size_cols = [label for label in unordered_cols if 'bid_size' in label]
+    ask_price_cols = [label for label in unordered_cols if "ask_price" in label]
+    ask_size_cols = [label for label in unordered_cols if "ask_size" in label]
+    bid_price_cols = [label for label in unordered_cols if "bid_price" in label]
+    bid_size_cols = [label for label in unordered_cols if "bid_size" in label]
 
     bid_price_cols.sort(key=get_int_from_string)
     bid_size_cols.sort(key=get_int_from_string)
@@ -79,7 +111,7 @@ def reorder_columns(unordered_cols):
     ask_size_cols = np.array(ask_size_cols)
 
     new_col_list_size = ask_price_cols.size + ask_size_cols.size + bid_price_cols.size + bid_size_cols.size
-    new_col_list = np.empty((new_col_list_size,), dtype='<U16')
+    new_col_list = np.empty((new_col_list_size,), dtype="<U16")
 
     new_col_list[0::4] = ask_price_cols
     new_col_list[1::4] = ask_size_cols
@@ -89,7 +121,7 @@ def reorder_columns(unordered_cols):
 
 
 def finalise_processing(orderbook_df, level):
-    """ Clip to requested level and fill NaNs according to LOBSTER spec. """
+    """Clip to requested level and fill NaNs according to LOBSTER spec."""
 
     bid_columns = [col for col in orderbook_df.columns if "bid" in col]
     ask_columns = [col for col in orderbook_df.columns if "ask" in col]
@@ -99,10 +131,10 @@ def finalise_processing(orderbook_df, level):
 
     num_levels = int((len(orderbook_df.columns) - 1) / 4) + 1
     columns_to_drop = []
-    columns_to_drop.extend([f'ask_price_{idx}' for idx in range(1, num_levels + 1) if idx > level])
-    columns_to_drop.extend([f'ask_size_{idx}' for idx in range(1, num_levels + 1) if idx > level])
-    columns_to_drop.extend([f'bid_price_{idx}' for idx in range(1, num_levels + 1) if idx > level])
-    columns_to_drop.extend([f'bid_size_{idx}' for idx in range(1, num_levels + 1) if idx > level])
+    columns_to_drop.extend([f"ask_price_{idx}" for idx in range(1, num_levels + 1) if idx > level])
+    columns_to_drop.extend([f"ask_size_{idx}" for idx in range(1, num_levels + 1) if idx > level])
+    columns_to_drop.extend([f"bid_price_{idx}" for idx in range(1, num_levels + 1) if idx > level])
+    columns_to_drop.extend([f"bid_size_{idx}" for idx in range(1, num_levels + 1) if idx > level])
 
     orderbook_df = orderbook_df.drop(columns=columns_to_drop)
 
@@ -110,15 +142,15 @@ def finalise_processing(orderbook_df, level):
 
 
 def is_wide_book(df):
-    """ Checks if orderbook dataframe is in wide or skinny format. """
-    if isinstance(df.index, pd.core.index.MultiIndex):
+    """Checks if orderbook dataframe is in wide or skinny format."""
+    if isinstance(df.index, pd.MultiIndex):
         return False
     else:
         return True
 
 
 def process_orderbook(df, level):
-    """ Method takes orderbook log and transforms into format amenable to "LOBSTER-ification"
+    """Method takes orderbook log and transforms into format amenable to "LOBSTER-ification"
 
     :param df: pd.DataFrame orderbook output by ABIDES
     :param level: Maximum displayed level in book
@@ -151,35 +183,35 @@ def process_orderbook(df, level):
     return orderbook_df
 
 
-def save_formatted_order_book(orderbook_bz2, ticker, level, out_dir='.'):
-    """ Saves orderbook data from ABIDES in LOBSTER format.
+def save_formatted_order_book(orderbook_bz2, ticker, level, out_dir="."):
+    """Saves orderbook data from ABIDES in LOBSTER format.
 
-        :param orderbook_bz2: file path of order book bz2 output file.
-        :type orderbook_bz2: str
-        :param ticker: label of security
-        :type ticker: str
-        :param level: maximum level of order book to display
-        :type level: int
-        :param out_dir: path to output directory
-        :type out_dir: str
+    :param orderbook_bz2: file path of order book bz2 output file.
+    :type orderbook_bz2: str
+    :param ticker: label of security
+    :type ticker: str
+    :param level: maximum level of order book to display
+    :type level: int
+    :param out_dir: path to output directory
+    :type out_dir: str
 
-        :return:
+    :return:
 
-        ============
+    ============
 
-        Orderbook File:     (Matrix of size: (Nx(4xNumberOfLevels)))
-        ---------------
+    Orderbook File:     (Matrix of size: (Nx(4xNumberOfLevels)))
+    ---------------
 
-        Name:   TICKER_Year-Month-Day_StartTime_EndTime_orderbook_LEVEL.csv
+    Name:   TICKER_Year-Month-Day_StartTime_EndTime_orderbook_LEVEL.csv
 
-        Columns:
+    Columns:
 
-            1.) Ask Price 1:    Level 1 Ask Price   (Best Ask)
-            2.) Ask Size 1:     Level 1 Ask Volume  (Best Ask Volume)
-            3.) Bid Price 1:    Level 1 Bid Price   (Best Bid)
-            4.) Bid Size 1:     Level 1 Bid Volume  (Best Bid Volume)
-            5.) Ask Price 2:    Level 2 Ask Price   (2nd Best Ask)
-            ...
+        1.) Ask Price 1:    Level 1 Ask Price   (Best Ask)
+        2.) Ask Size 1:     Level 1 Ask Volume  (Best Ask Volume)
+        3.) Bid Price 1:    Level 1 Bid Price   (Best Bid)
+        4.) Bid Size 1:     Level 1 Bid Volume  (Best Bid Volume)
+        5.) Ask Price 2:    Level 2 Ask Price   (2nd Best Ask)
+        ...
 
 
     """
@@ -188,17 +220,17 @@ def save_formatted_order_book(orderbook_bz2, ticker, level, out_dir='.'):
 
     if not is_wide_book(orderbook_df):  # skinny format
         trading_day = get_year_month_day(pd.Series(orderbook_df.index.levels[0]))
-        start_time, end_time = get_start_end_time(orderbook_df, 'orderbook_skinny')
+        start_time, end_time = get_start_end_time(orderbook_df, "orderbook_skinny")
     else:  # wide format
         trading_day = get_year_month_day(pd.Series(orderbook_df.index))
-        start_time, end_time = get_start_end_time(orderbook_df, 'orderbook_wide')
+        start_time, end_time = get_start_end_time(orderbook_df, "orderbook_wide")
 
     orderbook_df = process_orderbook(orderbook_df, level)
 
     # Save to file
 
-    #filename = f'{ticker}_{trading_day}_{start_time}_{end_time}_orderbook_{str(level)}.csv'
-    filename = f'orderbook.csv'
+    # filename = f'{ticker}_{trading_day}_{start_time}_{end_time}_orderbook_{str(level)}.csv'
+    filename = f"orderbook.csv"
     filename = os.path.join(out_dir, filename)
 
     orderbook_df.to_csv(filename, index=False, header=False)
@@ -206,12 +238,21 @@ def save_formatted_order_book(orderbook_bz2, ticker, level, out_dir='.'):
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description='Process ABIDES order book data into the LOBSTER format.')
-    parser.add_argument('book', type=str, help='ABIDES order book in bz2 format. '
-                                               'Typical example is `orderbook_TICKER.bz2`')
-    parser.add_argument('-o', '--output-dir', default='.', help='Path to output directory', type=dir_path)
-    parser.add_argument('ticker', type=str, help="Ticker label")
-    parser.add_argument('level', type=check_positive, help="Maximum orderbook level.")
+    parser = argparse.ArgumentParser(description="Process ABIDES order book data into the LOBSTER format.")
+    parser.add_argument(
+        "book",
+        type=str,
+        help="ABIDES order book in bz2 format. " "Typical example is `orderbook_TICKER.bz2`",
+    )
+    parser.add_argument(
+        "-o",
+        "--output-dir",
+        default=".",
+        help="Path to output directory",
+        type=dir_path,
+    )
+    parser.add_argument("ticker", type=str, help="Ticker label")
+    parser.add_argument("level", type=check_positive, help="Maximum orderbook level.")
 
     args, remaining_args = parser.parse_known_args()
 

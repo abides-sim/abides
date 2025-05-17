@@ -1,6 +1,7 @@
 from metrics.metric import Metric
 from metrics.minutely_returns import MinutelyReturns
 
+
 class AggregationNormality(Metric):
 
     def __init__(self):
@@ -11,4 +12,10 @@ class AggregationNormality(Metric):
         return self.mr.compute(df)
 
     def visualize(self, simulated):
-        self.hist(simulated, "Aggregation Normality (10 minutes)", "Log Returns", log=True, clip=.05)
+        self.hist(
+            simulated,
+            "Aggregation Normality (10 minutes)",
+            "Log Returns",
+            log=True,
+            clip=0.05,
+        )

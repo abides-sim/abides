@@ -1,46 +1,62 @@
-from Kernel import Kernel
-from agent.ExchangeAgent import ExchangeAgent
-from agent.ZeroIntelligenceAgent import ZeroIntelligenceAgent
-from model.LatencyModel import LatencyModel
-from util.order import LimitOrder
-from util.oracle.SparseMeanRevertingOracle import SparseMeanRevertingOracle
-from util import util
-
-import numpy as np
-import pandas as pd
-import sys
-
-
 # Some config files require additional command line parameters to easily
 # control agent or simulation hyperparameters during coarse parallelization.
 import argparse
+import sys
 
-parser = argparse.ArgumentParser(description='Detailed options for sparse_zi config.')
-parser.add_argument('-b', '--book_freq', default=None,
-                    help='Frequency at which to archive order book for visualization')
-parser.add_argument('-c', '--config', required=True,
-                    help='Name of config file to execute')
-parser.add_argument('-l', '--log_dir', default=None,
-                    help='Log directory name (default: unix timestamp at program start)')
-parser.add_argument('-n', '--obs_noise', type=float, default=1000000,
-                    help='Observation noise variance for zero intelligence agents (sigma^2_n)')
-parser.add_argument('-o', '--log_orders', action='store_true',
-                    help='Log every order-related action by every agent.')
-parser.add_argument('-s', '--seed', type=int, default=None,
-                    help='numpy.random.seed() for simulation')
-parser.add_argument('-v', '--verbose', action='store_true',
-                    help='Maximum verbosity!')
-parser.add_argument('--config_help', action='store_true',
-                    help='Print argument options for this config file')
+import numpy as np
+import pandas as pd
+
+from agent.ExchangeAgent import ExchangeAgent
+from agent.ZeroIntelligenceAgent import ZeroIntelligenceAgent
+from Kernel import Kernel
+from model.LatencyModel import LatencyModel
+from util import util
+from util.oracle.SparseMeanRevertingOracle import SparseMeanRevertingOracle
+from util.order import LimitOrder
+
+parser = argparse.ArgumentParser(description="Detailed options for sparse_zi config.")
+parser.add_argument(
+    "-b",
+    "--book_freq",
+    default=None,
+    help="Frequency at which to archive order book for visualization",
+)
+parser.add_argument("-c", "--config", required=True, help="Name of config file to execute")
+parser.add_argument(
+    "-l",
+    "--log_dir",
+    default=None,
+    help="Log directory name (default: unix timestamp at program start)",
+)
+parser.add_argument(
+    "-n",
+    "--obs_noise",
+    type=float,
+    default=1000000,
+    help="Observation noise variance for zero intelligence agents (sigma^2_n)",
+)
+parser.add_argument(
+    "-o",
+    "--log_orders",
+    action="store_true",
+    help="Log every order-related action by every agent.",
+)
+parser.add_argument("-s", "--seed", type=int, default=None, help="numpy.random.seed() for simulation")
+parser.add_argument("-v", "--verbose", action="store_true", help="Maximum verbosity!")
+parser.add_argument(
+    "--config_help",
+    action="store_true",
+    help="Print argument options for this config file",
+)
 
 args, remaining_args = parser.parse_known_args()
 
 if args.config_help:
-  parser.print_help()
-  sys.exit()
+    parser.print_help()
+    sys.exit()
 
 # Historical date to simulate.  Required even if not relevant.
-historical_date = pd.to_datetime('2019-06-28')
+historical_date = pd.to_datetime("2019-06-28")
 
 # Requested log directory.
 log_dir = args.log_dir
@@ -67,7 +83,8 @@ sigma_n = args.obs_noise
 # before)
 
 seed = args.seed
-if not seed: seed = int(pd.Timestamp.now().timestamp() * 1000000) % (2**32 - 1)
+if not seed:
+    seed = int(pd.Timestamp.now().timestamp() * 1000000) % (2**32 - 1)
 np.random.seed(seed)
 
 # Config parameter that causes util.util.print to suppress most output.
@@ -81,12 +98,11 @@ LimitOrder.silent_mode = not args.verbose
 log_orders = args.log_orders
 
 
-print ("Silent mode: {}".format(util.silent_mode))
-print ("Logging orders: {}".format(log_orders))
-print ("Book freq: {}".format(book_freq))
-print ("ZeroIntelligenceAgent noise: {:0.4f}".format(sigma_n))
-print ("Configuration seed: {}\n".format(seed))
-
+print("Silent mode: {}".format(util.silent_mode))
+print("Logging orders: {}".format(log_orders))
+print("Book freq: {}".format(book_freq))
+print("ZeroIntelligenceAgent noise: {:0.4f}".format(sigma_n))
+print("Configuration seed: {}\n".format(seed))
 
 
 # Since the simulator often pulls historical data, we use a real-world
@@ -102,12 +118,12 @@ kernelStartTime = midnight
 
 # When should the Kernel shut down?  (This should be after market close.)
 # Here we go for 5 PM the same day.
-kernelStopTime = midnight + pd.to_timedelta('17:00:00')
+kernelStopTime = midnight + pd.to_timedelta("17:00:00")
 
 # This will configure the kernel with a default computation delay
 # (time penalty) for each agent's wakeup and recvMsg.  An agent
 # can change this at any time for itself.  (nanoseconds)
-defaultComputationDelay = 1000000000        # one second
+defaultComputationDelay = 1000000000  # one second
 
 
 # IMPORTANT NOTE CONCERNING AGENT IDS: the id passed to each agent must:
@@ -127,15 +143,29 @@ defaultComputationDelay = 1000000000        # one second
 
 # Note: sigma_s is no longer used by the agents or the fundamental (for sparse discrete simulation).
 
-symbols = { 'JPM' : { 'r_bar' : 1e5, 'kappa' : 1.67e-12, 'agent_kappa' : 1.67e-15, 'sigma_s' : 0, 'fund_vol' : 1e-8, 'megashock_lambda_a' : 2.77778e-13, 'megashock_mean' : 1e3, 'megashock_var' : 5e4, 'random_state' : np.random.RandomState(seed=np.random.randint(low=0,high=2**32, dtype='uint64')) } }
- 
+symbols = {
+    "JPM": {
+        "r_bar": 1e5,
+        "kappa": 1.67e-12,
+        "agent_kappa": 1.67e-15,
+        "sigma_s": 0,
+        "fund_vol": 1e-8,
+        "megashock_lambda_a": 2.77778e-13,
+        "megashock_mean": 1e3,
+        "megashock_var": 5e4,
+        "random_state": np.random.RandomState(seed=np.random.randint(low=0, high=2**32, dtype="uint64")),
+    }
+}
+
 
 ### Configure the Kernel.
-kernel = Kernel("Base Kernel", random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32, dtype='uint64')))
+kernel = Kernel(
+    "Base Kernel",
+    random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2**32, dtype="uint64")),
+)
 
 ### Obtain random state for whatever latency model will be used.
-latency_rstate = np.random.RandomState(seed=np.random.randint(low=0,high=2**32))
-
+latency_rstate = np.random.RandomState(seed=np.random.randint(low=0, high=2**32))
 
 
 ### Configure the agents.  When conducting "agent of change" experiments, the
@@ -148,10 +178,10 @@ agent_types = []
 ### Configure an exchange agent.
 
 # Let's open the exchange at 9:30 AM.
-mkt_open = midnight + pd.to_timedelta('09:30:00')
+mkt_open = midnight + pd.to_timedelta("09:30:00")
 
 # And close it at 4:00 PM.
-mkt_close = midnight + pd.to_timedelta('16:00:00')
+mkt_close = midnight + pd.to_timedelta("16:00:00")
 
 
 # Configure an appropriate oracle for all traded stocks.
@@ -161,11 +191,27 @@ oracle = SparseMeanRevertingOracle(mkt_open, mkt_close, symbols)
 
 # Create the exchange.
 num_exchanges = 1
-agents.extend([ ExchangeAgent(j, "Exchange Agent {}".format(j), "ExchangeAgent", mkt_open, mkt_close, [s for s in symbols], log_orders=log_orders, book_freq=book_freq, pipeline_delay = 0, computation_delay = 0, stream_history = 10, random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32, dtype='uint64')))
-                for j in range(agent_count, agent_count + num_exchanges) ])
+agents.extend(
+    [
+        ExchangeAgent(
+            j,
+            "Exchange Agent {}".format(j),
+            "ExchangeAgent",
+            mkt_open,
+            mkt_close,
+            [s for s in symbols],
+            log_orders=log_orders,
+            book_freq=book_freq,
+            pipeline_delay=0,
+            computation_delay=0,
+            stream_history=10,
+            random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2**32, dtype="uint64")),
+        )
+        for j in range(agent_count, agent_count + num_exchanges)
+    ]
+)
 agent_types.extend(["ExchangeAgent" for j in range(num_exchanges)])
 agent_count += num_exchanges
-
 
 
 ### Configure some zero intelligence agents.
@@ -174,7 +220,7 @@ agent_count += num_exchanges
 starting_cash = 10000000
 
 # Here are the zero intelligence agents.
-symbol = 'JPM'
+symbol = "JPM"
 s = symbols[symbol]
 
 # Tuples are: (# agents, R_min, R_max, eta).
@@ -182,16 +228,47 @@ s = symbols[symbol]
 # Some configs for ZI agents only (among seven parameter settings).
 
 # 100 agents
-zi = [ (15, 0, 250, 1), (15, 0, 500, 1), (14, 0, 1000, 0.8), (14, 0, 1000, 1), (14, 0, 2000, 0.8), (14, 250, 500, 0.8), (14, 250, 500, 1) ]
+zi = [
+    (15, 0, 250, 1),
+    (15, 0, 500, 1),
+    (14, 0, 1000, 0.8),
+    (14, 0, 1000, 1),
+    (14, 0, 2000, 0.8),
+    (14, 250, 500, 0.8),
+    (14, 250, 500, 1),
+]
 
 # ZI strategy split.  Note that agent arrival rates are quite small, because our minimum
 # time step is a nanosecond, and we want the agents to arrive more on the order of
 # minutes.
-for i,x in enumerate(zi):
-  strat_name = "Type {} [{} <= R <= {}, eta={}]".format(i+1, x[1], x[2], x[3])
-  agents.extend([ ZeroIntelligenceAgent(j, "ZI Agent {} {}".format(j, strat_name), "ZeroIntelligenceAgent {}".format(strat_name), random_state = np.random.RandomState(seed=np.random.randint(low=0,high=2**32, dtype='uint64')),log_orders=log_orders, symbol=symbol, starting_cash=starting_cash, sigma_n=sigma_n, r_bar=s['r_bar'], kappa=s['agent_kappa'], sigma_s=s['fund_vol'], q_max=10, sigma_pv=5e6, R_min=x[1], R_max=x[2], eta=x[3], lambda_a=1e-12) for j in range(agent_count,agent_count+x[0]) ])
-  agent_types.extend([ "ZeroIntelligenceAgent {}".format(strat_name) for j in range(x[0]) ])
-  agent_count += x[0]
+for i, x in enumerate(zi):
+    strat_name = "Type {} [{} <= R <= {}, eta={}]".format(i + 1, x[1], x[2], x[3])
+    agents.extend(
+        [
+            ZeroIntelligenceAgent(
+                j,
+                "ZI Agent {} {}".format(j, strat_name),
+                "ZeroIntelligenceAgent {}".format(strat_name),
+                random_state=np.random.RandomState(seed=np.random.randint(low=0, high=2**32, dtype="uint64")),
+                log_orders=log_orders,
+                symbol=symbol,
+                starting_cash=starting_cash,
+                sigma_n=sigma_n,
+                r_bar=s["r_bar"],
+                kappa=s["agent_kappa"],
+                sigma_s=s["fund_vol"],
+                q_max=10,
+                sigma_pv=5e6,
+                R_min=x[1],
+                R_max=x[2],
+                eta=x[3],
+                lambda_a=1e-12,
+            )
+            for j in range(agent_count, agent_count + x[0])
+        ]
+    )
+    agent_types.extend(["ZeroIntelligenceAgent {}".format(strat_name) for j in range(x[0])])
+    agent_count += x[0]
 
 
 latency = None
@@ -212,30 +289,29 @@ USE_NEW_MODEL = True
 # Other agents can be explicitly set afterward (and the mirror half of the matrix is also).
 
 if not USE_NEW_MODEL:
-  # This configures all agents to a starting latency as described above.
-  latency = np.random.uniform(low = 21000, high = 13000000, size=(len(agent_types),len(agent_types)))
-  
-  # Overriding the latency for certain agent pairs happens below, as does forcing mirroring
-  # of the matrix to be symmetric.
-  for i, t1 in zip(range(latency.shape[0]), agent_types):
-    for j, t2 in zip(range(latency.shape[1]), agent_types):
-      # Three cases for symmetric array.  Set latency when j > i, copy it when i > j, same agent when i == j.
-      if j > i:
-        # Presently, strategy agents shouldn't be talking to each other, so we set them to extremely high latency.
-        if (t1 == "ZeroIntelligenceAgent" and t2 == "ZeroIntelligenceAgent"):
-          latency[i,j] = 1000000000 * 60 * 60 * 24    # Twenty-four hours.
-      elif i > j:
-        # This "bottom" half of the matrix simply mirrors the top.
-        latency[i,j] = latency[j,i]
-      else:
-        # This is the same agent.  How long does it take to reach localhost?  In our data center, it actually
-        # takes about 20 microseconds.
-        latency[i,j] = 20000
-  
-  
-  # Configure a simple latency noise model for the agents.
-  # Index is ns extra delay, value is probability of this delay being applied.
-  noise = [ 0.25, 0.25, 0.20, 0.15, 0.10, 0.05 ]
+    # This configures all agents to a starting latency as described above.
+    latency = np.random.uniform(low=21000, high=13000000, size=(len(agent_types), len(agent_types)))
+
+    # Overriding the latency for certain agent pairs happens below, as does forcing mirroring
+    # of the matrix to be symmetric.
+    for i, t1 in zip(range(latency.shape[0]), agent_types):
+        for j, t2 in zip(range(latency.shape[1]), agent_types):
+            # Three cases for symmetric array.  Set latency when j > i, copy it when i > j, same agent when i == j.
+            if j > i:
+                # Presently, strategy agents shouldn't be talking to each other, so we set them to extremely high latency.
+                if t1 == "ZeroIntelligenceAgent" and t2 == "ZeroIntelligenceAgent":
+                    latency[i, j] = 1000000000 * 60 * 60 * 24  # Twenty-four hours.
+            elif i > j:
+                # This "bottom" half of the matrix simply mirrors the top.
+                latency[i, j] = latency[j, i]
+            else:
+                # This is the same agent.  How long does it take to reach localhost?  In our data center, it actually
+                # takes about 20 microseconds.
+                latency[i, j] = 20000
+
+    # Configure a simple latency noise model for the agents.
+    # Index is ns extra delay, value is probability of this delay being applied.
+    noise = [0.25, 0.25, 0.20, 0.15, 0.10, 0.05]
 
 ### END OLD LATENCY ATTRIBUTE CONFIGURATION ###
 
@@ -243,28 +319,32 @@ if not USE_NEW_MODEL:
 ### BEGIN NEW LATENCY MODEL CONFIGURATION ###
 
 else:
-  # Get a new-style cubic LatencyModel from the networking literature.
-  pairwise = (len(agent_types),len(agent_types))
+    # Get a new-style cubic LatencyModel from the networking literature.
+    pairwise = (len(agent_types), len(agent_types))
 
-  model_args = { 'connected'   : True,
+    model_args = {
+        "connected": True,
+        # All in NYC.
+        "min_latency": np.random.uniform(low=21000, high=100000, size=pairwise),
+        "jitter": 0.3,
+        "jitter_clip": 0.05,
+        "jitter_unit": 5,
+    }
 
-                 # All in NYC.
-                 'min_latency' : np.random.uniform(low = 21000, high = 100000, size = pairwise),
-                 'jitter'      : 0.3,
-                 'jitter_clip' : 0.05,
-                 'jitter_unit' : 5,
-               }
-
-  latency_model = LatencyModel ( latency_model = 'cubic', random_state = latency_rstate, kwargs = model_args )
+    latency_model = LatencyModel(latency_model="cubic", random_state=latency_rstate, kwargs=model_args)
 
 ### END NEW LATENCY MODEL CONFIGURATION ###
 
 
 # Start the kernel running.
-kernel.runner(agents = agents, startTime = kernelStartTime,
-              stopTime = kernelStopTime,
-              agentLatencyModel = latency_model,
-              agentLatency = latency, latencyNoise = noise,
-              defaultComputationDelay = defaultComputationDelay,
-              oracle = oracle, log_dir = log_dir)
-
+kernel.runner(
+    agents=agents,
+    startTime=kernelStartTime,
+    stopTime=kernelStopTime,
+    agentLatencyModel=latency_model,
+    agentLatency=latency,
+    latencyNoise=noise,
+    defaultComputationDelay=defaultComputationDelay,
+    oracle=oracle,
+    log_dir=log_dir,
+)

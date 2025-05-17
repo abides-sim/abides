@@ -1,0 +1,34 @@
+[tool.isort]
+profile = "black"
+line_length = 120
+skip = [".gitignore", "env", "venv", ".git", ".mypy_cache", "__pycache__", "sandbox", "build", "dist"]
+
+[tool.black]
+line-length = 120
+force-exclude = '''   env|
+                      venv|
+                      .mypy_cache|
+                      build|
+                      dist|
+                      __pycache__
+                      sandbox
+                '''
+
+[tool.flake8]
+max-line-length = 120
+
+ignore = [
+    # Missing docstring in __init__
+    "D107",
+    # Missing docstring in public package
+    "D104",
+    # Whitespace before ':' - for black
+    "E203",
+    # Line break occurred before a binary operator
+    "W503",
+    # Module level import not at top of file
+    "E402"
+]
+exclude = ["env", "venv", "sandbox", "build", "dist"]
+
+

@@ -1,25 +1,47 @@
-from agent.TradingAgent import TradingAgent
+from collections import deque, namedtuple
+
 import pandas as pd
-from util.util import log_print
-from collections import namedtuple, deque
-from util.util import ignored
 
+from agent.TradingAgent import TradingAgent
+from util.util import ignored, log_print
 
-ANCHOR_TOP_STR = 'top'
-ANCHOR_BOTTOM_STR = 'bottom'
+ANCHOR_TOP_STR = "top"
+ANCHOR_BOTTOM_STR = "bottom"
 
 
 class SpreadBasedMarketMakerAgent(TradingAgent):
-    """ This class implements the Chakraborty-Kearns `ladder` market-making strategy. """
+    """This class implements the Chakraborty-Kearns `ladder` market-making strategy."""
 
-    _Order = namedtuple('_Order', ['price', 'id'])  # Internal data structure used to describe a placed order
+    _Order = namedtuple("_Order", ["price", "id"])  # Internal data structure used to describe a placed order
 
-    def __init__(self, id, name, type, symbol, starting_cash, order_size=1, window_size=5, anchor=ANCHOR_BOTTOM_STR,
-                 num_ticks=20, wake_up_freq='1s', subscribe=True, subscribe_freq=10e9, subscribe_num_levels=1,
-                 log_orders=False, random_state=None):
+    def __init__(
+        self,
+        id,
+        name,
+        type,
+        symbol,
+        starting_cash,
+        order_size=1,
+        window_size=5,
+        anchor=ANCHOR_BOTTOM_STR,
+        num_ticks=20,
+        wake_up_freq="1s",
+        subscribe=True,
+        subscribe_freq=10e9,
+        subscribe_num_levels=1,
+        log_orders=False,
+        random_state=None,
+    ):
 
-        super().__init__(id, name, type, starting_cash=starting_cash, log_orders=log_orders, random_state=random_state)
-        self.symbol = symbol      # Symbol traded
+        super().__init__(
+            id,
+            name,
+            type,
+            starting_cash=starting_cash,
+            log_orders=log_orders,
+            random_state=random_state,
+        )
+        self.symbol = symbol  # Symbol traded
         self.order_size = order_size  # order size per price level
         self.window_size = window_size  # Size in ticks (cents) of how wide the window around mid price is
         self.anchor = self.validateAnchor(anchor)  # anchor either top of window or bottom of window to mid-price
@@ -28,7 +50,7 @@ class SpreadBasedMarketMakerAgent(TradingAgent):
         self.wake_up_freq = wake_up_freq  # Frequency of agent wake up
         self.subscribe = subscribe  # Flag to determine whether to subscribe to data or use polling mechanism
         self.subscribe_freq = subscribe_freq  # Frequency in nanoseconds^-1 at which to receive market updates
-                                              # in subscribe mode
+        # in subscribe mode
         self.subscribe_num_levels = subscribe_num_levels  # Number of orderbook levels in subscription mode
         self.log_orders = log_orders
 
@@ -44,7 +66,7 @@ class SpreadBasedMarketMakerAgent(TradingAgent):
         self.LIQUIDITY_DROPOUT_WARNING = f"Liquidity dropout for agent {self.name}."
 
     def validateAnchor(self, anchor):
-        """ Checks that input parameter anchor takes allowed value, raises ValueError if not.
+        """Checks that input parameter anchor takes allowed value, raises ValueError if not.
 
         :param anchor: str
         :return:
@@ -58,18 +80,18 @@ class SpreadBasedMarketMakerAgent(TradingAgent):
         super().kernelStarting(startTime)
 
     def wakeup(self, currentTime):
-        """ Agent wakeup is determined by self.wake_up_freq """
+        """Agent wakeup is determined by self.wake_up_freq"""
         can_trade = super().wakeup(currentTime)
         if self.subscribe and not self.subscription_requested:
             super().requestDataSubscription(self.symbol, levels=self.subscribe_num_levels, freq=self.subscribe_freq)
             self.subscription_requested = True
-            self.state = 'AWAITING_MARKET_DATA'
+            self.state = "AWAITING_MARKET_DATA"
         elif can_trade and not self.subscribe:
             self.getCurrentSpread(self.symbol, depth=self.subscribe_num_levels)
-            self.state = 'AWAITING_SPREAD'
+            self.state = "AWAITING_SPREAD"
 
     def receiveMessage(self, currentTime, msg):
-        """ Processes message from exchange. Main function is to update orders in orderbook relative to mid-price.
+        """Processes message from exchange. Main function is to update orders in orderbook relative to mid-price.
 
         :param simulation current time
         :param message received by self from ExchangeAgent
@@ -85,7 +107,7 @@ class SpreadBasedMarketMakerAgent(TradingAgent):
         if self.last_mid is not None:
             mid = self.last_mid
 
-        if not self.subscribe and self.state == 'AWAITING_SPREAD' and msg.body['msg'] == 'QUERY_SPREAD':
+        if not self.subscribe and self.state == "AWAITING_SPREAD" and msg.body["msg"] == "QUERY_SPREAD":
 
             bid, _, ask, _ = self.getKnownBidAsk(self.symbol)
             if bid and ask:
@@ -97,10 +119,10 @@ class SpreadBasedMarketMakerAgent(TradingAgent):
             self.cancelOrders(orders_to_cancel)
             self.placeOrders(mid)
             self.setWakeup(currentTime + self.getWakeFrequency())
-            self.state = 'AWAITING_WAKEUP'
+            self.state = "AWAITING_WAKEUP"
             self.last_mid = mid
 
-        elif self.subscribe and self.state == 'AWAITING_MARKET_DATA' and msg.body['msg'] == 'MARKET_DATA':
+        elif self.subscribe and self.state == "AWAITING_MARKET_DATA" and msg.body["msg"] == "MARKET_DATA":
 
             bid = self.known_bids[self.symbol][0][0] if self.known_bids[self.symbol] else None
             ask = self.known_asks[self.symbol][0][0] if self.known_asks[self.symbol] else None
@@ -113,11 +135,11 @@ class SpreadBasedMarketMakerAgent(TradingAgent):
             orders_to_cancel = self.computeOrdersToCancel(mid)
             self.cancelOrders(orders_to_cancel)
             self.placeOrders(mid)
-            self.state = 'AWAITING_MARKET_DATA'
+            self.state = "AWAITING_MARKET_DATA"
             self.last_mid = mid
 
     def computeOrdersToCancel(self, mid):
-        """ Given a mid price, computes the orders that need to be removed from orderbook, and pops these orders from
+        """Given a mid price, computes the orders that need to be removed from orderbook, and pops these orders from
             bid and ask deques.
 
         :param mid: mid-price
@@ -140,7 +162,7 @@ class SpreadBasedMarketMakerAgent(TradingAgent):
                 with ignored(self.LIQUIDITY_DROPOUT_WARNING, IndexError):
                     orders_to_cancel.append(self.current_asks.popleft())
         elif num_ticks_to_increase < 0:
-            for _ in range(- num_ticks_to_increase):
+            for _ in range(-num_ticks_to_increase):
                 with ignored(self.LIQUIDITY_DROPOUT_WARNING, IndexError):
                     orders_to_cancel.append(self.current_bids.pop())
                 with ignored(self.LIQUIDITY_DROPOUT_WARNING, IndexError):
@@ -149,7 +171,7 @@ class SpreadBasedMarketMakerAgent(TradingAgent):
         return orders_to_cancel
 
     def cancelOrders(self, orders_to_cancel):
-        """ Given a list of _Order objects, remove the corresponding orders from ExchangeAgent's orderbook
+        """Given a list of _Order objects, remove the corresponding orders from ExchangeAgent's orderbook
 
         :param orders_to_cancel: orders to remove from orderbook
         :type orders_to_cancel: list(_Order)
@@ -164,7 +186,7 @@ class SpreadBasedMarketMakerAgent(TradingAgent):
                 continue
 
     def computeOrdersToPlace(self, mid):
-        """ Given a mid price, computes the orders that need to be removed from orderbook, and adds these orders to
+        """Given a mid price, computes the orders that need to be removed from orderbook, and adds these orders to
             bid and ask deques.
 
         :param mid: mid-price
@@ -223,28 +245,40 @@ class SpreadBasedMarketMakerAgent(TradingAgent):
         return bids_to_place, asks_to_place
 
     def placeOrders(self, mid):
-        """ Given a mid-price, compute new orders that need to be placed, then send the orders to the Exchange.
+        """Given a mid-price, compute new orders that need to be placed, then send the orders to the Exchange.
 
-            :param mid: mid-price
-            :type mid: int
+        :param mid: mid-price
+        :type mid: int
 
         """
 
         bid_orders, ask_orders = self.computeOrdersToPlace(mid)
         for bid_order in bid_orders:
-            log_print(f'{self.name}: Placing BUY limit order of size {self.order_size} @ price {bid_order.price}')
-            self.placeLimitOrder(self.symbol, self.order_size, True, bid_order.price, order_id=bid_order.id)
+            log_print(f"{self.name}: Placing BUY limit order of size {self.order_size} @ price {bid_order.price}")
+            self.placeLimitOrder(
+                self.symbol,
+                self.order_size,
+                True,
+                bid_order.price,
+                order_id=bid_order.id,
+            )
 
         for ask_order in ask_orders:
-            log_print(f'{self.name}: Placing SELL limit order of size {self.order_size} @ price {ask_order.price}')
-            self.placeLimitOrder(self.symbol, self.order_size, False, ask_order.price, order_id=ask_order.id)
+            log_print(f"{self.name}: Placing SELL limit order of size {self.order_size} @ price {ask_order.price}")
+            self.placeLimitOrder(
+                self.symbol,
+                self.order_size,
+                False,
+                ask_order.price,
+                order_id=ask_order.id,
+            )
 
     def initialiseBidsAsksDeques(self, mid):
-        """ Initialise the current_bids and current_asks object attributes, which internally keep track of the limit
-            orders sent to the Exchange.
+        """Initialise the current_bids and current_asks object attributes, which internally keep track of the limit
+        orders sent to the Exchange.
 
-            :param mid: mid-price
-            :type mid: int
+        :param mid: mid-price
+        :type mid: int
 
         """
 
@@ -262,7 +296,7 @@ class SpreadBasedMarketMakerAgent(TradingAgent):
         self.current_asks = deque([self.generateNewOrderId(price) for price in range(lowest_ask, highest_ask + 1)])
 
     def generateNewOrderId(self, price):
-        """ Generate a _Order object for a particular price level
+        """Generate a _Order object for a particular price level
 
         :param price:
         :type price: int
@@ -273,10 +307,10 @@ class SpreadBasedMarketMakerAgent(TradingAgent):
         return self._Order(price, order_id)
 
     def getWakeFrequency(self):
-        """ Get time increment corresponding to wakeup period. """
+        """Get time increment corresponding to wakeup period."""
         return pd.Timedelta(self.wake_up_freq)
 
     def cancelAllOrders(self):
-        """ Cancels all resting limit orders placed by the market maker """
+        """Cancels all resting limit orders placed by the market maker"""
         for _, order in self.orders.items():
             self.cancelOrder(order)

@@ -1,27 +1,60 @@
+import sys
+from math import sqrt
+
+import numpy as np
+import pandas as pd
+
 from agent.ZeroIntelligenceAgent import ZeroIntelligenceAgent
 from message.Message import Message
 from util.util import log_print
-
-from math import sqrt
-import numpy as np
-import pandas as pd
-import sys
 
 np.set_printoptions(threshold=np.inf)
 
 
 class HeuristicBeliefLearningAgent(ZeroIntelligenceAgent):
 
-    def __init__(self, id, name, type, symbol='IBM', starting_cash=100000, sigma_n=1000,
-                 r_bar=100000, kappa=0.05, sigma_s=100000, q_max=10, sigma_pv=5000000, R_min=0,
-                 R_max=250, eta=1.0, lambda_a=0.005, L=8, log_orders=False,
-                 random_state=None):
+    def __init__(
+        self,
+        id,
+        name,
+        type,
+        symbol="IBM",
+        starting_cash=100000,
+        sigma_n=1000,
+        r_bar=100000,
+        kappa=0.05,
+        sigma_s=100000,
+        q_max=10,
+        sigma_pv=5000000,
+        R_min=0,
+        R_max=250,
+        eta=1.0,
+        lambda_a=0.005,
+        L=8,
+        log_orders=False,
+        random_state=None,
+    ):
 
         # Base class init.
-        super().__init__(id, name, type, symbol=symbol, starting_cash=starting_cash, sigma_n=sigma_n,
-                         r_bar=r_bar, kappa=kappa, sigma_s=sigma_s, q_max=q_max, sigma_pv=sigma_pv, R_min=R_min,
-                         R_max=R_max, eta=eta, lambda_a=lambda_a, log_orders=log_orders,
-                         random_state=random_state)
+        super().__init__(
+            id,
+            name,
+            type,
+            symbol=symbol,
+            starting_cash=starting_cash,
+            sigma_n=sigma_n,
+            r_bar=r_bar,
+            kappa=kappa,
+            sigma_s=sigma_s,
+            q_max=q_max,
+            sigma_pv=sigma_pv,
+            R_min=R_min,
+            R_max=R_max,
+            eta=eta,
+            lambda_a=lambda_a,
+            log_orders=log_orders,
+            random_state=random_state,
+        )
 
         # Store important parameters particular to the HBL agent.
         self.L = L  # length of order book history to use (number of transactions)
@@ -33,11 +66,12 @@ class HeuristicBeliefLearningAgent(ZeroIntelligenceAgent):
 
         # Only if the superclass leaves the state as ACTIVE should we proceed with our
         # trading strategy.
-        if self.state != 'ACTIVE': return
+        if self.state != "ACTIVE":
+            return
 
         # To make trade decisions, the HBL agent requires recent order stream information.
         self.getOrderStream(self.symbol, length=self.L)
-        self.state = 'AWAITING_STREAM'
+        self.state = "AWAITING_STREAM"
 
     def placeOrder(self):
         # Called when it is time for the agent to determine a limit price and place an order.
@@ -51,7 +85,11 @@ class HeuristicBeliefLearningAgent(ZeroIntelligenceAgent):
 
         if len(self.stream_history[self.symbol]) < self.L:
             # Not enough history for HBL.
-            log_print("Insufficient history for HBL: length {}, L {}", len(self.stream_history[self.symbol]), self.L)
+            log_print(
+                "Insufficient history for HBL: length {}, L {}",
+                len(self.stream_history[self.symbol]),
+                self.L,
+            )
             super().placeOrder()
             return
 
@@ -70,9 +108,11 @@ class HeuristicBeliefLearningAgent(ZeroIntelligenceAgent):
         # Find the lowest and highest observed prices in the order history.
         for h in self.stream_history[self.symbol]:
             for id, order in h.items():
-                p = order['limit_price']
-                if p < low_p: low_p = p
-                if p > high_p: high_p = p
+                p = order["limit_price"]
+                if p < low_p:
+                    low_p = p
+                if p > high_p:
+                    high_p = p
 
         # Set up the ndarray we will use for our computation.
         # idx 0-7 are sa, sb, ua, ub, num, denom, Pr, Es
@@ -83,20 +123,22 @@ class HeuristicBeliefLearningAgent(ZeroIntelligenceAgent):
             # h follows increasing "transactions into the past", with index zero being orders
             # after the most recent transaction.
             for id, order in h.items():
-                p = order['limit_price']
-                if p < low_p: low_p = p
-                if p > high_p: high_p = p
+                p = order["limit_price"]
+                if p < low_p:
+                    low_p = p
+                if p > high_p:
+                    high_p = p
 
                 # For now if there are any transactions, consider the order successful.  For single
                 # unit orders, this is sufficient.  For multi-unit orders,
                 # we may wish to switch to a proportion of shares executed.
-                if order['is_buy_order']:
-                    if order['transactions']:
+                if order["is_buy_order"]:
+                    if order["transactions"]:
                         nd[p - low_p, 1] += 1
                     else:
                         nd[p - low_p, 3] += 1
                 else:
-                    if order['transactions']:
+                    if order["transactions"]:
                         nd[p - low_p, 0] += 1
                     else:
                         nd[p - low_p, 2] += 1
@@ -119,7 +161,7 @@ class HeuristicBeliefLearningAgent(ZeroIntelligenceAgent):
         # nan to zero, which is the right answer for us.
 
         # Compute probability estimates for successful transaction at all price levels.
-        with np.errstate(divide='ignore', invalid='ignore'):
+        with np.errstate(divide="ignore", invalid="ignore"):
             nd[:, 6] = np.nan_to_num(np.divide(nd[:, 4], nd[:, 5]))
 
         # Compute expected surplus for all price levels.
@@ -135,14 +177,22 @@ class HeuristicBeliefLearningAgent(ZeroIntelligenceAgent):
 
         # If the best expected surplus is positive, go for it.
         if best_Es > 0:
-            log_print("Numpy: {} selects limit price {} with expected surplus {} (Pr = {:0.4f})", self.name, best_p,
-                      int(round(best_Es)), best_Pr)
+            log_print(
+                "Numpy: {} selects limit price {} with expected surplus {} (Pr = {:0.4f})",
+                self.name,
+                best_p,
+                int(round(best_Es)),
+                best_Pr,
+            )
 
             # Place the constructed order.
             self.placeLimitOrder(self.symbol, 100, buy, int(round(best_p)))
         else:
             # Do nothing if best limit price has negative expected surplus with below code.
-            log_print("Numpy: {} elects not to place an order (best expected surplus <= 0)", self.name)
+            log_print(
+                "Numpy: {} elects not to place an order (best expected surplus <= 0)",
+                self.name,
+            )
 
             # OTHER OPTION 1: Allow negative expected surplus with below code.
             # log_print ("Numpy: {} placing undesirable order (best expected surplus <= 0)", self.name)
@@ -162,13 +212,14 @@ class HeuristicBeliefLearningAgent(ZeroIntelligenceAgent):
         super().receiveMessage(currentTime, msg)
 
         # Do our special stuff.
-        if self.state == 'AWAITING_STREAM':
+        if self.state == "AWAITING_STREAM":
             # We were waiting to receive the recent order stream.
-            if msg.body['msg'] == 'QUERY_ORDER_STREAM':
+            if msg.body["msg"] == "QUERY_ORDER_STREAM":
                 # This is what we were waiting for.
 
                 # But if the market is now closed, don't advance.
-                if self.mkt_closed: return
+                if self.mkt_closed:
+                    return
 
                 self.getCurrentSpread(self.symbol)
-                self.state = 'AWAITING_SPREAD'
+                self.state = "AWAITING_SPREAD"

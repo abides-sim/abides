@@ -11,11 +11,17 @@ class Kurtosis(Metric):
 
     def compute(self, df):
         ks = []
-        for i in range(1,self.intervals+1):
+        for i in range(1, self.intervals + 1):
             temp = df[["close"]].resample("{}T".format(i)).last()
             rets = self.mr.compute(temp)
             ks.append(kurtosis(rets))
         return [ks]
 
     def visualize(self, simulated):
-        self.line(simulated, title="Kurtosis", xlabel="Time scale (min)", ylabel="Average kurtosis", logy=True)
+        self.line(
+            simulated,
+            title="Kurtosis",
+            xlabel="Time scale (min)",
+            ylabel="Average kurtosis",
+            logy=True,
+        )

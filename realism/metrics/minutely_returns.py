@@ -1,6 +1,6 @@
-from metrics.metric import Metric
 import matplotlib.pyplot as plt
 import numpy as np
+from metrics.metric import Metric
 
 
 class MinutelyReturns(Metric):
@@ -12,4 +12,10 @@ class MinutelyReturns(Metric):
         return df.tolist()
 
     def visualize(self, simulated):
-        self.hist(simulated, title="Minutely Log Returns", xlabel="Log Returns", log=True, clip=.05)
+        self.hist(
+            simulated,
+            title="Minutely Log Returns",
+            xlabel="Log Returns",
+            log=True,
+            clip=0.05,
+        )

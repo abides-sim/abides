@@ -9,7 +9,16 @@ class Order:
     order_id = 0
     _order_ids = set()
 
-    def __init__(self, agent_id, time_placed, symbol, quantity, is_buy_order, order_id=None, tag=None):
+    def __init__(
+        self,
+        agent_id,
+        time_placed,
+        symbol,
+        quantity,
+        is_buy_order,
+        order_id=None,
+        tag=None,
+    ):
 
         self.agent_id = agent_id
 
@@ -52,7 +61,7 @@ class Order:
 
     def to_dict(self):
         as_dict = deepcopy(self).__dict__
-        as_dict['time_placed'] = self.time_placed.isoformat()
+        as_dict["time_placed"] = self.time_placed.isoformat()
         return as_dict
 
     def __copy__(self):
